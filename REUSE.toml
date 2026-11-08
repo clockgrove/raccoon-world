@@ -1,0 +1,16 @@
+version = 1
+
+# Everything here is Raccoon World work, MIT, unless an annotation below says otherwise.
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Clockgrove"
+SPDX-License-Identifier = "MIT"
+
+# 3D models made on Meshy's Free plan are CC BY 4.0 under Meshy's terms, and so are renders and
+# conversions of them. Credit: "3D model generated with Meshy (meshy.ai)".
+[[annotations]]
+path = ["references/stevie/77-3d/meshy-*.glb", "references/stevie/77-3d/ship-meshy*.glb", "references/stevie/77-3d/preview-meshy-*.png"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Meshy (generated on the Meshy Free plan for Clockgrove)"
+SPDX-License-Identifier = "CC-BY-4.0"

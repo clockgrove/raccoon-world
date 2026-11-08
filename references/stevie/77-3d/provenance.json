@@ -1,0 +1,920 @@
+{
+  "capUsd": 10,
+  "calls": [
+    {
+      "id": "turnaround-1794118584695",
+      "step": "turnaround (image generation)",
+      "provider": "Vercel AI Gateway",
+      "model": "openai/gpt-image-2",
+      "endpoint": "https://ai-gateway.vercel.sh/v1/images/edits",
+      "parameters": {
+        "size": "1536x1024",
+        "quality": "high",
+        "n": 1,
+        "prompt": "The attached sprite sheet is the identity reference for Stevie, a raccoon character. Draw a clean character turnaround of the same raccoon for 3D modelling: four full-body views of him in one 2x2 grid, each view centred in its own quarter of the image with a wide margin: top-left FRONT view (facing the viewer), top-right THREE-QUARTER front view (facing front-left), bottom-left SIDE profile (facing left), bottom-right BACK view. Neutral standing pose on all four legs, legs straight and apart, all four paws visible on one ground line, tail held out behind and slightly down, not crossing the body. Same size and scale in every view. Flat, even, shadowless studio light: no cast shadows, no ground shadow, no rim light, no orange fringe. Plain uniform light grey background. No text, no numbers, no labels, no grid lines. Keep his identity exactly: the black eye mask with white brows and muzzle, the ringed tail with dark brown and tan bands, grey-brown fur with a lighter tan underside, dark brown legs and paws, his round chubby proportions and rounded ears. Soft painterly storybook illustration style with fine fur texture.",
+        "image": "docs/design/reference/stevie-sprite-sheet.png sha256 ec4ef883287b4f08b13008abd0381f6932d1c0c1631c75d81efe1b5a00ecffd4"
+      },
+      "reservedUsd": 0.5,
+      "startedAt": "2026-11-08T06:16:24.697Z",
+      "status": "done",
+      "costUsd": 0.17768,
+      "costBasis": "AI Gateway credit balance before and after the call",
+      "usage": {
+        "total_tokens": 7214,
+        "input_tokens": 1726,
+        "output_tokens": 5488,
+        "input_tokens_details": {
+          "text_tokens": 256,
+          "image_tokens": 1470
+        }
+      },
+      "minutes": 1.11
+    },
+    {
+      "id": "fal-multi-1794118656400",
+      "step": "image to 3D (fal.ai TRELLIS.2)",
+      "provider": "fal.ai",
+      "model": "TRELLIS.2 (microsoft/TRELLIS.2; MIT weights per its release)",
+      "endpoint": "fal-ai/trellis-2/multi",
+      "parameters": {
+        "resolution": 1024,
+        "texture_size": 2048,
+        "decimation_target": 50000,
+        "seed": 1,
+        "views": [
+          "media/turnaround-front.png",
+          "media/turnaround-three-quarter.png",
+          "media/turnaround-side.png",
+          "media/turnaround-back.png"
+        ]
+      },
+      "reservedUsd": 0.3,
+      "licence": "fal.ai's model page and terms are not reachable from the sandbox (egress allows only fal's API and media hosts); the maintainer re-checks them before relying on the licence",
+      "startedAt": "2026-11-08T06:17:36.402Z",
+      "status": "done",
+      "requestId": "01a1b9ce-253d-76e2-b3db-c791e9d7c462",
+      "costUsd": 0.3,
+      "costBasis": "fal's listed per-generation price (billing API not reachable from the sandbox)",
+      "result": {
+        "model_glb": {
+          "url": "(downloaded)",
+          "content_type": "model/gltf-binary",
+          "file_name": "trellis2_4dae5a1ebcd449b9a2fa5a9bddac23d8.glb",
+          "file_size": 2368604
+        }
+      },
+      "minutes": 0.99
+    },
+    {
+      "id": "meshy-1794118719180",
+      "step": "image to 3D and auto-rig (Meshy)",
+      "provider": "Meshy",
+      "model": "Meshy multi-image-to-3D (latest) + Meshy rigging",
+      "endpoint": "https://api.meshy.ai/openapi/v1/multi-image-to-3d, https://api.meshy.ai/openapi/v1/rigging",
+      "parameters": {
+        "should_texture": true,
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "views": [
+          "media/turnaround-front.png",
+          "media/turnaround-three-quarter.png",
+          "media/turnaround-side.png",
+          "media/turnaround-back.png"
+        ],
+        "rig": {
+          "height_meters": 0.53
+        }
+      },
+      "reservedUsd": 0.9,
+      "startedAt": "2026-11-08T06:18:39.181Z",
+      "status": "done",
+      "credits": 35,
+      "costUsd": 0.7,
+      "costBasis": "Meshy credit balance before and after (exact credits), valued at $0.02 per credit (estimate)",
+      "steps": [
+        {
+          "step": "multi-image-to-3d",
+          "minutes": 2.29,
+          "taskId": "01a1b9cf-1836-703b-b094-37abff16dc74"
+        },
+        {
+          "step": "rigging",
+          "minutes": 0.34,
+          "taskId": "01a1b9d1-3f67-716c-b4c6-fc85dadabb6c"
+        }
+      ],
+      "textureUrls": "(see the GLB)",
+      "minutes": 2.87
+    },
+    {
+      "id": "fal-three-quarter-1794118894191",
+      "step": "image to 3D (fal.ai TRELLIS.2)",
+      "provider": "fal.ai",
+      "model": "TRELLIS.2 (microsoft/TRELLIS.2; MIT weights per its release)",
+      "endpoint": "fal-ai/trellis-2",
+      "parameters": {
+        "resolution": 1024,
+        "texture_size": 2048,
+        "decimation_target": 50000,
+        "seed": 1,
+        "views": ["media/turnaround-three-quarter.png"]
+      },
+      "reservedUsd": 0.3,
+      "licence": "fal.ai's model page and terms are not reachable from the sandbox (egress allows only fal's API and media hosts); the maintainer re-checks them before relying on the licence",
+      "startedAt": "2026-11-08T06:21:34.192Z",
+      "status": "done",
+      "requestId": "01a1b9d1-c534-75a1-a17f-7881be371971",
+      "costUsd": 0.3,
+      "costBasis": "fal's listed per-generation price (billing API not reachable from the sandbox)",
+      "result": {
+        "model_glb": {
+          "url": "(downloaded)",
+          "content_type": "model/gltf-binary",
+          "file_name": "trellis2_6dca25ce16634814bc02c2ea0ca2a94a.glb",
+          "file_size": 6079696
+        }
+      },
+      "minutes": 1.1
+    },
+    {
+      "id": "fal-three-quarter-1536-1794118960453",
+      "step": "image to 3D (fal.ai TRELLIS.2)",
+      "provider": "fal.ai",
+      "model": "TRELLIS.2 (microsoft/TRELLIS.2; MIT weights per its release)",
+      "endpoint": "fal-ai/trellis-2",
+      "parameters": {
+        "resolution": 1536,
+        "texture_size": 2048,
+        "decimation_target": 50000,
+        "seed": 2,
+        "views": ["media/turnaround-three-quarter.png"]
+      },
+      "reservedUsd": 0.35,
+      "licence": "fal.ai's model page and terms are not reachable from the sandbox (egress allows only fal's API and media hosts); the maintainer re-checks them before relying on the licence",
+      "startedAt": "2026-11-08T06:22:40.454Z",
+      "status": "done",
+      "requestId": "01a1b9d2-c809-7e30-86d6-b1fce261f0b9",
+      "costUsd": 0.35,
+      "costBasis": "fal's listed per-generation price (billing API not reachable from the sandbox)",
+      "result": {
+        "model_glb": {
+          "url": "(downloaded)",
+          "content_type": "model/gltf-binary",
+          "file_name": "trellis2_e57644b4710d4260bca721bc589a5cd0.glb",
+          "file_size": 4170288
+        }
+      },
+      "minutes": 2.83
+    },
+    {
+      "id": "tripo-1794121133220",
+      "step": "image to 3D and auto-rig (Tripo)",
+      "provider": "Tripo",
+      "model": "Tripo multiview-to-model v3.1-20260211 + Tripo rig",
+      "endpoint": "https://openapi.tripo3d.ai/v3/generation/multiview-to-model, https://openapi.tripo3d.ai/v3/animations/rig-check, https://openapi.tripo3d.ai/v3/animations/rig, https://openapi.tripo3d.ai/v3/animations/retarget",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "texture": true,
+        "pbr": true,
+        "smart_low_poly": true,
+        "face_limit": 10000,
+        "views": {
+          "front": "media/turnaround-front.png",
+          "left": "media/turnaround-side.png",
+          "back": "media/turnaround-back.png",
+          "right": null
+        }
+      },
+      "reservedUsd": 2,
+      "startedAt": "2026-11-08T06:58:53.227Z",
+      "status": "done-unfetched",
+      "note": "the run was restarted before any result was recorded; the $2 reservation stays committed because Tripo may have charged it; ledger corrected per the owner (07:17Z): Tripo made the model and charged 40 credits ($0.40), not the $2 reservation; a second candidate from the approved turnaround, not used",
+      "credits": 40,
+      "costUsd": 0.4,
+      "tasks": {
+        "model": "7c64bf96-60bd-4584-b12d-4a78061e8f1e"
+      },
+      "costBasis": "40 credits per Tripo usage API (owner, issue 77 07:17Z), valued at $0.01 per credit (estimate)"
+    },
+    {
+      "id": "turnaround-v2-1794121324285",
+      "step": "turnaround (image generation)",
+      "provider": "Vercel AI Gateway",
+      "model": "openai/gpt-image-2",
+      "endpoint": "https://ai-gateway.vercel.sh/v1/images/edits",
+      "parameters": {
+        "size": "1536x1024",
+        "quality": "high",
+        "n": 1,
+        "prompt": "The attached images are all the same raccoon character, Stevie: the first is his whole sprite sheet and the others are single frames from it. Draw a clean character turnaround of exactly this character for 3D modelling, keeping his identity above all. His identity: a ROUND, HUNCHED, CHUBBY body, the back arched high into a dome so the body is almost a ball, the head held low and forward at the front of the dome, short stocky legs; a BIG, very FLUFFY, thick tail nearly as wide as his body, with bold alternating dark-brown and tan rings; the black eye mask, white brows and white muzzle, round dark glossy eyes with a soft friendly look, small rounded ears with pale rims; warm grey-brown fluffy fur with a lighter tan underside, dark brown paws. Soft painterly storybook illustration finish, the same as the sprite sheet. Do NOT make him lean, long-bodied, upright or naturalistic, and do NOT give him a thin tail. Layout: four full-body views in one 2x2 grid, each centred in its own quarter with a wide margin: top-left FRONT view (facing the viewer), top-right THREE-QUARTER front view (facing front-left), bottom-left SIDE profile (facing left), bottom-right BACK view. Neutral standing pose on all four legs, all four paws on one ground line, tail curving out behind, not crossing the body. Same size in every view. Flat, even, shadowless light: no cast shadow, no ground shadow, no rim light, no orange fringe. Plain uniform light grey background. No text, no numbers, no labels, no grid lines.",
+        "image": "docs/design/reference/stevie-sprite-sheet.png sha256 ec4ef883287b4f08b13008abd0381f6932d1c0c1631c75d81efe1b5a00ecffd4",
+        "referenceFrames": [0, 8, 16, 25, 39, 49]
+      },
+      "reservedUsd": 0.5,
+      "startedAt": "2026-11-08T07:02:04.296Z",
+      "status": "done",
+      "costUsd": 0.185658,
+      "costBasis": "AI Gateway credit balance before and after the call",
+      "usage": {
+        "total_tokens": 8248,
+        "input_tokens": 2760,
+        "output_tokens": 5488,
+        "input_tokens_details": {
+          "text_tokens": 354,
+          "image_tokens": 2406
+        }
+      },
+      "minutes": 1.19,
+      "dropped": "owner correction 07:08Z: the sheet is Jimothy, not Stevie; the v2 images were pushed toward Jimothy and are not Stevie. Files deleted; cost stays in the ledger."
+    },
+    {
+      "id": "tripo-v2-1794121402914",
+      "step": "image to 3D and auto-rig (Tripo)",
+      "provider": "Tripo",
+      "model": "Tripo multiview-to-model v3.1-20260211 + Tripo rig",
+      "endpoint": "https://openapi.tripo3d.ai/v3/generation/multiview-to-model, https://openapi.tripo3d.ai/v3/animations/rig-check, https://openapi.tripo3d.ai/v3/animations/rig, https://openapi.tripo3d.ai/v3/animations/retarget",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "texture": true,
+        "pbr": true,
+        "smart_low_poly": true,
+        "face_limit": 10000,
+        "views": {
+          "front": "media/turnaround-v2-front.png",
+          "left": "media/turnaround-v2-side.png",
+          "back": "media/turnaround-v2-back.png",
+          "right": null
+        }
+      },
+      "reservedUsd": 2,
+      "startedAt": "2026-11-08T07:03:22.916Z",
+      "status": "done-unfetched",
+      "note": "the pass was stopped by the owner (07:08Z correction) before any result was recorded; the $2 reservation stays committed because Tripo may have charged it; ledger corrected per the owner (07:17Z): Tripo made the model and charged 40 credits ($0.40), not the $2 reservation; from the dropped v2 turnaround, ignored",
+      "credits": 40,
+      "costUsd": 0.4,
+      "tasks": {
+        "model": "31d1a793-92ce-4c27-9426-26d7e8b93997"
+      },
+      "costBasis": "40 credits per Tripo usage API (owner, issue 77 07:17Z), valued at $0.01 per credit (estimate)"
+    },
+    {
+      "id": "tripo-1794121819560",
+      "step": "image to 3D and auto-rig (Tripo)",
+      "provider": "Tripo",
+      "model": "Tripo multiview-to-model v3.1-20260211 + Tripo rig",
+      "endpoint": "https://openapi.tripo3d.ai/v3/generation/multiview-to-model, https://openapi.tripo3d.ai/v3/animations/rig-check, https://openapi.tripo3d.ai/v3/animations/rig, https://openapi.tripo3d.ai/v3/animations/retarget",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "texture": true,
+        "pbr": true,
+        "smart_low_poly": true,
+        "face_limit": 10000,
+        "views": {
+          "front": "media/turnaround-front.png",
+          "left": "media/turnaround-side.png",
+          "back": "media/turnaround-back.png",
+          "right": null
+        }
+      },
+      "reservedUsd": 2,
+      "startedAt": "2026-11-08T07:10:19.561Z",
+      "status": "partial",
+      "minutes": 5.85,
+      "error": "tripo-model: fetch failed (host openapi-dl.data.tripo3d.com)",
+      "credits": 40,
+      "costUsd": 0.4,
+      "costBasis": "credits_consumed of task cb8787b8-a247-46d4-bf73-7e711d3d0c06 (exact), valued at $0.01 per credit (estimate)",
+      "tasks": {
+        "model": "cb8787b8-a247-46d4-bf73-7e711d3d0c06"
+      },
+      "refusedDownloads": [
+        {
+          "file": "tripo-model-model_url",
+          "host": "openapi-dl.data.tripo3d.com",
+          "error": "sandbox egress refused"
+        }
+      ],
+      "note": "the model was made (5.8 min) but its download host was refused by the sandbox; the rig and walk resume from this task in the next call; the maintainer runs tripo-fetch outside the sandbox"
+    },
+    {
+      "id": "tripo-1794122249479",
+      "step": "image to 3D and auto-rig (Tripo)",
+      "provider": "Tripo",
+      "model": "Tripo multiview-to-model v3.1-20260211 + Tripo rig v3.0-20260909",
+      "endpoint": "https://openapi.tripo3d.ai/v3/generation/multiview-to-model, https://openapi.tripo3d.ai/v3/animations/rig-check, https://openapi.tripo3d.ai/v3/animations/rig, https://openapi.tripo3d.ai/v3/animations/retarget",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "texture": true,
+        "pbr": true,
+        "smart_low_poly": true,
+        "face_limit": 10000,
+        "resumedFromModelTask": "cb8787b8-a247-46d4-bf73-7e711d3d0c06",
+        "views": {
+          "front": "media/turnaround-front.png",
+          "left": "media/turnaround-side.png",
+          "back": "media/turnaround-back.png",
+          "right": null
+        }
+      },
+      "reservedUsd": 1,
+      "startedAt": "2026-11-08T07:17:29.480Z",
+      "status": "interrupted",
+      "note": "the run was stopped at 07:17Z before any result was recorded; whether a rig task was created is unknown, so the $1 reservation stays committed"
+    },
+    {
+      "id": "tripo-1794122326092",
+      "step": "image to 3D and auto-rig (Tripo)",
+      "provider": "Tripo",
+      "model": "Tripo multiview-to-model v3.1-20260211 + Tripo rig v3.0-20260909",
+      "endpoint": "https://openapi.tripo3d.ai/v3/generation/multiview-to-model, https://openapi.tripo3d.ai/v3/animations/rig-check, https://openapi.tripo3d.ai/v3/animations/rig, https://openapi.tripo3d.ai/v3/animations/retarget",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "texture": true,
+        "pbr": true,
+        "smart_low_poly": true,
+        "face_limit": 10000,
+        "resumedFromModelTask": "cb8787b8-a247-46d4-bf73-7e711d3d0c06",
+        "views": {
+          "front": "media/turnaround-front.png",
+          "left": "media/turnaround-side.png",
+          "back": "media/turnaround-back.png",
+          "right": null
+        }
+      },
+      "reservedUsd": 1,
+      "startedAt": "2026-11-08T07:18:46.094Z",
+      "status": "done",
+      "credits": 35,
+      "rigType": "quadruped",
+      "tasks": {
+        "model": "cb8787b8-a247-46d4-bf73-7e711d3d0c06",
+        "rigCheck": "341d8f79-b2f8-466e-b1ea-8151bab8386f",
+        "rig": "45da4652-6878-4594-809d-5e73682a4f78",
+        "walk": "5662c533-1989-4423-8dd8-a61ca4feb302"
+      },
+      "refusedDownloads": [],
+      "costUsd": 0.35,
+      "costBasis": "the credits_consumed of each Tripo task this call created (exact), valued at $0.01 per credit (estimate)",
+      "steps": [
+        {
+          "step": "multiview-to-model",
+          "minutes": null,
+          "taskId": "cb8787b8-a247-46d4-bf73-7e711d3d0c06"
+        },
+        {
+          "step": "rig-check (free)",
+          "minutes": 0.08,
+          "taskId": "341d8f79-b2f8-466e-b1ea-8151bab8386f",
+          "output": {
+            "riggable": true,
+            "rig_type": "quadruped"
+          }
+        },
+        {
+          "step": "rig",
+          "minutes": 0.26,
+          "taskId": "45da4652-6878-4594-809d-5e73682a4f78",
+          "rigType": "quadruped"
+        },
+        {
+          "step": "retarget preset:quadruped:walk",
+          "minutes": 0.08,
+          "taskId": "5662c533-1989-4423-8dd8-a61ca4feb302"
+        }
+      ],
+      "minutes": 0.53
+    }
+  ],
+  "files": {
+    "turnaround.png": {
+      "call": "turnaround-1794118584695",
+      "provider": "Vercel AI Gateway",
+      "model": "openai/gpt-image-2",
+      "parameters": {
+        "size": "1536x1024",
+        "quality": "high",
+        "n": 1,
+        "prompt": "The attached sprite sheet is the identity reference for Stevie, a raccoon character. Draw a clean character turnaround of the same raccoon for 3D modelling: four full-body views of him in one 2x2 grid, each view centred in its own quarter of the image with a wide margin: top-left FRONT view (facing the viewer), top-right THREE-QUARTER front view (facing front-left), bottom-left SIDE profile (facing left), bottom-right BACK view. Neutral standing pose on all four legs, legs straight and apart, all four paws visible on one ground line, tail held out behind and slightly down, not crossing the body. Same size and scale in every view. Flat, even, shadowless studio light: no cast shadows, no ground shadow, no rim light, no orange fringe. Plain uniform light grey background. No text, no numbers, no labels, no grid lines. Keep his identity exactly: the black eye mask with white brows and muzzle, the ringed tail with dark brown and tan bands, grey-brown fur with a lighter tan underside, dark brown legs and paws, his round chubby proportions and rounded ears. Soft painterly storybook illustration style with fine fur texture.",
+        "image": "docs/design/reference/stevie-sprite-sheet.png sha256 ec4ef883287b4f08b13008abd0381f6932d1c0c1631c75d81efe1b5a00ecffd4"
+      },
+      "costUsd": 0.17768,
+      "sha256": "6fba28c68a9957003cad483861352dd3bfc9ac63078875cf4be7d3d1f1191bba",
+      "bytes": 1845836,
+      "steps": [
+        {
+          "step": "turnaround (image generation)",
+          "minutes": 1.11
+        }
+      ]
+    },
+    "turnaround-front.png": {
+      "call": "turnaround-1794118584695",
+      "provider": "Vercel AI Gateway",
+      "model": "openai/gpt-image-2",
+      "parameters": {
+        "size": "1536x1024",
+        "quality": "high",
+        "n": 1,
+        "prompt": "The attached sprite sheet is the identity reference for Stevie, a raccoon character. Draw a clean character turnaround of the same raccoon for 3D modelling: four full-body views of him in one 2x2 grid, each view centred in its own quarter of the image with a wide margin: top-left FRONT view (facing the viewer), top-right THREE-QUARTER front view (facing front-left), bottom-left SIDE profile (facing left), bottom-right BACK view. Neutral standing pose on all four legs, legs straight and apart, all four paws visible on one ground line, tail held out behind and slightly down, not crossing the body. Same size and scale in every view. Flat, even, shadowless studio light: no cast shadows, no ground shadow, no rim light, no orange fringe. Plain uniform light grey background. No text, no numbers, no labels, no grid lines. Keep his identity exactly: the black eye mask with white brows and muzzle, the ringed tail with dark brown and tan bands, grey-brown fur with a lighter tan underside, dark brown legs and paws, his round chubby proportions and rounded ears. Soft painterly storybook illustration style with fine fur texture.",
+        "image": "docs/design/reference/stevie-sprite-sheet.png sha256 ec4ef883287b4f08b13008abd0381f6932d1c0c1631c75d81efe1b5a00ecffd4"
+      },
+      "costUsd": 0.17768,
+      "sha256": "2d0b8263e757d122fc2e8b48a510fcb723b8cb1f022e674df3d9bc6d265b6fa7",
+      "bytes": 446915,
+      "steps": [
+        {
+          "step": "turnaround (image generation)",
+          "minutes": 1.11
+        }
+      ],
+      "derivedFrom": "turnaround.png",
+      "quadrant": 0
+    },
+    "turnaround-three-quarter.png": {
+      "call": "turnaround-1794118584695",
+      "provider": "Vercel AI Gateway",
+      "model": "openai/gpt-image-2",
+      "parameters": {
+        "size": "1536x1024",
+        "quality": "high",
+        "n": 1,
+        "prompt": "The attached sprite sheet is the identity reference for Stevie, a raccoon character. Draw a clean character turnaround of the same raccoon for 3D modelling: four full-body views of him in one 2x2 grid, each view centred in its own quarter of the image with a wide margin: top-left FRONT view (facing the viewer), top-right THREE-QUARTER front view (facing front-left), bottom-left SIDE profile (facing left), bottom-right BACK view. Neutral standing pose on all four legs, legs straight and apart, all four paws visible on one ground line, tail held out behind and slightly down, not crossing the body. Same size and scale in every view. Flat, even, shadowless studio light: no cast shadows, no ground shadow, no rim light, no orange fringe. Plain uniform light grey background. No text, no numbers, no labels, no grid lines. Keep his identity exactly: the black eye mask with white brows and muzzle, the ringed tail with dark brown and tan bands, grey-brown fur with a lighter tan underside, dark brown legs and paws, his round chubby proportions and rounded ears. Soft painterly storybook illustration style with fine fur texture.",
+        "image": "docs/design/reference/stevie-sprite-sheet.png sha256 ec4ef883287b4f08b13008abd0381f6932d1c0c1631c75d81efe1b5a00ecffd4"
+      },
+      "costUsd": 0.17768,
+      "sha256": "a1883f9f3e0a5b293157e6b57c89bed9c880bc72f484cd38a9fd9d9e375b1609",
+      "bytes": 507081,
+      "steps": [
+        {
+          "step": "turnaround (image generation)",
+          "minutes": 1.11
+        }
+      ],
+      "derivedFrom": "turnaround.png",
+      "quadrant": 1
+    },
+    "turnaround-side.png": {
+      "call": "turnaround-1794118584695",
+      "provider": "Vercel AI Gateway",
+      "model": "openai/gpt-image-2",
+      "parameters": {
+        "size": "1536x1024",
+        "quality": "high",
+        "n": 1,
+        "prompt": "The attached sprite sheet is the identity reference for Stevie, a raccoon character. Draw a clean character turnaround of the same raccoon for 3D modelling: four full-body views of him in one 2x2 grid, each view centred in its own quarter of the image with a wide margin: top-left FRONT view (facing the viewer), top-right THREE-QUARTER front view (facing front-left), bottom-left SIDE profile (facing left), bottom-right BACK view. Neutral standing pose on all four legs, legs straight and apart, all four paws visible on one ground line, tail held out behind and slightly down, not crossing the body. Same size and scale in every view. Flat, even, shadowless studio light: no cast shadows, no ground shadow, no rim light, no orange fringe. Plain uniform light grey background. No text, no numbers, no labels, no grid lines. Keep his identity exactly: the black eye mask with white brows and muzzle, the ringed tail with dark brown and tan bands, grey-brown fur with a lighter tan underside, dark brown legs and paws, his round chubby proportions and rounded ears. Soft painterly storybook illustration style with fine fur texture.",
+        "image": "docs/design/reference/stevie-sprite-sheet.png sha256 ec4ef883287b4f08b13008abd0381f6932d1c0c1631c75d81efe1b5a00ecffd4"
+      },
+      "costUsd": 0.17768,
+      "sha256": "638757a486fac5adfa08a0c38b4f9c6b85bdf31308883756c1146f085643cfd0",
+      "bytes": 532961,
+      "steps": [
+        {
+          "step": "turnaround (image generation)",
+          "minutes": 1.11
+        }
+      ],
+      "derivedFrom": "turnaround.png",
+      "quadrant": 2
+    },
+    "turnaround-back.png": {
+      "call": "turnaround-1794118584695",
+      "provider": "Vercel AI Gateway",
+      "model": "openai/gpt-image-2",
+      "parameters": {
+        "size": "1536x1024",
+        "quality": "high",
+        "n": 1,
+        "prompt": "The attached sprite sheet is the identity reference for Stevie, a raccoon character. Draw a clean character turnaround of the same raccoon for 3D modelling: four full-body views of him in one 2x2 grid, each view centred in its own quarter of the image with a wide margin: top-left FRONT view (facing the viewer), top-right THREE-QUARTER front view (facing front-left), bottom-left SIDE profile (facing left), bottom-right BACK view. Neutral standing pose on all four legs, legs straight and apart, all four paws visible on one ground line, tail held out behind and slightly down, not crossing the body. Same size and scale in every view. Flat, even, shadowless studio light: no cast shadows, no ground shadow, no rim light, no orange fringe. Plain uniform light grey background. No text, no numbers, no labels, no grid lines. Keep his identity exactly: the black eye mask with white brows and muzzle, the ringed tail with dark brown and tan bands, grey-brown fur with a lighter tan underside, dark brown legs and paws, his round chubby proportions and rounded ears. Soft painterly storybook illustration style with fine fur texture.",
+        "image": "docs/design/reference/stevie-sprite-sheet.png sha256 ec4ef883287b4f08b13008abd0381f6932d1c0c1631c75d81efe1b5a00ecffd4"
+      },
+      "costUsd": 0.17768,
+      "sha256": "0a50c5fa12a4cd33338e0ffa557da072e95a177a8e7eb79c71cd2b2af5155d06",
+      "bytes": 422107,
+      "steps": [
+        {
+          "step": "turnaround (image generation)",
+          "minutes": 1.11
+        }
+      ],
+      "derivedFrom": "turnaround.png",
+      "quadrant": 3
+    },
+    "fal-multi-model_glb.glb": {
+      "call": "fal-multi-1794118656400",
+      "provider": "fal.ai",
+      "model": "TRELLIS.2 (microsoft/TRELLIS.2; MIT weights per its release)",
+      "parameters": {
+        "resolution": 1024,
+        "texture_size": 2048,
+        "decimation_target": 50000,
+        "seed": 1,
+        "views": [
+          "media/turnaround-front.png",
+          "media/turnaround-three-quarter.png",
+          "media/turnaround-side.png",
+          "media/turnaround-back.png"
+        ]
+      },
+      "costUsd": 0.3,
+      "sha256": "48d7c965dc04a3ef20cc36d06e6cf775cf46a69b0eb9a70ec962eb355ed95c17",
+      "bytes": 2368604,
+      "steps": [
+        {
+          "step": "image to 3D (fal.ai TRELLIS.2)",
+          "minutes": 0.99
+        }
+      ]
+    },
+    "meshy-model.glb": {
+      "call": "meshy-1794118719180",
+      "provider": "Meshy",
+      "model": "Meshy multi-image-to-3D (latest) + Meshy rigging",
+      "parameters": {
+        "should_texture": true,
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "views": [
+          "media/turnaround-front.png",
+          "media/turnaround-three-quarter.png",
+          "media/turnaround-side.png",
+          "media/turnaround-back.png"
+        ],
+        "rig": {
+          "height_meters": 0.53
+        }
+      },
+      "costUsd": 0.7,
+      "sha256": "07856f9fc7043505d6c714ab98b5c38ad008649e27d0524cb971646f6e1bda56",
+      "bytes": 5561012,
+      "steps": [
+        {
+          "step": "image to 3D and auto-rig (Meshy)",
+          "minutes": 2.87
+        }
+      ]
+    },
+    "meshy-rig-rigged_character.glb": {
+      "call": "meshy-1794118719180",
+      "provider": "Meshy",
+      "model": "Meshy multi-image-to-3D (latest) + Meshy rigging",
+      "parameters": {
+        "should_texture": true,
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "views": [
+          "media/turnaround-front.png",
+          "media/turnaround-three-quarter.png",
+          "media/turnaround-side.png",
+          "media/turnaround-back.png"
+        ],
+        "rig": {
+          "height_meters": 0.53
+        }
+      },
+      "costUsd": 0.7,
+      "sha256": "eb1791deb1f1aab95a4d99f1fecdebd8259b63bd3f6590c86b20d8e3a520f0ca",
+      "bytes": 7484728,
+      "steps": [
+        {
+          "step": "image to 3D and auto-rig (Meshy)",
+          "minutes": 2.87
+        }
+      ]
+    },
+    "meshy-rig-basic_animations-walking.glb": {
+      "call": "meshy-1794118719180",
+      "provider": "Meshy",
+      "model": "Meshy multi-image-to-3D (latest) + Meshy rigging",
+      "parameters": {
+        "should_texture": true,
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "views": [
+          "media/turnaround-front.png",
+          "media/turnaround-three-quarter.png",
+          "media/turnaround-side.png",
+          "media/turnaround-back.png"
+        ],
+        "rig": {
+          "height_meters": 0.53
+        }
+      },
+      "costUsd": 0.7,
+      "sha256": "6caf04a4b80475a4c937d260342d857367f16e3446df65c87ecd00f583f79ff2",
+      "bytes": 7464688,
+      "steps": [
+        {
+          "step": "image to 3D and auto-rig (Meshy)",
+          "minutes": 2.87
+        }
+      ]
+    },
+    "meshy-rig-basic_animations-walking_armature.glb": {
+      "call": "meshy-1794118719180",
+      "provider": "Meshy",
+      "model": "Meshy multi-image-to-3D (latest) + Meshy rigging",
+      "parameters": {
+        "should_texture": true,
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "views": [
+          "media/turnaround-front.png",
+          "media/turnaround-three-quarter.png",
+          "media/turnaround-side.png",
+          "media/turnaround-back.png"
+        ],
+        "rig": {
+          "height_meters": 0.53
+        }
+      },
+      "costUsd": 0.7,
+      "sha256": "7c77d01bde526e15e68aa7f66c1998f67693d1ab501e192acc24109dce6becaa",
+      "bytes": 90512,
+      "steps": [
+        {
+          "step": "image to 3D and auto-rig (Meshy)",
+          "minutes": 2.87
+        }
+      ]
+    },
+    "meshy-rig-basic_animations-running.glb": {
+      "call": "meshy-1794118719180",
+      "provider": "Meshy",
+      "model": "Meshy multi-image-to-3D (latest) + Meshy rigging",
+      "parameters": {
+        "should_texture": true,
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "views": [
+          "media/turnaround-front.png",
+          "media/turnaround-three-quarter.png",
+          "media/turnaround-side.png",
+          "media/turnaround-back.png"
+        ],
+        "rig": {
+          "height_meters": 0.53
+        }
+      },
+      "costUsd": 0.7,
+      "sha256": "691f0d2db9d874d7e09dedb4b8356145b921b79f228447e8c0cc6df26b99abfa",
+      "bytes": 7454068,
+      "steps": [
+        {
+          "step": "image to 3D and auto-rig (Meshy)",
+          "minutes": 2.87
+        }
+      ]
+    },
+    "meshy-rig-basic_animations-running_armature.glb": {
+      "call": "meshy-1794118719180",
+      "provider": "Meshy",
+      "model": "Meshy multi-image-to-3D (latest) + Meshy rigging",
+      "parameters": {
+        "should_texture": true,
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 30000,
+        "views": [
+          "media/turnaround-front.png",
+          "media/turnaround-three-quarter.png",
+          "media/turnaround-side.png",
+          "media/turnaround-back.png"
+        ],
+        "rig": {
+          "height_meters": 0.53
+        }
+      },
+      "costUsd": 0.7,
+      "sha256": "a668901ea394eeec9d0edaa84690019f4094d70d6d2bb4aff8928839098cafe7",
+      "bytes": 79884,
+      "steps": [
+        {
+          "step": "image to 3D and auto-rig (Meshy)",
+          "minutes": 2.87
+        }
+      ]
+    },
+    "fal-three-quarter-model_glb.glb": {
+      "call": "fal-three-quarter-1794118894191",
+      "provider": "fal.ai",
+      "model": "TRELLIS.2 (microsoft/TRELLIS.2; MIT weights per its release)",
+      "parameters": {
+        "resolution": 1024,
+        "texture_size": 2048,
+        "decimation_target": 50000,
+        "seed": 1,
+        "views": ["media/turnaround-three-quarter.png"]
+      },
+      "costUsd": 0.3,
+      "sha256": "47fae1d24256969051e5ad2a246ec138ad81ec7d30708d1b36f68d5da16c21ef",
+      "bytes": 6079696,
+      "steps": [
+        {
+          "step": "image to 3D (fal.ai TRELLIS.2)",
+          "minutes": 1.1
+        }
+      ]
+    },
+    "fal-three-quarter-1536-model_glb.glb": {
+      "call": "fal-three-quarter-1536-1794118960453",
+      "provider": "fal.ai",
+      "model": "TRELLIS.2 (microsoft/TRELLIS.2; MIT weights per its release)",
+      "parameters": {
+        "resolution": 1536,
+        "texture_size": 2048,
+        "decimation_target": 50000,
+        "seed": 2,
+        "views": ["media/turnaround-three-quarter.png"]
+      },
+      "costUsd": 0.35,
+      "sha256": "0908ec7874956193de150541869d63d2ac3f436804e0b6040f89ab0aa1a7d5cf",
+      "bytes": 4170288,
+      "steps": [
+        {
+          "step": "image to 3D (fal.ai TRELLIS.2)",
+          "minutes": 2.83
+        }
+      ]
+    },
+    "preview-fal-fit-walk.png": {
+      "provider": "none (sandbox)",
+      "model": "scratch CPU rasteriser of the GLB (not committed): bind pose from six directions (+z,+x,+x+z / -z,-x,top), or idle at 0 and walk at 0, 0.2, 0.4, 0.6 of the clip from three.js skinning (side, three-quarter, rear) for the -walk files",
+      "parameters": {},
+      "costUsd": 0,
+      "sha256": "35891b34dbf1e35a512d46ef0ae5a3fafb59335e51b7e339444973bffc7a692f",
+      "bytes": 450387
+    },
+    "preview-fal-multi-bind.png": {
+      "provider": "none (sandbox)",
+      "model": "scratch CPU rasteriser of the GLB (not committed): bind pose from six directions (+z,+x,+x+z / -z,-x,top), or idle at 0 and walk at 0, 0.2, 0.4, 0.6 of the clip from three.js skinning (side, three-quarter, rear) for the -walk files",
+      "parameters": {},
+      "costUsd": 0,
+      "sha256": "957e5d00edadc34b5e94ad18fbe052489452d9f80c71f0bc0620f42659492e60",
+      "bytes": 601696
+    },
+    "preview-fal-three-quarter-1536-bind.png": {
+      "provider": "none (sandbox)",
+      "model": "scratch CPU rasteriser of the GLB (not committed): bind pose from six directions (+z,+x,+x+z / -z,-x,top), or idle at 0 and walk at 0, 0.2, 0.4, 0.6 of the clip from three.js skinning (side, three-quarter, rear) for the -walk files",
+      "parameters": {},
+      "costUsd": 0,
+      "sha256": "65ecd9efa289ba857d29cd8e37627241b3923cc95759c8eba2823d665bdde3c5",
+      "bytes": 526693
+    },
+    "preview-fal-three-quarter-bind.png": {
+      "provider": "none (sandbox)",
+      "model": "scratch CPU rasteriser of the GLB (not committed): bind pose from six directions (+z,+x,+x+z / -z,-x,top), or idle at 0 and walk at 0, 0.2, 0.4, 0.6 of the clip from three.js skinning (side, three-quarter, rear) for the -walk files",
+      "parameters": {},
+      "costUsd": 0,
+      "sha256": "53ebdb1686efb533e7dcaf1419bd822d82436b4db6496cf90570c04ffd21003a",
+      "bytes": 578492
+    },
+    "preview-meshy-bind.png": {
+      "provider": "none (sandbox)",
+      "model": "scratch CPU rasteriser of the GLB (not committed): bind pose from six directions (+z,+x,+x+z / -z,-x,top), or idle at 0 and walk at 0, 0.2, 0.4, 0.6 of the clip from three.js skinning (side, three-quarter, rear) for the -walk files",
+      "parameters": {},
+      "costUsd": 0,
+      "sha256": "ad8c6515546d2b92bf484f9d205cc83fba07dcb958c0cbefe5029055bf550ad9",
+      "bytes": 525757
+    },
+    "preview-meshy-fit-walk.png": {
+      "provider": "none (sandbox)",
+      "model": "scratch CPU rasteriser of the GLB (not committed): bind pose from six directions (+z,+x,+x+z / -z,-x,top), or idle at 0 and walk at 0, 0.2, 0.4, 0.6 of the clip from three.js skinning (side, three-quarter, rear) for the -walk files",
+      "parameters": {},
+      "costUsd": 0,
+      "sha256": "7880c658f1b7be3aa374c1eeee960b36f4fadb1858d01b9f1ccefac14869aff9",
+      "bytes": 552431
+    },
+    "preview-meshy-provider-rig-walk.png": {
+      "provider": "none (sandbox)",
+      "model": "scratch CPU rasteriser of the GLB (not committed): bind pose from six directions (+z,+x,+x+z / -z,-x,top), or idle at 0 and walk at 0, 0.2, 0.4, 0.6 of the clip from three.js skinning (side, three-quarter, rear) for the -walk files",
+      "parameters": {},
+      "costUsd": 0,
+      "sha256": "214646b26be5e327ba1166313ccb4c7aa95362cf0a94362aecd6bc85acb5a179",
+      "bytes": 473467
+    },
+    "tripo-model-model_url.glb": {
+      "call": "tripo-1794122326092",
+      "provider": "Tripo",
+      "model": "Tripo multiview-to-model v3.1-20260211 + Tripo rig v3.0-20260909",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "texture": true,
+        "pbr": true,
+        "smart_low_poly": true,
+        "face_limit": 10000,
+        "resumedFromModelTask": "cb8787b8-a247-46d4-bf73-7e711d3d0c06",
+        "views": {
+          "front": "media/turnaround-front.png",
+          "left": "media/turnaround-side.png",
+          "back": "media/turnaround-back.png",
+          "right": null
+        }
+      },
+      "costUsd": 0.35,
+      "sha256": "6535115869045f499468a74ae7cd4bbd2ac200b979e515578481f4e912911079",
+      "bytes": 5161836,
+      "steps": [
+        {
+          "step": "image to 3D and auto-rig (Tripo)",
+          "minutes": 0.53
+        }
+      ]
+    },
+    "tripo-rig-model_url.glb": {
+      "call": "tripo-1794122326092",
+      "provider": "Tripo",
+      "model": "Tripo multiview-to-model v3.1-20260211 + Tripo rig v3.0-20260909",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "texture": true,
+        "pbr": true,
+        "smart_low_poly": true,
+        "face_limit": 10000,
+        "resumedFromModelTask": "cb8787b8-a247-46d4-bf73-7e711d3d0c06",
+        "views": {
+          "front": "media/turnaround-front.png",
+          "left": "media/turnaround-side.png",
+          "back": "media/turnaround-back.png",
+          "right": null
+        }
+      },
+      "costUsd": 0.35,
+      "sha256": "0e2fd5f51b3b62423f35c6b77b8e3a765c0672d269cd289eb113275538a58cf2",
+      "bytes": 5479488,
+      "steps": [
+        {
+          "step": "image to 3D and auto-rig (Tripo)",
+          "minutes": 0.53
+        }
+      ]
+    },
+    "tripo-walk-model_url.glb": {
+      "call": "tripo-1794122326092",
+      "provider": "Tripo",
+      "model": "Tripo multiview-to-model v3.1-20260211 + Tripo rig v3.0-20260909",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "texture": true,
+        "pbr": true,
+        "smart_low_poly": true,
+        "face_limit": 10000,
+        "resumedFromModelTask": "cb8787b8-a247-46d4-bf73-7e711d3d0c06",
+        "views": {
+          "front": "media/turnaround-front.png",
+          "left": "media/turnaround-side.png",
+          "back": "media/turnaround-back.png",
+          "right": null
+        }
+      },
+      "costUsd": 0.35,
+      "sha256": "4927c226d0c7d2a1ce5e7657360bac8ca8266778b3ea5043884146797d3c6b8f",
+      "bytes": 5491444,
+      "steps": [
+        {
+          "step": "image to 3D and auto-rig (Tripo)",
+          "minutes": 0.53
+        }
+      ]
+    },
+    "preview-tripo-provider-render.png": {
+      "provider": "Tripo",
+      "model": "Tripo multiview-to-model v3.1-20260211 (its own preview render)",
+      "call": "tripo-1794121819560",
+      "taskId": "cb8787b8-a247-46d4-bf73-7e711d3d0c06",
+      "costUsd": 0,
+      "sha256": "3d2185a331c704552f84758bb327c2649f76d60813d920ef9e6aad7fde12f97b",
+      "bytes": 276833,
+      "note": "output.rendered_image_url of the model task, fetched free"
+    }
+  },
+  "models": {
+    "meshy-fit": {
+      "glb": "meshy-model.glb",
+      "rig": "fit",
+      "why": "Meshy's multi-view mesh, the closest to the turnaround and the sheet (mask, ringed tail, colours), with the spike's fitted quadruped rig and clips"
+    },
+    "meshy": {
+      "glb": "meshy-rig-rigged_character.glb",
+      "rig": "provider",
+      "walk": "meshy-rig-basic_animations-walking.glb",
+      "why": "Meshy's own auto-rig and clip as delivered: a 24-joint humanoid skeleton; its walking_man clip rears the raccoon up and tears the mesh, and its idle is the one-frame rest pose"
+    },
+    "fal": {
+      "glb": "fal-three-quarter-1536-model_glb.glb",
+      "rig": "fit",
+      "why": "best of three TRELLIS.2 candidates: the single three-quarter view at 1536; multi-view lost the face and the tail rings, the 1024 single view lost the tail rings and drifted red; this one keeps the mask and some tail banding but its fur drifts darker and blotchy"
+    },
+    "tripo": {
+      "glb": "tripo-rig-model_url.glb",
+      "rig": "provider",
+      "walk": "tripo-walk-model_url.glb",
+      "why": "Tripo's multi-view low-poly model from the approved turnaround (15,156 triangles as delivered), with Tripo's quadruped auto-rig (28 joints) and its preset quadruped walk"
+    }
+  }
+}
