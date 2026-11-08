@@ -1,0 +1,104 @@
+{
+  "status": "confirmed",
+  "families": [
+    {
+      "name": "idle",
+      "reason": "The raccoon stands in a neutral posture, sniffing the ground and shifting its weight slightly while looking around.",
+      "frames": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57
+      ]
+    },
+    {
+      "name": "walk-right",
+      "reason": "A standard walk cycle with the raccoon moving toward the right with its head lowered.",
+      "frames": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ]
+    },
+    {
+      "name": "walk-left",
+      "reason": "A separate left-facing walk cycle, frames 15-22 (owner confirmed 2026-11-08).",
+      "frames": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22
+      ]
+    },
+    {
+      "name": "crouch-hop",
+      "reason": "The raccoon lowers its body into a crouch, pauses to glance at the viewer (frames 24-25), and then crawls forward.",
+      "frames": [
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31
+      ]
+    },
+    {
+      "name": "walk-right-alert",
+      "reason": "An alternative walk cycle moving to the right, characterized by a more upright head position.",
+      "frames": [
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39
+      ]
+    },
+    {
+      "name": "sit-groom",
+      "reason": "The raccoon sits up on its hind legs and turns its head to look around.",
+      "frames": [
+        40,
+        41,
+        42,
+        43,
+        44,
+        45
+      ]
+    }
+  ],
+  "unassigned": [],
+  "notes": "Frames 15-22 are explicit left-facing walks that perfectly mirror the right-facing walks in 7-14. Frames 32-39 represent a distinct walk cycle from 7-14 with different head and tail placement. Confirmed by the owner (Kirk, 2026-11-08) with walk-left as frames 15-22, not a mirror.",
+  "proposedBy": {
+    "model": "google/gemini-3-flash",
+    "requestId": "gen_01M6YG6XS8KQADXQ8CXHXZ8XTF"
+  }
+}

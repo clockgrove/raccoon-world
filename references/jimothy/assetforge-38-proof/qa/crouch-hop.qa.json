@@ -1,0 +1,225 @@
+{
+  "family": "crouch-hop",
+  "frameCount": 9,
+  "passed": false,
+  "reasons": [
+    {
+      "check": "template",
+      "passed": true,
+      "reason": "no motion template matches family crouch-hop; loop and continuity checks use the defaults",
+      "source": "deterministic"
+    },
+    {
+      "check": "ground-contact",
+      "passed": true,
+      "reason": "frames 1, 2, 3, 4, 5, 6, 7, 8, 9 rest on the ground line 127",
+      "source": "deterministic"
+    },
+    {
+      "check": "anchor-drift",
+      "passed": true,
+      "reason": "every frame's centre of mass is within 1 px of the anchor",
+      "source": "deterministic"
+    },
+    {
+      "check": "footprint-drift",
+      "passed": false,
+      "reason": "frame 2: footprint centre 59.5 is 3.5 px from frame 1's 56 (limit 2)",
+      "source": "deterministic",
+      "frames": [
+        2
+      ]
+    },
+    {
+      "check": "footprint-drift",
+      "passed": false,
+      "reason": "frame 3: footprint centre 59.5 is 3.5 px from frame 1's 56 (limit 2)",
+      "source": "deterministic",
+      "frames": [
+        3
+      ]
+    },
+    {
+      "check": "footprint-drift",
+      "passed": false,
+      "reason": "frame 5: footprint centre 53 is 3 px from frame 1's 56 (limit 2)",
+      "source": "deterministic",
+      "frames": [
+        5
+      ]
+    },
+    {
+      "check": "footprint-drift",
+      "passed": false,
+      "reason": "frame 6: footprint centre 64 is 8 px from frame 1's 56 (limit 2)",
+      "source": "deterministic",
+      "frames": [
+        6
+      ]
+    },
+    {
+      "check": "footprint-drift",
+      "passed": false,
+      "reason": "frame 7: footprint centre 64.5 is 8.5 px from frame 1's 56 (limit 2)",
+      "source": "deterministic",
+      "frames": [
+        7
+      ]
+    },
+    {
+      "check": "footprint-drift",
+      "passed": false,
+      "reason": "frame 8: footprint centre 67.5 is 11.5 px from frame 1's 56 (limit 2)",
+      "source": "deterministic",
+      "frames": [
+        8
+      ]
+    },
+    {
+      "check": "footprint-drift",
+      "passed": false,
+      "reason": "frame 9: footprint centre 53.5 is 2.5 px from frame 1's 56 (limit 2)",
+      "source": "deterministic",
+      "frames": [
+        9
+      ]
+    },
+    {
+      "check": "silhouette",
+      "passed": true,
+      "reason": "silhouette change stays within 0..0.5 between every pair of frames",
+      "source": "deterministic"
+    },
+    {
+      "check": "loop-seam",
+      "passed": true,
+      "reason": "frame 9 → frame 1 distance 0.26 is within 1.5 × the largest step (0.49)",
+      "source": "deterministic",
+      "frames": [
+        9,
+        1
+      ]
+    }
+  ],
+  "measures": [
+    {
+      "frame": 1,
+      "baseline": 127,
+      "centerX": 64.50047018778315,
+      "centerY": 74.17021588492625,
+      "area": 6398,
+      "footprint": [
+        49,
+        62
+      ]
+    },
+    {
+      "frame": 2,
+      "baseline": 127,
+      "centerX": 64.50046535649045,
+      "centerY": 72.19904817869202,
+      "area": 6402,
+      "footprint": [
+        52,
+        66
+      ]
+    },
+    {
+      "frame": 3,
+      "baseline": 127,
+      "centerX": 64.50042457937444,
+      "centerY": 72.02130500371051,
+      "area": 6414,
+      "footprint": [
+        52,
+        66
+      ]
+    },
+    {
+      "frame": 4,
+      "baseline": 127,
+      "centerX": 64.50017029216662,
+      "centerY": 73.62006266751732,
+      "area": 6403,
+      "footprint": [
+        51,
+        64
+      ]
+    },
+    {
+      "frame": 5,
+      "baseline": 127,
+      "centerX": 64.49983639688777,
+      "centerY": 81.51313143046899,
+      "area": 6421,
+      "footprint": [
+        45,
+        60
+      ]
+    },
+    {
+      "frame": 6,
+      "baseline": 127,
+      "centerX": 64.50025058251312,
+      "centerY": 70.36665239400573,
+      "area": 6407,
+      "footprint": [
+        61,
+        66
+      ]
+    },
+    {
+      "frame": 7,
+      "baseline": 127,
+      "centerX": 64.50003892790127,
+      "centerY": 69.84466216360059,
+      "area": 6413,
+      "footprint": [
+        61,
+        67
+      ]
+    },
+    {
+      "frame": 8,
+      "baseline": 127,
+      "centerX": 64.49940210958607,
+      "centerY": 72.0418596277387,
+      "area": 6409,
+      "footprint": [
+        64,
+        70
+      ]
+    },
+    {
+      "frame": 9,
+      "baseline": 127,
+      "centerX": 64.49961440026469,
+      "centerY": 81.04072821179035,
+      "area": 6414,
+      "footprint": [
+        45,
+        61
+      ]
+    }
+  ],
+  "silhouetteChange": [
+    0.16408491107286283,
+    0.02344231955582976,
+    0.13272144522144524,
+    0.36449432470348175,
+    0.4168826360607183,
+    0.17456927239071618,
+    0.20445315782103346,
+    0.3511636877973512,
+    0.3119894598155468
+  ],
+  "thresholds": {
+    "groundTolerancePx": 1,
+    "anchorDriftPx": 1,
+    "footprintDriftPx": 2,
+    "loopSeamRatio": 1.5,
+    "flickerCutoff": 0.7
+  },
+  "identityFlicker": "skipped",
+  "decisions": []
+}
