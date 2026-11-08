@@ -1,0 +1,287 @@
+{
+  "family": "idle",
+  "template": "idle",
+  "frameCount": 18,
+  "passed": false,
+  "reasons": [
+    {
+      "check": "template",
+      "passed": false,
+      "reason": "18 frames is outside the idle template's 2..12",
+      "source": "deterministic"
+    },
+    {
+      "check": "beats",
+      "passed": true,
+      "reason": "beats fall on rest → frame 1, breathe-in → frame 10",
+      "source": "deterministic",
+      "frames": [
+        1,
+        10
+      ]
+    },
+    {
+      "check": "ground-contact",
+      "passed": true,
+      "reason": "frames 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 rest on the ground line 127",
+      "source": "deterministic"
+    },
+    {
+      "check": "anchor-drift",
+      "passed": true,
+      "reason": "every frame's centre of mass is within 1 px of the anchor",
+      "source": "deterministic"
+    },
+    {
+      "check": "footprint-drift",
+      "passed": true,
+      "reason": "footprints stay within 2 px of frame 1's",
+      "source": "deterministic"
+    },
+    {
+      "check": "silhouette",
+      "passed": true,
+      "reason": "silhouette change stays within 0..0.15 between every pair of frames",
+      "source": "deterministic"
+    },
+    {
+      "check": "loop-seam",
+      "passed": true,
+      "reason": "frame 18 → frame 1 distance 0.07 is within 1.5 × the largest step (0.24)",
+      "source": "deterministic",
+      "frames": [
+        18,
+        1
+      ]
+    }
+  ],
+  "measures": [
+    {
+      "frame": 1,
+      "baseline": 127,
+      "centerX": 64.50134332677331,
+      "centerY": 69.70958887580207,
+      "area": 7306,
+      "footprint": [
+        48,
+        59
+      ]
+    },
+    {
+      "frame": 2,
+      "baseline": 127,
+      "centerX": 64.50079554070072,
+      "centerY": 69.52411342595065,
+      "area": 7321,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 3,
+      "baseline": 127,
+      "centerX": 64.50084837839064,
+      "centerY": 69.29968339308644,
+      "area": 7294,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 4,
+      "baseline": 127,
+      "centerX": 64.50129474132136,
+      "centerY": 69.26958516488064,
+      "area": 7302,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 5,
+      "baseline": 127,
+      "centerX": 64.50101231219367,
+      "centerY": 69.25730669428812,
+      "area": 7306,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 6,
+      "baseline": 127,
+      "centerX": 64.50104648753933,
+      "centerY": 69.2061046530253,
+      "area": 7318,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 7,
+      "baseline": 127,
+      "centerX": 64.50007847898125,
+      "centerY": 69.2502590607187,
+      "area": 7307,
+      "footprint": [
+        49,
+        59
+      ]
+    },
+    {
+      "frame": 8,
+      "baseline": 127,
+      "centerX": 64.50062356321533,
+      "centerY": 68.77415373182298,
+      "area": 7304,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 9,
+      "baseline": 127,
+      "centerX": 64.5002135521246,
+      "centerY": 68.67024055045195,
+      "area": 7307,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 10,
+      "baseline": 127,
+      "centerX": 64.50007954684989,
+      "centerY": 68.79022855037879,
+      "area": 7315,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 11,
+      "baseline": 127,
+      "centerX": 64.50067053541399,
+      "centerY": 68.56768457074523,
+      "area": 7323,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 12,
+      "baseline": 127,
+      "centerX": 64.50016336275287,
+      "centerY": 68.85298259812977,
+      "area": 7321,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 13,
+      "baseline": 127,
+      "centerX": 64.5010090494114,
+      "centerY": 69.22165558847868,
+      "area": 7312,
+      "footprint": [
+        49,
+        59
+      ]
+    },
+    {
+      "frame": 14,
+      "baseline": 127,
+      "centerX": 64.5009978601266,
+      "centerY": 68.79927474949386,
+      "area": 7315,
+      "footprint": [
+        49,
+        60
+      ]
+    },
+    {
+      "frame": 15,
+      "baseline": 127,
+      "centerX": 64.5009818572639,
+      "centerY": 68.67219662132185,
+      "area": 7310,
+      "footprint": [
+        49,
+        59
+      ]
+    },
+    {
+      "frame": 16,
+      "baseline": 127,
+      "centerX": 64.50094076139739,
+      "centerY": 68.66720191825627,
+      "area": 7310,
+      "footprint": [
+        50,
+        60
+      ]
+    },
+    {
+      "frame": 17,
+      "baseline": 127,
+      "centerX": 64.500151105392,
+      "centerY": 71.86532424921177,
+      "area": 7348,
+      "footprint": [
+        50,
+        60
+      ]
+    },
+    {
+      "frame": 18,
+      "baseline": 127,
+      "centerX": 64.50077841827328,
+      "centerY": 68.75068058209456,
+      "area": 7324,
+      "footprint": [
+        49,
+        59
+      ]
+    }
+  ],
+  "silhouetteChange": [
+    0.026844732227168433,
+    0.021524299444970918,
+    0.016308779559662923,
+    0.017910447761193993,
+    0.021377350832093134,
+    0.03849248927038629,
+    0.07547418335089573,
+    0.0503069121964238,
+    0.025654874426141006,
+    0.052421500798296994,
+    0.027212717230230332,
+    0.08192423646611613,
+    0.1104508461439091,
+    0.10262065386611308,
+    0.07631578947368423,
+    0.1296414444302667,
+    0.1411377169643988,
+    0.06173820879703229
+  ],
+  "thresholds": {
+    "groundTolerancePx": 1,
+    "anchorDriftPx": 1,
+    "footprintDriftPx": 2,
+    "loopSeamRatio": 1.5,
+    "flickerCutoff": 0.7
+  },
+  "identityFlicker": "skipped",
+  "decisions": []
+}

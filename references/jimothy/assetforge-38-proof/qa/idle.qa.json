@@ -1,0 +1,741 @@
+{
+  "family": "idle",
+  "template": "idle",
+  "frameCount": 18,
+  "passed": false,
+  "reasons": [
+    {
+      "check": "template",
+      "passed": false,
+      "reason": "18 frames is outside the idle template's 2..12",
+      "source": "deterministic"
+    },
+    {
+      "check": "beats",
+      "passed": true,
+      "reason": "beats fall on rest → frame 1, breathe-in → frame 10",
+      "source": "deterministic",
+      "frames": [
+        1,
+        10
+      ]
+    },
+    {
+      "check": "ground-contact",
+      "passed": true,
+      "reason": "frames 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 rest on the ground line 127",
+      "source": "deterministic"
+    },
+    {
+      "check": "anchor-drift",
+      "passed": true,
+      "reason": "every frame's centre of mass is within 1 px of the anchor",
+      "source": "deterministic"
+    },
+    {
+      "check": "footprint-drift",
+      "passed": false,
+      "reason": "frame 17: footprint centre 56.5 is 2.5 px from frame 1's 54 (limit 2)",
+      "source": "deterministic",
+      "frames": [
+        17
+      ]
+    },
+    {
+      "check": "silhouette",
+      "passed": true,
+      "reason": "silhouette change stays within 0..0.15 between every pair of frames",
+      "source": "deterministic"
+    },
+    {
+      "check": "loop-seam",
+      "passed": true,
+      "reason": "frame 18 → frame 1 distance 0.07 is within 1.5 × the largest step (0.16)",
+      "source": "deterministic",
+      "frames": [
+        18,
+        1
+      ]
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        1,
+        2
+      ],
+      "reason": "frame 1 → frame 2: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        2,
+        3
+      ],
+      "reason": "frame 2 → frame 3: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        3,
+        4
+      ],
+      "reason": "frame 3 → frame 4: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        4,
+        5
+      ],
+      "reason": "frame 4 → frame 5: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        5,
+        6
+      ],
+      "reason": "frame 5 → frame 6: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        6,
+        7
+      ],
+      "reason": "frame 6 → frame 7: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        7,
+        8
+      ],
+      "reason": "frame 7 → frame 8: same (0.95)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        8,
+        9
+      ],
+      "reason": "frame 8 → frame 9: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        9,
+        10
+      ],
+      "reason": "frame 9 → frame 10: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        10,
+        11
+      ],
+      "reason": "frame 10 → frame 11: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        11,
+        12
+      ],
+      "reason": "frame 11 → frame 12: same (0.98)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        12,
+        13
+      ],
+      "reason": "frame 12 → frame 13: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        13,
+        14
+      ],
+      "reason": "frame 13 → frame 14: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        14,
+        15
+      ],
+      "reason": "frame 14 → frame 15: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": false,
+      "source": "vision",
+      "frames": [
+        15,
+        16
+      ],
+      "reason": "frame 15 → frame 16: flicker (confidence 0.9 ≥ cutoff 0.7): In frame 16, noticeable green/yellowish artifacts or speckles appear on the character's front leg and underside that were not present in frame 15. Furthermore, the dark facial mask and mouth area morph inconsistently, losing the clear structural definition seen in the previous frame."
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        16,
+        17
+      ],
+      "reason": "frame 16 → frame 17: same (0.95)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        17,
+        18
+      ],
+      "reason": "frame 17 → frame 18: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        18,
+        1
+      ],
+      "reason": "frame 18 → frame 1: same (1)"
+    }
+  ],
+  "measures": [
+    {
+      "frame": 1,
+      "baseline": 127,
+      "centerX": 64.50134332677331,
+      "centerY": 69.70958887580207,
+      "area": 7306,
+      "footprint": [
+        48,
+        59
+      ]
+    },
+    {
+      "frame": 2,
+      "baseline": 127,
+      "centerX": 64.50079554070072,
+      "centerY": 69.52411342595065,
+      "area": 7321,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 3,
+      "baseline": 127,
+      "centerX": 64.50084837839064,
+      "centerY": 69.29968339308644,
+      "area": 7294,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 4,
+      "baseline": 127,
+      "centerX": 64.50129474132136,
+      "centerY": 69.26958516488064,
+      "area": 7302,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 5,
+      "baseline": 127,
+      "centerX": 64.50101231219367,
+      "centerY": 69.25730669428812,
+      "area": 7306,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 6,
+      "baseline": 127,
+      "centerX": 64.50104648753933,
+      "centerY": 69.2061046530253,
+      "area": 7318,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 7,
+      "baseline": 127,
+      "centerX": 64.50007847898125,
+      "centerY": 69.2502590607187,
+      "area": 7307,
+      "footprint": [
+        49,
+        59
+      ]
+    },
+    {
+      "frame": 8,
+      "baseline": 127,
+      "centerX": 64.50062356321533,
+      "centerY": 68.77415373182298,
+      "area": 7304,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 9,
+      "baseline": 127,
+      "centerX": 64.5002135521246,
+      "centerY": 68.67024055045195,
+      "area": 7307,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 10,
+      "baseline": 127,
+      "centerX": 64.50007954684989,
+      "centerY": 68.79022855037879,
+      "area": 7315,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 11,
+      "baseline": 127,
+      "centerX": 64.50067053541399,
+      "centerY": 68.56768457074523,
+      "area": 7323,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 12,
+      "baseline": 127,
+      "centerX": 64.50016336275287,
+      "centerY": 68.85298259812977,
+      "area": 7321,
+      "footprint": [
+        48,
+        58
+      ]
+    },
+    {
+      "frame": 13,
+      "baseline": 127,
+      "centerX": 64.5010090494114,
+      "centerY": 69.22165558847868,
+      "area": 7312,
+      "footprint": [
+        49,
+        59
+      ]
+    },
+    {
+      "frame": 14,
+      "baseline": 127,
+      "centerX": 64.5009978601266,
+      "centerY": 68.79927474949386,
+      "area": 7315,
+      "footprint": [
+        49,
+        60
+      ]
+    },
+    {
+      "frame": 15,
+      "baseline": 127,
+      "centerX": 64.5009818572639,
+      "centerY": 68.67219662132185,
+      "area": 7310,
+      "footprint": [
+        49,
+        59
+      ]
+    },
+    {
+      "frame": 16,
+      "baseline": 127,
+      "centerX": 64.50094076139739,
+      "centerY": 68.66720191825627,
+      "area": 7310,
+      "footprint": [
+        50,
+        60
+      ]
+    },
+    {
+      "frame": 17,
+      "baseline": 127,
+      "centerX": 64.50117620300527,
+      "centerY": 69.06679209984539,
+      "area": 7301,
+      "footprint": [
+        51,
+        61
+      ]
+    },
+    {
+      "frame": 18,
+      "baseline": 127,
+      "centerX": 64.50077841827328,
+      "centerY": 68.75068058209456,
+      "area": 7324,
+      "footprint": [
+        49,
+        59
+      ]
+    }
+  ],
+  "silhouetteChange": [
+    0.026844732227168433,
+    0.021524299444970918,
+    0.016308779559662923,
+    0.017910447761193993,
+    0.021377350832093134,
+    0.03849248927038629,
+    0.07547418335089573,
+    0.0503069121964238,
+    0.025654874426141006,
+    0.052421500798296994,
+    0.027212717230230332,
+    0.08192423646611613,
+    0.1104508461439091,
+    0.10262065386611308,
+    0.07631578947368423,
+    0.07926909425529116,
+    0.10532452390205982,
+    0.06173820879703229
+  ],
+  "thresholds": {
+    "groundTolerancePx": 1,
+    "anchorDriftPx": 1,
+    "footprintDriftPx": 2,
+    "loopSeamRatio": 1.5,
+    "flickerCutoff": 0.7
+  },
+  "identityFlicker": "checked",
+  "decisions": [
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGPYEVDKH749T2WCKN7NQE",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, markings, colors, and proportions are identical between both frames. Even the pose is almost unchanged, ensuring perfect identity consistency.",
+      "costUsd": 0.0024785,
+      "at": "2026-11-08T21:23:31.437Z"
+    },
+    {
+      "pair": [
+        2,
+        3
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGQ282K14N1TF5ARMSQ8QV",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's markings, colors, and proportions are perfectly consistent between frames; the only change is the eyes closing for a blink, which is a standard animation detail.",
+      "costUsd": 0.0024905,
+      "at": "2026-11-08T21:23:35.156Z"
+    },
+    {
+      "pair": [
+        3,
+        4
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGQ5V3FZ4VZGBY397SJ2PK",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, including its fur texture, markings (like the tail bands and facial mask), and color palette, remains perfectly consistent between the two frames, with only a minor change in pose as expected.",
+      "costUsd": 0.0022475,
+      "at": "2026-11-08T21:23:39.270Z"
+    },
+    {
+      "pair": [
+        4,
+        5
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGQ9VA1Y3FT1P03BP123HC",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's markings, colors, and overall design are perfectly consistent between the two frames. The only differences are slight changes in pose, which are to be ignored.",
+      "costUsd": 0.0024005,
+      "at": "2026-11-08T21:23:42.643Z"
+    },
+    {
+      "pair": [
+        5,
+        6
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGQD63GWP3SR6491CX1KYY",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, including its complex fur markings, colors, and proportions, is perfectly consistent between the two frames. Only the pose shows minor movement typical of an animation.",
+      "costUsd": 0.0028445,
+      "at": "2026-11-08T21:23:48.485Z"
+    },
+    {
+      "pair": [
+        6,
+        7
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGQJWVCGS9TMZHJDZ08NGE",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, including its facial markings, tail stripes, fur color, and proportions, remains perfectly consistent between the two frames.",
+      "costUsd": 0.0021125,
+      "at": "2026-11-08T21:23:53.210Z"
+    },
+    {
+      "pair": [
+        7,
+        8
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGQQGANKE8666BNBEBGNSP",
+      "label": "same",
+      "confidence": 0.95,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, markings such as the facial mask and tail rings, color palette, and overall proportions remain consistent between the two frames. The differences are purely due to a slight shift in pose, which is expected for consecutive animation frames.",
+      "costUsd": 0.0027995,
+      "at": "2026-11-08T21:23:59.019Z"
+    },
+    {
+      "pair": [
+        8,
+        9
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGQX7AJ1S98N8Z4V4ZEV5V",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, including its facial markings, tail rings, color palette, and overall proportions, remains perfectly consistent between the two frames. The only differences are subtle shifts in pose, which are expected between consecutive animation frames.",
+      "costUsd": 0.0029135,
+      "at": "2026-11-08T21:24:03.642Z"
+    },
+    {
+      "pair": [
+        9,
+        10
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGR1PV2Y3KQPSJF9B3V3ZH",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, markings, and colors remain identical between frames. The only difference is a slight shift in head position consistent with an idle animation.",
+      "costUsd": 0.002356,
+      "at": "2026-11-08T21:24:07.412Z"
+    },
+    {
+      "pair": [
+        10,
+        11
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGR5CNEAVANH7HMQRVFM58",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, markings, color palette, and proportions are consistent between the two frames, with only expected minor pose shifts for an animation.",
+      "costUsd": 0.0026055,
+      "at": "2026-11-08T21:24:11.614Z"
+    },
+    {
+      "pair": [
+        11,
+        12
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGR9F6ADNMHNE1D743M8AW",
+      "label": "same",
+      "confidence": 0.98,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, including its facial mask, tail stripes, and fur coloration, remains perfectly consistent between the two frames, with only a minor shift in pose.",
+      "costUsd": 0.0025305,
+      "at": "2026-11-08T21:24:16.893Z"
+    },
+    {
+      "pair": [
+        12,
+        13
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGREQHVGC08YD2Y5GQ6J4D",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, colors, and markings remain perfectly consistent between the two frames. Specifically, the distinctive black dots on the right front leg and the ring pattern on the tail are identical, with only minor shifts due to the change in pose.",
+      "costUsd": 0.0030075,
+      "at": "2026-11-08T21:24:22.055Z"
+    },
+    {
+      "pair": [
+        13,
+        14
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGRKNZNS6C11EA0B8DY7E6",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's markings, specifically the facial mask and the ring patterns on the tail, are identical between frames. The colors, textures, and proportions remain perfectly consistent.",
+      "costUsd": 0.0026205,
+      "at": "2026-11-08T21:24:26.157Z"
+    },
+    {
+      "pair": [
+        14,
+        15
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGRQNW3Q6ZDPWH443W2CH7",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, markings (specifically the tail rings and facial mask), colors, and proportions are identical between the two frames, with only a minor change in head rotation consistent with animation.",
+      "costUsd": 0.0025545,
+      "at": "2026-11-08T21:24:29.566Z"
+    },
+    {
+      "pair": [
+        15,
+        16
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGRTZ28KD7VA2GVF2FPAPD",
+      "label": "flicker",
+      "confidence": 0.9,
+      "cutoff": 0.7,
+      "flagged": true,
+      "reason": "In frame 16, noticeable green/yellowish artifacts or speckles appear on the character's front leg and underside that were not present in frame 15. Furthermore, the dark facial mask and mouth area morph inconsistently, losing the clear structural definition seen in the previous frame.",
+      "costUsd": 0.0047685,
+      "at": "2026-11-08T21:24:40.173Z"
+    },
+    {
+      "pair": [
+        16,
+        17
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGS5DGFWF4FKXKF3YVB8GS",
+      "label": "same",
+      "confidence": 0.95,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The raccoon's character design, specifically the tail markings, facial mask, and fur color palette, remains consistent between the two frames, with only slight shifts in position due to animation.",
+      "costUsd": 0.0030045,
+      "at": "2026-11-08T21:24:45.882Z"
+    },
+    {
+      "pair": [
+        17,
+        18
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGSAYWW1TKHPNTB5D0P6FC",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's identity is perfectly maintained between frames. All design elements, including the specific markings of the raccoon's facial mask, the tail rings, fur texture, and color palette, are consistent. The only difference is a slight shift in head position, which is a pose change and not a change in identity.",
+      "costUsd": 0.0026805,
+      "at": "2026-11-08T21:24:51.301Z"
+    },
+    {
+      "pair": [
+        18,
+        1
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YGSG7XAZ6N9NPTVXTBGVGX",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, markings (especially the tail stripes and facial mask), colors, and proportions are perfectly consistent between both frames.",
+      "costUsd": 0.002503,
+      "at": "2026-11-08T21:24:54.391Z"
+    }
+  ]
+}

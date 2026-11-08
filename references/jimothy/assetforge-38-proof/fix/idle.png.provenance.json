@@ -1,0 +1,177 @@
+{
+  "generator": "frame-fix",
+  "route": "vercel-ai-gateway:edit:bfl/flux-kontext-pro",
+  "models": [
+    "bfl/flux-kontext-pro"
+  ],
+  "prompt": "Reference image 1 is the approved frame 16 of the \"idle\" cycle of jimothy.\nReference image 2 is the frame to fix.\nKeep the identity, design, colours and scale of image 1 exactly.\nKeep the pose of image 2, which is frame 17 of 18 of the \"idle\" cycle.\nDraw one whole figure on a plain flat light background or transparent, with the feet at the bottom, no text.",
+  "parameters": {},
+  "requestIds": [
+    "gen_01M6YGSKF5KG2RXMCA27J8F87G"
+  ],
+  "referenceHashes": [
+    "dbcde814b13e3d4cfa841250177ca5a3c4872d443c61137ef93f7e761f5cc699",
+    "bf36a7d559a65055e1b183c7a9944871447c43633b484a2685cc40447e45461b"
+  ],
+  "bibleVersion": "unknown",
+  "license": "MIT",
+  "providerTerms": [
+    "Black Forest Labs API Terms of Service, via Vercel AI Gateway (as of 2026-11-07)"
+  ],
+  "startedAt": "2026-11-08T21:24:54.606Z",
+  "finishedAt": "2026-11-08T21:25:08.307Z",
+  "costUsd": 0.04,
+  "calls": [
+    {
+      "operation": "edit",
+      "model": "bfl/flux-kontext-pro",
+      "route": "vercel-ai-gateway:edit:bfl/flux-kontext-pro",
+      "prompt": "Reference image 1 is the approved frame 16 of the \"idle\" cycle of jimothy.\nReference image 2 is the frame to fix.\nKeep the identity, design, colours and scale of image 1 exactly.\nKeep the pose of image 2, which is frame 17 of 18 of the \"idle\" cycle.\nDraw one whole figure on a plain flat light background or transparent, with the feet at the bottom, no text.",
+      "parameters": {
+        "seed": 3409902942,
+        "references": [
+          {
+            "role": "approved neighbour frame 16",
+            "path": "/home/kirk/work/af-38-proof/out/imports/2026-11-08T21-23-25-533Z-26c699/preview/idle.png#frame-16",
+            "sha256": "dbcde814b13e3d4cfa841250177ca5a3c4872d443c61137ef93f7e761f5cc699"
+          },
+          {
+            "role": "frame 17 to fix",
+            "path": "/home/kirk/work/af-38-proof/out/imports/2026-11-08T21-23-25-533Z-26c699/preview/idle.png#frame-17",
+            "sha256": "bf36a7d559a65055e1b183c7a9944871447c43633b484a2685cc40447e45461b"
+          }
+        ]
+      },
+      "referenceHashes": [
+        "dbcde814b13e3d4cfa841250177ca5a3c4872d443c61137ef93f7e761f5cc699",
+        "bf36a7d559a65055e1b183c7a9944871447c43633b484a2685cc40447e45461b"
+      ],
+      "seed": 3409902942,
+      "requestId": "gen_01M6YGSKF5KG2RXMCA27J8F87G",
+      "requestIdSource": "provider",
+      "startedAt": "2026-11-08T21:24:54.606Z",
+      "finishedAt": "2026-11-08T21:25:08.069Z",
+      "costUsd": 0.04,
+      "costSource": "provider",
+      "providerTerms": "Black Forest Labs API Terms of Service, via Vercel AI Gateway (as of 2026-11-07)"
+    }
+  ],
+  "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+  "steps": [
+    {
+      "op": "slice",
+      "params": {
+        "components": true,
+        "tolerance": 40,
+        "labelFraction": 0.04,
+        "padding": 4
+      },
+      "engine": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      },
+      "inputs": [
+        "c0e615b1f2c183d041f0e7272c32579b7b2210324a4b4ecf5b8594180ce2870c"
+      ],
+      "outputs": [
+        "f2c5bd8d8bdd52bef5e9fbed2a995380b8de76844698ca9994ee06c85baa89b0"
+      ],
+      "report": {
+        "mode": "components",
+        "background": "#ffffff",
+        "figures": 1
+      }
+    },
+    {
+      "op": "matte",
+      "params": {
+        "band": 2,
+        "tolerance": 24,
+        "maxHaloFraction": 0.005,
+        "sliceTolerance": 40
+      },
+      "engine": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      },
+      "inputs": [
+        "f2c5bd8d8bdd52bef5e9fbed2a995380b8de76844698ca9994ee06c85baa89b0"
+      ],
+      "outputs": [
+        "f07ffd177eb86f963d4cc2f35cb0d6ee034f3b7cc0883ec8e09a2f4ddadf9a98"
+      ],
+      "report": {
+        "figure": {
+          "source": "slice",
+          "background": "#ffffff",
+          "sha256": "7e41e654a181d711192c12d0c8bab43a3d84e01fd59a90b47a59dcac44922be6"
+        }
+      }
+    },
+    {
+      "op": "register",
+      "params": {
+        "frame": {
+          "width": 128,
+          "height": 128
+        },
+        "anchor": {
+          "x": 64,
+          "y": 127
+        },
+        "measureThreshold": 128,
+        "margin": 1,
+        "clamp": [
+          0.8,
+          1.25
+        ],
+        "scale": 0.12424875032995006,
+        "filter": "antialiased"
+      },
+      "engine": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      },
+      "inputs": [
+        "f07ffd177eb86f963d4cc2f35cb0d6ee034f3b7cc0883ec8e09a2f4ddadf9a98"
+      ],
+      "outputs": [
+        "0e3e826596dfa6119a010ba22c268c3a47714ba440b88c859f381a0a46b8eb1d"
+      ],
+      "report": {
+        "scale": 0.12424875032995006,
+        "jitterPx": 0.00015110539200691164
+      }
+    },
+    {
+      "op": "apply-style",
+      "params": {},
+      "engine": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      },
+      "inputs": [
+        "0e3e826596dfa6119a010ba22c268c3a47714ba440b88c859f381a0a46b8eb1d"
+      ],
+      "outputs": [
+        "4e66a6f43457db49460a417b3299f60fa72dfc12e58c1d31378a0d6dd92dae17"
+      ]
+    }
+  ],
+  "fixes": [
+    {
+      "frame": 17,
+      "from": {
+        "neighbour": 16
+      },
+      "prompt": "Reference image 1 is the approved frame 16 of the \"idle\" cycle of jimothy.\nReference image 2 is the frame to fix.\nKeep the identity, design, colours and scale of image 1 exactly.\nKeep the pose of image 2, which is frame 17 of 18 of the \"idle\" cycle.\nDraw one whole figure on a plain flat light background or transparent, with the feet at the bottom, no text.",
+      "model": "bfl/flux-kontext-pro",
+      "requestId": "gen_01M6YGSKF5KG2RXMCA27J8F87G",
+      "seed": 3409902942,
+      "costUsd": 0.04,
+      "at": "2026-11-08T21:25:08.307Z",
+      "beforeHash": "763f7bc3917c84187c2a3dc7b10eeef21239f2d35ab8a0d0d72382d4c4a5203b",
+      "afterHash": "4e66a6f43457db49460a417b3299f60fa72dfc12e58c1d31378a0d6dd92dae17"
+    }
+  ]
+}
