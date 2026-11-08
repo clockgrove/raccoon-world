@@ -1,0 +1,737 @@
+{
+  "budgetTriangles": 10000,
+  "tools": {
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/extensions": "4.5.1",
+    "@gltf-transform/functions": "4.5.1",
+    "meshoptimizer": "1.3.0",
+    "gltf-validator": "2.0.0-dev.3.10",
+    "ktx2-encoder": "0.6.0",
+    "sharp": "0.35.5"
+  },
+  "models": {
+    "tripo": {
+      "rig": "provider",
+      "files": {
+        "model": {
+          "input": "tripo-rig-model_url.glb",
+          "inputSha256": "0e2fd5f51b3b62423f35c6b77b8e3a765c0672d269cd289eb113275538a58cf2",
+          "raw": {
+            "triangles": 15156,
+            "vertices": 15412,
+            "bytes": 5479488,
+            "textures": [
+              {
+                "slot": "normal",
+                "mime": "image/png",
+                "width": 2048,
+                "height": 2048
+              },
+              {
+                "slot": "baseColor",
+                "mime": "image/jpeg",
+                "width": 2048,
+                "height": 2048
+              },
+              {
+                "slot": "metallicRoughness",
+                "mime": "image/jpeg",
+                "width": 2048,
+                "height": 2048
+              }
+            ],
+            "skins": 1,
+            "joints": 28,
+            "animations": 0,
+            "validator": {
+              "errors": 0,
+              "warnings": 2,
+              "infos": 0,
+              "hints": 0,
+              "first": [
+                "warning MESH_PRIMITIVE_GENERATED_TANGENT_SPACE /meshes/0/primitives/0/material: Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+                "warning NODE_SKINNED_MESH_NON_ROOT /nodes/28: Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh."
+              ]
+            }
+          },
+          "shipped": {
+            "triangles": 9799,
+            "vertices": 11666,
+            "bytes": 8288564,
+            "textures": [
+              {
+                "slot": "normal",
+                "mime": "image/ktx2",
+                "width": 2048,
+                "height": 2048
+              },
+              {
+                "slot": "baseColor",
+                "mime": "image/ktx2",
+                "width": 2048,
+                "height": 2048
+              },
+              {
+                "slot": "metallicRoughness",
+                "mime": "image/ktx2",
+                "width": 2048,
+                "height": 2048
+              }
+            ],
+            "skins": 1,
+            "joints": 28,
+            "animations": 0,
+            "file": "ship-tripo.glb",
+            "sha256": "c239662ae20dbd54774af7496b5c2f362c34eb8d60ec2d0a18ba133113c98276",
+            "extensionsUsed": [
+              "EXT_meshopt_compression",
+              "KHR_mesh_quantization",
+              "KHR_texture_basisu",
+              "KHR_xmp_json_ld"
+            ],
+            "extensionsRequired": [
+              "EXT_meshopt_compression",
+              "KHR_mesh_quantization",
+              "KHR_texture_basisu"
+            ],
+            "budgetTriangles": 10000,
+            "simplifyRatio": 0.6466,
+            "rawHeightUnits": 0.571,
+            "simplifyError": 0.05,
+            "normalsRecomputed": false,
+            "namedByShip": 0,
+            "heightMetres": 0.53,
+            "minutes": {
+              "simplify": 0,
+              "ktx2": 0.85,
+              "meshopt": 0
+            },
+            "validator": {
+              "errors": 0,
+              "warnings": 8,
+              "infos": 6,
+              "hints": 0,
+              "first": [
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/0: Cannot validate an extension as it is not supported by the validator: 'EXT_meshopt_compression'.",
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/2: Cannot validate an extension as it is not supported by the validator: 'KHR_texture_basisu'.",
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/3: Cannot validate an extension as it is not supported by the validator: 'KHR_xmp_json_ld'.",
+                "warning VALUE_NOT_IN_LIST /images/0/mimeType: Invalid value 'image/ktx2'. Valid values are ('image/jpeg', 'image/png').",
+                "warning VALUE_NOT_IN_LIST /images/1/mimeType: Invalid value 'image/ktx2'. Valid values are ('image/jpeg', 'image/png')."
+              ]
+            }
+          },
+          "guidelines": [
+            {
+              "item": "scale and units",
+              "pass": true,
+              "detail": "bounding box height 0.53 m (accept 0.2-1 m, the scene's Stevie is 0.53 m); glTF is metres by definition; the source is taken as metres"
+            },
+            {
+              "item": "naming",
+              "pass": true,
+              "detail": "every node, mesh and material is named"
+            },
+            {
+              "item": "UVs",
+              "pass": true,
+              "detail": "1 primitives, TEXCOORD_0 range [0.002,0.002]-[0.991,0.998]"
+            },
+            {
+              "item": "texture sizes",
+              "pass": true,
+              "detail": "2048x2048, 2048x2048, 2048x2048 (power of two, at most 2048)"
+            }
+          ]
+        },
+        "walk": {
+          "input": "tripo-walk-model_url.glb",
+          "inputSha256": "4927c226d0c7d2a1ce5e7657360bac8ca8266778b3ea5043884146797d3c6b8f",
+          "raw": {
+            "triangles": 15156,
+            "vertices": 15441,
+            "bytes": 5491444,
+            "textures": [
+              {
+                "slot": "normal",
+                "mime": "image/png",
+                "width": 2048,
+                "height": 2048
+              },
+              {
+                "slot": "baseColor",
+                "mime": "image/jpeg",
+                "width": 2048,
+                "height": 2048
+              },
+              {
+                "slot": "metallicRoughness",
+                "mime": "image/jpeg",
+                "width": 2048,
+                "height": 2048
+              }
+            ],
+            "skins": 1,
+            "joints": 28,
+            "animations": 1,
+            "validator": {
+              "errors": 0,
+              "warnings": 2,
+              "infos": 0,
+              "hints": 0,
+              "first": [
+                "warning MESH_PRIMITIVE_GENERATED_TANGENT_SPACE /meshes/0/primitives/0/material: Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+                "warning NODE_SKINNED_MESH_NON_ROOT /nodes/28: Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh."
+              ]
+            }
+          },
+          "shipped": {
+            "triangles": 9799,
+            "vertices": 11684,
+            "bytes": 8297940,
+            "textures": [
+              {
+                "slot": "normal",
+                "mime": "image/ktx2",
+                "width": 2048,
+                "height": 2048
+              },
+              {
+                "slot": "baseColor",
+                "mime": "image/ktx2",
+                "width": 2048,
+                "height": 2048
+              },
+              {
+                "slot": "metallicRoughness",
+                "mime": "image/ktx2",
+                "width": 2048,
+                "height": 2048
+              }
+            ],
+            "skins": 1,
+            "joints": 28,
+            "animations": 1,
+            "file": "ship-tripo-walk.glb",
+            "sha256": "2055ed798e2afbb8283b314d11477838d73547a4952cd7dc22e50d84459d8fb8",
+            "extensionsUsed": [
+              "EXT_meshopt_compression",
+              "KHR_mesh_quantization",
+              "KHR_texture_basisu",
+              "KHR_xmp_json_ld"
+            ],
+            "extensionsRequired": [
+              "EXT_meshopt_compression",
+              "KHR_mesh_quantization",
+              "KHR_texture_basisu"
+            ],
+            "budgetTriangles": 10000,
+            "simplifyRatio": 0.6466,
+            "rawHeightUnits": 0.571,
+            "simplifyError": 0.05,
+            "normalsRecomputed": false,
+            "namedByShip": 0,
+            "heightMetres": 0.53,
+            "minutes": {
+              "simplify": 0,
+              "ktx2": 0.99,
+              "meshopt": 0
+            },
+            "validator": {
+              "errors": 0,
+              "warnings": 8,
+              "infos": 6,
+              "hints": 0,
+              "first": [
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/0: Cannot validate an extension as it is not supported by the validator: 'EXT_meshopt_compression'.",
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/2: Cannot validate an extension as it is not supported by the validator: 'KHR_texture_basisu'.",
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/3: Cannot validate an extension as it is not supported by the validator: 'KHR_xmp_json_ld'.",
+                "warning VALUE_NOT_IN_LIST /images/0/mimeType: Invalid value 'image/ktx2'. Valid values are ('image/jpeg', 'image/png').",
+                "warning VALUE_NOT_IN_LIST /images/1/mimeType: Invalid value 'image/ktx2'. Valid values are ('image/jpeg', 'image/png')."
+              ]
+            }
+          },
+          "guidelines": [
+            {
+              "item": "scale and units",
+              "pass": true,
+              "detail": "bounding box height 0.53 m (accept 0.2-1 m, the scene's Stevie is 0.53 m); glTF is metres by definition; the source is taken as metres"
+            },
+            {
+              "item": "naming",
+              "pass": true,
+              "detail": "every node, mesh and material is named"
+            },
+            {
+              "item": "UVs",
+              "pass": true,
+              "detail": "1 primitives, TEXCOORD_0 range [0.002,0.002]-[0.991,0.998]"
+            },
+            {
+              "item": "texture sizes",
+              "pass": true,
+              "detail": "2048x2048, 2048x2048, 2048x2048 (power of two, at most 2048)"
+            }
+          ]
+        }
+      }
+    },
+    "meshy-fit": {
+      "rig": "fit",
+      "files": {
+        "model": {
+          "input": "meshy-model.glb",
+          "inputSha256": "07856f9fc7043505d6c714ab98b5c38ad008649e27d0524cb971646f6e1bda56",
+          "raw": {
+            "triangles": 31171,
+            "vertices": 55131,
+            "bytes": 5561012,
+            "textures": [
+              {
+                "slot": "baseColor",
+                "mime": "image/jpeg",
+                "width": 2048,
+                "height": 2048
+              }
+            ],
+            "skins": 0,
+            "joints": 0,
+            "animations": 0,
+            "validator": {
+              "errors": 0,
+              "warnings": 0,
+              "infos": 1,
+              "hints": 0,
+              "first": [
+                "info NODE_MATRIX_DEFAULT /nodes/0/matrix: Do not specify default transform matrix."
+              ]
+            }
+          },
+          "shipped": {
+            "triangles": 9799,
+            "vertices": 29397,
+            "bytes": 1158540,
+            "textures": [
+              {
+                "slot": "baseColor",
+                "mime": "image/ktx2",
+                "width": 2048,
+                "height": 2048
+              }
+            ],
+            "skins": 0,
+            "joints": 0,
+            "animations": 0,
+            "file": "ship-meshy-fit.glb",
+            "sha256": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97",
+            "extensionsUsed": [
+              "EXT_meshopt_compression",
+              "KHR_mesh_quantization",
+              "KHR_texture_basisu",
+              "KHR_xmp_json_ld"
+            ],
+            "extensionsRequired": [
+              "EXT_meshopt_compression",
+              "KHR_mesh_quantization",
+              "KHR_texture_basisu"
+            ],
+            "budgetTriangles": 10000,
+            "simplifyRatio": 0.3144,
+            "rawHeightUnits": 0.97,
+            "simplifyError": 0.05,
+            "normalsRecomputed": true,
+            "namedByShip": 3,
+            "heightMetres": 0.53,
+            "minutes": {
+              "simplify": 0.01,
+              "ktx2": 0.19,
+              "meshopt": 0
+            },
+            "validator": {
+              "errors": 0,
+              "warnings": 2,
+              "infos": 4,
+              "hints": 0,
+              "first": [
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/0: Cannot validate an extension as it is not supported by the validator: 'EXT_meshopt_compression'.",
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/2: Cannot validate an extension as it is not supported by the validator: 'KHR_texture_basisu'.",
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/3: Cannot validate an extension as it is not supported by the validator: 'KHR_xmp_json_ld'.",
+                "warning VALUE_NOT_IN_LIST /images/0/mimeType: Invalid value 'image/ktx2'. Valid values are ('image/jpeg', 'image/png').",
+                "info UNUSED_OBJECT /images/0: This object may be unused."
+              ]
+            }
+          },
+          "guidelines": [
+            {
+              "item": "scale and units",
+              "pass": true,
+              "detail": "bounding box height 0.53 m (accept 0.2-1 m, the scene's Stevie is 0.53 m); glTF is metres by definition; the source is taken as metres"
+            },
+            {
+              "item": "naming",
+              "pass": true,
+              "detail": "every node, mesh and material is named"
+            },
+            {
+              "item": "UVs",
+              "pass": true,
+              "detail": "1 primitives, TEXCOORD_0 range [0.000,0.002]-[1.000,1.000]"
+            },
+            {
+              "item": "texture sizes",
+              "pass": true,
+              "detail": "2048x2048 (power of two, at most 2048)"
+            }
+          ]
+        }
+      }
+    },
+    "meshy": {
+      "rig": "provider",
+      "files": {
+        "model": {
+          "input": "meshy-rig-rigged_character.glb",
+          "inputSha256": "eb1791deb1f1aab95a4d99f1fecdebd8259b63bd3f6590c86b20d8e3a520f0ca",
+          "raw": {
+            "triangles": 31171,
+            "vertices": 55804,
+            "bytes": 7484728,
+            "textures": [
+              {
+                "slot": "baseColor",
+                "mime": "image/jpeg",
+                "width": 2048,
+                "height": 2048
+              }
+            ],
+            "skins": 1,
+            "joints": 24,
+            "animations": 1,
+            "validator": {
+              "errors": 0,
+              "warnings": 1,
+              "infos": 49,
+              "hints": 0,
+              "first": [
+                "info UNUSED_MESH_TANGENT /meshes/0/primitives/0/attributes/TANGENT: Tangents are not used because the material has no normal texture.",
+                "warning NODE_SKINNED_MESH_NON_ROOT /nodes/24: Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh.",
+                "info UNUSED_OBJECT /accessors/8: This object may be unused.",
+                "info UNUSED_OBJECT /accessors/9: This object may be unused.",
+                "info UNUSED_OBJECT /accessors/10: This object may be unused."
+              ]
+            }
+          },
+          "shipped": {
+            "triangles": 22464,
+            "vertices": 67392,
+            "bytes": 1991152,
+            "textures": [
+              {
+                "slot": "baseColor",
+                "mime": "image/ktx2",
+                "width": 2048,
+                "height": 2048
+              }
+            ],
+            "skins": 1,
+            "joints": 24,
+            "animations": 1,
+            "file": "ship-meshy.glb",
+            "sha256": "610a0b8d7c6a4bd51c31480cb42ece6e1508dcadea90a96a76ba6cd460863567",
+            "extensionsUsed": [
+              "EXT_meshopt_compression",
+              "KHR_mesh_quantization",
+              "KHR_texture_basisu",
+              "KHR_xmp_json_ld"
+            ],
+            "extensionsRequired": [
+              "EXT_meshopt_compression",
+              "KHR_mesh_quantization",
+              "KHR_texture_basisu"
+            ],
+            "budgetTriangles": 10000,
+            "simplifyRatio": 0.1671,
+            "rawHeightUnits": 0.53,
+            "simplifyError": 1,
+            "normalsRecomputed": true,
+            "namedByShip": 0,
+            "heightMetres": 0.53,
+            "minutes": {
+              "simplify": 0.02,
+              "ktx2": 0.18,
+              "meshopt": 0
+            },
+            "validator": {
+              "errors": 0,
+              "warnings": 3,
+              "infos": 4,
+              "hints": 0,
+              "first": [
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/0: Cannot validate an extension as it is not supported by the validator: 'EXT_meshopt_compression'.",
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/2: Cannot validate an extension as it is not supported by the validator: 'KHR_texture_basisu'.",
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/3: Cannot validate an extension as it is not supported by the validator: 'KHR_xmp_json_ld'.",
+                "warning VALUE_NOT_IN_LIST /images/0/mimeType: Invalid value 'image/ktx2'. Valid values are ('image/jpeg', 'image/png').",
+                "warning NODE_SKINNED_MESH_NON_ROOT /nodes/24: Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh."
+              ]
+            }
+          },
+          "guidelines": [
+            {
+              "item": "scale and units",
+              "pass": true,
+              "detail": "bounding box height 0.53 m (accept 0.2-1 m, the scene's Stevie is 0.53 m); glTF is metres by definition; the source is taken as metres"
+            },
+            {
+              "item": "naming",
+              "pass": true,
+              "detail": "every node, mesh and material is named"
+            },
+            {
+              "item": "UVs",
+              "pass": true,
+              "detail": "1 primitives, TEXCOORD_0 range [0.000,0.002]-[1.000,1.000]"
+            },
+            {
+              "item": "texture sizes",
+              "pass": true,
+              "detail": "2048x2048 (power of two, at most 2048)"
+            }
+          ]
+        },
+        "walk": {
+          "input": "meshy-rig-basic_animations-walking.glb",
+          "inputSha256": "6caf04a4b80475a4c937d260342d857367f16e3446df65c87ecd00f583f79ff2",
+          "raw": {
+            "triangles": 31171,
+            "vertices": 55804,
+            "bytes": 7464688,
+            "textures": [
+              {
+                "slot": "baseColor",
+                "mime": "image/jpeg",
+                "width": 2048,
+                "height": 2048
+              }
+            ],
+            "skins": 1,
+            "joints": 24,
+            "animations": 1,
+            "validator": {
+              "errors": 0,
+              "warnings": 1,
+              "infos": 1,
+              "hints": 0,
+              "first": [
+                "info UNUSED_MESH_TANGENT /meshes/0/primitives/0/attributes/TANGENT: Tangents are not used because the material has no normal texture.",
+                "warning NODE_SKINNED_MESH_NON_ROOT /nodes/24: Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh."
+              ]
+            }
+          },
+          "shipped": {
+            "triangles": 22464,
+            "vertices": 67392,
+            "bytes": 2000640,
+            "textures": [
+              {
+                "slot": "baseColor",
+                "mime": "image/ktx2",
+                "width": 2048,
+                "height": 2048
+              }
+            ],
+            "skins": 1,
+            "joints": 24,
+            "animations": 1,
+            "file": "ship-meshy-walk.glb",
+            "sha256": "4dc6f8a4a41bd6b8c2af4dccce9f144843ea939dbc83399f6a6cb2bc22bc45ba",
+            "extensionsUsed": [
+              "EXT_meshopt_compression",
+              "KHR_mesh_quantization",
+              "KHR_texture_basisu",
+              "KHR_xmp_json_ld"
+            ],
+            "extensionsRequired": [
+              "EXT_meshopt_compression",
+              "KHR_mesh_quantization",
+              "KHR_texture_basisu"
+            ],
+            "budgetTriangles": 10000,
+            "simplifyRatio": 0.1671,
+            "rawHeightUnits": 0.53,
+            "simplifyError": 1,
+            "normalsRecomputed": true,
+            "namedByShip": 0,
+            "heightMetres": 0.53,
+            "minutes": {
+              "simplify": 0.02,
+              "ktx2": 0.19,
+              "meshopt": 0
+            },
+            "validator": {
+              "errors": 0,
+              "warnings": 3,
+              "infos": 4,
+              "hints": 0,
+              "first": [
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/0: Cannot validate an extension as it is not supported by the validator: 'EXT_meshopt_compression'.",
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/2: Cannot validate an extension as it is not supported by the validator: 'KHR_texture_basisu'.",
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/3: Cannot validate an extension as it is not supported by the validator: 'KHR_xmp_json_ld'.",
+                "warning VALUE_NOT_IN_LIST /images/0/mimeType: Invalid value 'image/ktx2'. Valid values are ('image/jpeg', 'image/png').",
+                "warning NODE_SKINNED_MESH_NON_ROOT /nodes/24: Node with a skinned mesh is not root. Parent transforms will not affect a skinned mesh."
+              ]
+            }
+          },
+          "guidelines": [
+            {
+              "item": "scale and units",
+              "pass": true,
+              "detail": "bounding box height 0.53 m (accept 0.2-1 m, the scene's Stevie is 0.53 m); glTF is metres by definition; the source is taken as metres"
+            },
+            {
+              "item": "naming",
+              "pass": true,
+              "detail": "every node, mesh and material is named"
+            },
+            {
+              "item": "UVs",
+              "pass": true,
+              "detail": "1 primitives, TEXCOORD_0 range [0.000,0.002]-[1.000,1.000]"
+            },
+            {
+              "item": "texture sizes",
+              "pass": true,
+              "detail": "2048x2048 (power of two, at most 2048)"
+            }
+          ]
+        }
+      }
+    },
+    "fal": {
+      "rig": "fit",
+      "files": {
+        "model": {
+          "input": "fal-three-quarter-1536-model_glb.glb",
+          "inputSha256": "0908ec7874956193de150541869d63d2ac3f436804e0b6040f89ab0aa1a7d5cf",
+          "raw": {
+            "triangles": 46681,
+            "vertices": 40543,
+            "bytes": 4170288,
+            "textures": [
+              {
+                "slot": "unused",
+                "mime": "image/webp",
+                "width": 2048,
+                "height": 2048
+              },
+              {
+                "slot": "unused",
+                "mime": "image/webp",
+                "width": 2048,
+                "height": 2048
+              }
+            ],
+            "skins": 0,
+            "joints": 0,
+            "animations": 0,
+            "validator": {
+              "errors": 3,
+              "warnings": 0,
+              "infos": 0,
+              "hints": 4,
+              "first": [
+                "hint BUFFER_VIEW_TARGET_MISSING /meshes/0/primitives/0/attributes/POSITION: bufferView.target should be set for vertex or index data.",
+                "hint BUFFER_VIEW_TARGET_MISSING /meshes/0/primitives/0/attributes/TEXCOORD_0: bufferView.target should be set for vertex or index data.",
+                "hint BUFFER_VIEW_TARGET_MISSING /meshes/0/primitives/0/attributes/NORMAL: bufferView.target should be set for vertex or index data.",
+                "hint BUFFER_VIEW_TARGET_MISSING /meshes/0/primitives/0/indices: bufferView.target should be set for vertex or index data.",
+                "error ACCESSOR_VECTOR3_NON_UNIT /meshes/0/primitives/0/attributes/NORMAL: Vector3 at accessor indices 25440..25442 is not of unit length: 0."
+              ]
+            }
+          },
+          "shipped": {
+            "triangles": 9800,
+            "vertices": 14763,
+            "bytes": 3306360,
+            "textures": [
+              {
+                "slot": "baseColor",
+                "mime": "image/ktx2",
+                "width": 2048,
+                "height": 2048
+              },
+              {
+                "slot": "metallicRoughness",
+                "mime": "image/ktx2",
+                "width": 2048,
+                "height": 2048
+              }
+            ],
+            "skins": 0,
+            "joints": 0,
+            "animations": 0,
+            "file": "ship-fal.glb",
+            "sha256": "c0a350af1be4e828fb93b15858adb3b62c6e777c10d6a582d9fcae1793a97e8d",
+            "extensionsUsed": [
+              "EXT_meshopt_compression",
+              "EXT_texture_webp",
+              "KHR_mesh_quantization",
+              "KHR_texture_basisu",
+              "KHR_xmp_json_ld"
+            ],
+            "extensionsRequired": [
+              "EXT_meshopt_compression",
+              "EXT_texture_webp",
+              "KHR_mesh_quantization",
+              "KHR_texture_basisu"
+            ],
+            "budgetTriangles": 10000,
+            "simplifyRatio": 0.2099,
+            "rawHeightUnits": 0.581,
+            "simplifyError": 0.05,
+            "normalsRecomputed": false,
+            "namedByShip": 1,
+            "heightMetres": 0.53,
+            "minutes": {
+              "simplify": 0,
+              "ktx2": 0.65,
+              "meshopt": 0
+            },
+            "validator": {
+              "errors": 0,
+              "warnings": 4,
+              "infos": 5,
+              "hints": 0,
+              "first": [
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/0: Cannot validate an extension as it is not supported by the validator: 'EXT_meshopt_compression'.",
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/3: Cannot validate an extension as it is not supported by the validator: 'KHR_texture_basisu'.",
+                "info UNSUPPORTED_EXTENSION /extensionsUsed/4: Cannot validate an extension as it is not supported by the validator: 'KHR_xmp_json_ld'.",
+                "warning VALUE_NOT_IN_LIST /images/0/mimeType: Invalid value 'image/ktx2'. Valid values are ('image/jpeg', 'image/png', 'image/webp').",
+                "warning VALUE_NOT_IN_LIST /images/1/mimeType: Invalid value 'image/ktx2'. Valid values are ('image/jpeg', 'image/png', 'image/webp')."
+              ]
+            }
+          },
+          "guidelines": [
+            {
+              "item": "scale and units",
+              "pass": true,
+              "detail": "bounding box height 0.53 m (accept 0.2-1 m, the scene's Stevie is 0.53 m); glTF is metres by definition; the source is taken as metres"
+            },
+            {
+              "item": "naming",
+              "pass": true,
+              "detail": "every node, mesh and material is named"
+            },
+            {
+              "item": "UVs",
+              "pass": true,
+              "detail": "1 primitives, TEXCOORD_0 range [0.000,0.000]-[1.000,1.000]"
+            },
+            {
+              "item": "texture sizes",
+              "pass": true,
+              "detail": "2048x2048, 2048x2048 (power of two, at most 2048)"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
