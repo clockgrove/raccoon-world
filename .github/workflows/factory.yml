@@ -29,8 +29,8 @@ env:
   FACTORY_AUTO_MERGE: "true"
   FACTORY_NOTIFY: kirkmarple-clockgrove#318831919 # login#id: the id pins the account (setup writes it)
   FACTORY_SETUP: ""
-  FACTORY_INSTALL: auto # auto (from the lockfile), none, or your own command
-  FACTORY_VALIDATION: git lfs fsck --pointers
+  FACTORY_INSTALL: bash scripts/clockgrove.sh fetch # the pinned Clockgrove checkout, as CI fetches it
+  FACTORY_VALIDATION: git lfs fsck --pointers, bash scripts/clockgrove.sh check # CI's pack check
   FACTORY_BUDGET_COMMAND: ""
   FACTORY_PROTECTED_PATHS: ""
   FACTORY_CI_CHECKS: ci
