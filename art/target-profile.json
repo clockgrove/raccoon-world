@@ -1,0 +1,118 @@
+{
+  "name": "raccoon-world",
+  "license": "MIT",
+  "acceptedLicenses": [
+    "CC-BY-4.0"
+  ],
+  "style": {
+    "alpha": {
+      "mode": "soft",
+      "threshold": 16
+    },
+    "color": {
+      "rule": "full"
+    },
+    "edges": "antialiased"
+  },
+  "values": {
+    "creator": "Clockgrove",
+    "provider": "vercel-ai-gateway",
+    "displayName": "Stevie",
+    "entity": "grove.stevie",
+    "archetype": "grove.raccoon-kind",
+    "footprint": {
+      "width": 700,
+      "depth": 400
+    },
+    "atlasId": "raccoon-world",
+    "palette": [
+      "#1c1b1f",
+      "#282323",
+      "#556836",
+      "#5e3d28",
+      "#5f6b75",
+      "#6b6662",
+      "#7e96a9",
+      "#ae9675",
+      "#e2d7c2",
+      "#f2a348"
+    ]
+  },
+  "frames": {
+    "width": 32,
+    "height": 32,
+    "maxEdge": 2048,
+    "durationMs": 250
+  },
+  "layout": {
+    "media": "assets/source/{{spec.assetId}}/{{spec.animationFamily}}.{{output.extension}}",
+    "manifest": "assets/manifests/{{spec.assetId}}/{{spec.animationFamily}}.json",
+    "provenance": "assets/source/{{spec.assetId}}/{{spec.animationFamily}}.{{output.extension}}.provenance.json"
+  },
+  "manifest": {
+    "assetManifestVersion": 2,
+    "assetId": "{{spec.assetId}}",
+    "animationFamily": "{{spec.animationFamily}}",
+    "source": {
+      "kind": "generated",
+      "path": "{{output.path}}",
+      "creator": "{{profile.creator}}",
+      "tool": "assetforge"
+    },
+    "license": "{{provenance.license}}",
+    "provenance": {
+      "prompt": "{{provenance.prompt}}",
+      "references": "{{provenance.referenceHashes}}",
+      "model": "{{provenance.calls.0.model}}",
+      "provider": "{{profile.provider}}",
+      "route": "{{provenance.calls.0.route}}",
+      "providerTermsVersion": "{{provenance.calls.0.providerTerms}}",
+      "outputGrant": "{{provenance.outputGrant}}"
+    },
+    "review": {
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "notes": ""
+    },
+    "semantic": {
+      "role": "actor",
+      "entity": "{{profile.entity}}",
+      "archetype": "{{profile.archetype}}"
+    },
+    "frames": "{{output.frames}}",
+    "anchor": "{{output.anchor}}",
+    "footprint": "{{profile.footprint}}",
+    "bounds": "{{output.bounds}}",
+    "palette": "{{profile.palette}}",
+    "contentHash": "{{output.sha256}}",
+    "atlas": {
+      "atlasId": "{{profile.atlasId}}",
+      "x": 0,
+      "y": 0
+    },
+    "accessibilityLabel": "{{profile.displayName}}, {{spec.animationFamily}} animation"
+  },
+  "review": {
+    "path": "review.status",
+    "pending": "pending"
+  },
+  "validator": {
+    "command": [
+      "bash",
+      "scripts/validate-asset.sh",
+      "{{manifest}}"
+    ]
+  },
+  "identity": {
+    "mode": "shadow",
+    "threshold": 0.68,
+    "question": "score"
+  },
+  "animation": {
+    "gait": "quadruped",
+    "thresholds": {
+      "edgeHaloShare": 0.3
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "purpose": "animation strip: Stevie's shelter family, one 4-frame looping cycle",
+  "appearsIn": "the yard at dusk in the rain, seen from the mockup's high three-quarter isometric camera, at about 32 px a frame",
+  "neighbouringAssets": [
+    "den",
+    "rain",
+    "puddle"
+  ],
+  "mood": "rainy",
+  "context": "Rain has started; Stevie hunkers down by the den out of the downpour. Motion: hunched low against the rain, fur damp, a small shiver, tail wrapped close."
+}

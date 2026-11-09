@@ -1,0 +1,11 @@
+{
+  "purpose": "animation strip: Stevie's idle family, one 4-frame looping cycle",
+  "appearsIn": "the yard at dusk in the rain, seen from the mockup's high three-quarter isometric camera, at about 32 px a frame",
+  "neighbouringAssets": [
+    "path stones",
+    "lantern",
+    "den"
+  ],
+  "mood": "calm",
+  "context": "Stevie waits in the yard between errands, the lantern light on his fur. Motion: standing at rest on all fours, breathing slowly, ears and tail settling."
+}
