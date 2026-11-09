@@ -71,7 +71,7 @@ raccoon eats in the rain instead of sheltering next to food.
   13000), where Stevie, the kit and the kit's young live. Each is at distance 0 from its home's food and shelter,
   so drinking never takes a raccoon out of sight of them. The old bowl stood at the garden edge (22000, 8000), at
   least 7 m from everywhere a raccoon stays and outside the 5 m perception range (`perceptionRange` 5000), so
-  nobody drank and every actor's thirst passed 7000.
+  nobody drank: from about day 170, every raccoon that lived 70 days passed thirst 7000.
 - **Why placement.** A perception range wide enough to see the garden bowl from the den would be at least 19.8 m.
   That would make almost every food holder and shelter visible from both homes and change food and shelter
   choices across the world. A remembered water source (`scriptedCognition`) can only name actors that exist at
