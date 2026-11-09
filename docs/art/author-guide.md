@@ -80,12 +80,10 @@ bash scripts/assetforge.sh run write-families \
 The command writes, in Clockgrove's layout:
 
 - `assets/source/stevie/shelter.png`, the strip;
-- `assets/manifests/stevie/shelter.json`, replacing the placeholder's manifest, with `review.status: "pending"`;
+- `assets/manifests/stevie/shelter.json`, replacing the placeholder's manifest, with `review.status: "pending"` and the atlas slot, accessibility label, semantic and footprint from `art/stevie/shelter/spec.json` (the family named in the confirmed grouping must be the spec's family);
 - `assets/source/stevie/shelter.png.provenance.json`, the full provenance: models, route, prompt, references, request IDs, costs, provider terms, output grant, identity score, and IPTC Digital Source Type `trainedAlgorithmicMedia`. The PNG also embeds the disclosure in XMP.
 
 It then runs Clockgrove's validator (`bash scripts/validate-asset.sh`). A refusal comes back as exit 6 with Clockgrove's reasons verbatim, and nothing is fixed silently. Frames that failed the matte checks are refused at write time. A licence the profile can't accept is refused with exit 7 before anything is written: MIT needs a commercial grant that allows relabelling, CC-BY-4.0 is accepted with its credit line, and non-commercial or provider-retained output is always refused.
-
-**Open Assetforge gap, awaiting the owner (see "Known gaps"):** at the pinned Assetforge the written manifest has atlas `(0, 0)` and the label "Stevie, <family> animation", not the slot and label in `art/stevie/<family>/spec.json`. `git diff assets/manifests/stevie/shelter.json` shows the difference, and Clockgrove's `check` (step 7) flags a wrong slot. How this is closed (an Assetforge fix before the pick lands, or an agreed interim author step) is a question for the owner, not a settled step of this guide.
 
 `write-families` also runs the pixel animation QA against the family's motion template (ground contact, anchor and footprint drift, silhouette, loop seam, edge halo; `art/target-profile.json` sets the quadruped gait). It writes the onion skin and looping preview into the import's `preview/`. Then the agent runs the two vision checks, identity flicker and holes, on what was written, within a small cap. A failing check exits 5 and names its frame:
 
@@ -180,6 +178,5 @@ The atlas, golden and live-yard changes after the picks land as one direct PR wi
 
 These sit in the platform tools, not in this repository:
 
-- **Assetforge:** `write-families` doesn't pass the spec's `fields` to the manifest template. So the per-family atlas slot and accessibility label can't come from `art/stevie/<family>/spec.json` (the spec keeps them for when it does). Until then the profile writes Stevie's character values and atlas slot (0, 0). This is raised as an open question for the owner in PR #19; no workaround is built here.
 - **Clockgrove:** the manifest decoder requires a non-empty palette even for unrestricted-colour art. The profile records the bible's palette tokens, which `check` keeps equal to the bible.
 - **Assetforge:** the briefs are read by `plan` and its key-pose fallback, not by `generate-sheet` at the pinned commit. On the sheet path they are the author's statement of what the strip must show.

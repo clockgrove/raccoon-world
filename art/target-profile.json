@@ -17,14 +17,6 @@
   "values": {
     "creator": "Clockgrove",
     "provider": "vercel-ai-gateway",
-    "displayName": "Stevie",
-    "entity": "grove.stevie",
-    "archetype": "grove.raccoon-kind",
-    "footprint": {
-      "width": 700,
-      "depth": 400
-    },
-    "atlasId": "raccoon-world",
     "palette": [
       "#1c1b1f",
       "#282323",
@@ -75,23 +67,15 @@
       "reviewedAt": null,
       "notes": ""
     },
-    "semantic": {
-      "role": "actor",
-      "entity": "{{profile.entity}}",
-      "archetype": "{{profile.archetype}}"
-    },
+    "semantic": "{{spec.fields.semantic}}",
     "frames": "{{output.frames}}",
     "anchor": "{{output.anchor}}",
-    "footprint": "{{profile.footprint}}",
+    "footprint": "{{spec.fields.footprint}}",
     "bounds": "{{output.bounds}}",
     "palette": "{{profile.palette}}",
     "contentHash": "{{output.sha256}}",
-    "atlas": {
-      "atlasId": "{{profile.atlasId}}",
-      "x": 0,
-      "y": 0
-    },
-    "accessibilityLabel": "{{profile.displayName}}, {{spec.animationFamily}} animation"
+    "atlas": "{{spec.fields.atlas}}",
+    "accessibilityLabel": "{{spec.fields.accessibilityLabel}}"
   },
   "review": {
     "path": "review.status",

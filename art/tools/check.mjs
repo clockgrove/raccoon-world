@@ -279,6 +279,8 @@ async function proof() {
       await readFile(join(target, "assets/source/stevie/shelter.png.provenance.json"), "utf8"),
     );
     const png = await readFile(join(target, manifest.source.path));
+    const spec = await json("art/stevie/shelter/spec.json");
+    const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     const p = manifest.provenance;
     const expectations = [
       ["review pending", manifest.review.status === "pending" && manifest.review.reviewer === null],
@@ -290,6 +292,9 @@ async function proof() {
       ["IPTC trainedAlgorithmicMedia in the PNG", png.includes(Buffer.from("trainedAlgorithmicMedia"))],
       ["identity scored in shadow mode at 0.68, nothing filtered", provenance.identity?.mode === "shadow" && provenance.identity?.threshold === 0.68 && provenance.identity?.filtered === false],
       ["only scripted calls, nothing spent", provenance.calls.every((c) => c.route.startsWith("scripted:")) && provenance.costUsd === 0],
+      ["the spec's atlas slot", same(manifest.atlas, spec.fields.atlas)],
+      ["the spec's accessibility label", manifest.accessibilityLabel === spec.fields.accessibilityLabel],
+      ["the spec's semantic and footprint", same(manifest.semantic, spec.fields.semantic) && same(manifest.footprint, spec.fields.footprint)],
       ["the strip's frame grid", manifest.frames.width === 32 && manifest.frames.height === 32 && manifest.frames.count === 4],
     ];
     for (const [what, ok] of expectations) if (!ok) fail("proof", `the written strip lacks: ${what}`);
