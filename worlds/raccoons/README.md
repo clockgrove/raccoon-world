@@ -1,4 +1,4 @@
-# clockgrove.green-lake-yard@1.2.0
+# clockgrove.green-lake-yard@1.3.0
 
 The Wave 1 reference world: a data-only pack. It holds no code and no engine behaviour. Its
 versioned presentation metadata, `presentation.json` (`presentationVersion` 1, issue 813), binds the stable actor
@@ -25,15 +25,17 @@ state hash depends on it. Every value below is a resource the shared conformance
   water source, a cedar hollow shelter, cedar, herb (plant), the weather/day-night sky and a gate
   (`grove.gate-kind`). Both raccoon archetypes carry the `grove.needs` trait.
 - **Actors**: Stevie, Gracie and a kit with `lifecycle` seeds (one household; the kit names Gracie and Stevie as
-  parents), plus the placed objects: trash can, snack dish, den stash, pantry bin, water bowl, den, porch, cedar
-  hollow, cedar, herb, sky and the fence gate (`grove.fence-gate`, carrying the portal).
-- **Policies**: one clock policy and one `clockgrove.world-behavior-policy` (`grove-yard-2`) covering the clock
+  parents), plus the placed objects: trash can, snack dish, den stash, pantry bin, two water bowls (one in the den,
+  one in the snack house), den, porch, cedar hollow, cedar, herb, sky and the fence gate (`grove.fence-gate`,
+  carrying the portal).
+- **Policies**: one clock policy and one `clockgrove.world-behavior-policy` (`grove-yard-3`) covering the clock
   ratio, a three-day weather cycle with day and night, needs, utility, growth and resources, gestation, aging and
   death. Its utility record declares ambiguity (`score-margin` with `maxMargin` 0, so exact score ties are
   ambiguous, and the novelty condition `unperceived-target`): such a decision still takes its routine choice and
   records one planning request beside its trace, never executed
   ([utility decisions](https://github.com/clockgrove/clockgrove/blob/main/packages/kernel/docs/utility-decisions.md)).
-  Its shelter and hunger weights set the threshold below ([Hunger against rain](#hunger-against-rain)).
+  Its shelter and hunger weights set the threshold below ([Hunger against rain](#hunger-against-rain)), and its
+  water sources and meal size follow [Water](#water).
 - **Scripted cognition** (`grove.learning`): Stevie's repeated snack-house food access and resulting belief, the
   kit's belief attributed to Gracie, and two kit beliefs attributed to Stevie, one effective before his death and
   one after.
@@ -44,7 +46,7 @@ state hash depends on it. Every value below is a resource the shared conformance
 
 ## Hunger against rain
 
-`grove-yard-2` weighs shelter at 926 (`shelterWeight`) against hunger at 5000 (`hungerWeight`), so a hungry
+`grove-yard-3` weighs shelter at 926 (`shelterWeight`) against hunger at 5000 (`hungerWeight`), so a hungry
 raccoon eats in the rain instead of sheltering next to food.
 
 - **Threshold: hunger 6000.** Take a dry raccoon in the heaviest rain (9000), with the den (protection 9000) and
@@ -60,6 +62,40 @@ raccoon eats in the rain instead of sheltering next to food.
   wetness 9000 the reflex shelters whatever the hunger.
 - **Proof.** The `hungry-in-the-rain` scenario.
 
+## Water
+
+`grove-yard-3` puts water where the raccoons live, and makes a meal worth more than a day of hunger.
+
+- **Placement.** The water bowl (`grove.water-bowl`) sits in the den on the den stash (8000, 22000), where Gracie
+  and the kits born in the den live. A second bowl, `grove.snack-house-bowl`, sits on the snack dish (30000,
+  13000), where Stevie, the kit and the kit's young live. Each is at distance 0 from its home's food, so drinking
+  never takes a raccoon out of sight of it. The old bowl stood at the garden edge (22000, 8000), at
+  least 7 m from everywhere a raccoon stays and outside the 5 m perception range (`perceptionRange` 5000), so
+  nobody drank: from about day 170, every raccoon that lived 70 days passed thirst 7000.
+- **Why placement.** A perception range wide enough to see the garden bowl from the den would be at least 19.8 m.
+  That would make almost every food holder and shelter visible from both homes and change food and shelter
+  choices across the world. A remembered water source (`scriptedCognition`) can only name actors that exist at
+  genesis, so the kits born during a run could not hold one, and they are most of the one-year population and all
+  of its thirsty actors. A raccoon that walks to a distant bowl also stays there, out of sight of its food. A bowl
+  at each home needs neither.
+- **Meal size: 1200.** A meal relieves 1200 hunger (`hungerReliefPerUnit`), up from 800. Hunger rises 800 a day
+  and a raccoon takes one action a day, so a meal of 800 only held hunger level, and every day spent drinking or
+  sheltering added 800 for good. With water in reach and meals of 800, the one-year run trades thirst for hunger:
+  the den kits reach hunger 10000 and health 2800. At 1200, two meals pay back a day spent on anything else. At
+  1000 the kits still reach 7000 (`urgentHunger`). The threshold above is unchanged, because it rests on the
+  daily rise, not on the meal.
+- **Bowl size: 200.** Each bowl holds 200 drinks (the source `quantity`) and is refilled at 6:00 only when empty.
+  The one-year run drinks 55 from the den bowl and 64 from the snack-house bowl, so neither runs dry inside the
+  long runs. A small daily bowl would, and Clockgrove at the pinned commit skips a dry source's refill inside one
+  fast-forward call, which breaks the long runs' small-step versus aggregate equivalence. A small bowl can come
+  back once Clockgrove refills on time.
+- **What happens.** Thirst rises 100 a day and a drink relieves 1000. A raccoon drinks when thirst × 5000 beats
+  its best food score: in the den at midnight, once thirst passes a quarter of its hunger. In the snack house the
+  kit's belief in the snack dish holds water off until thirst is about 5400. In the one-year run thirst peaks at
+  5446 and hunger at 6800, and no actor's health falls; before, health fell as low as 4500. Exact ties between
+  food and water are ambiguous under the policy, so they record planning requests (35 in the one-year run).
+- **Proof.** The `thirsty-raccoons-drink` scenario and the long runs.
+
 ## Scenarios
 
 Each scenario in `scenarios/` has a golden of the same name in `goldens/`.
@@ -67,7 +103,8 @@ Each scenario in `scenarios/` has a golden of the same name in `goldens/`.
 | Scenario | What it shows |
 | --- | --- |
 | `favorite-snack-house` | Stevie's scripted memories and belief; his hungry decision before they take effect picks the trash can, a later one picks the snack dish, with a non-zero `expectation` feature linked to the scripted refs |
-| `hungry-in-the-rain` | Gracie is dry in the heaviest rain with the den stash at distance 0: at hunger 5400 she shelters in the den, and at 6200, past the 6000 threshold, she eats from the stash and stays dry. No actor's hunger turns urgent. In the `no-food-in-reach` variant the stash is retired, her hunger crosses 7000 and the hunger alarm fires |
+| `hungry-in-the-rain` | Gracie is dry in the heaviest rain with the den stash at distance 0: on day 122, at hunger 5000, she shelters in the den, and on day 125, at 6200 after a day spent drinking, past the 6000 threshold, she eats from the stash and stays dry. No actor's hunger turns urgent. In the `no-food-in-reach` variant the stash is retired, her hunger crosses 7000 and the hunger alarm fires |
+| `thirsty-raccoons-drink` | On day 112 Gracie, at thirst 1200, drinks from the den bowl at distance 0 (6,000,000 against the stash's 5,250,000): one drink, thirst 200, and she never moves. The snack-house bowl is in reach of the kit at the snack dish. After the drink her meals pay it back: hunger 5800 on day 114, 5400 on day 115. In the `no-bowl-in-reach` variant the den bowl is retired and nobody drinks |
 | `rain-shelter-comfort` | An exposed raccoon gets wetter and less comfortable under rain, a sheltered one does not get wetter, perception differs by location, and a live run equals a fast-forward run |
 | `food-decay-and-conservation` | Food appears, decays and is consumed until depleted; a retried command does nothing twice; quantities never go negative and consumed plus remaining is conserved |
 | `cedar-growth` | A continuous live run and an aggregated fast-forward run cross the same cedar stages; Stevie's and the kit's `unperceived-target` planning requests, raised in calls 2 and 6 of the live run (12-hour steps) and in the fast-forward run's one call, are identical in both progressions |

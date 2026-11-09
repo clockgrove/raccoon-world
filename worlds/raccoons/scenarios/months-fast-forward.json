@@ -5,8 +5,8 @@
 {"id":"weather-changed","kind":"eventCount","eventType":"weather.transitioned","operator":"eq","run":"main","value":81},
 {"id":"plant-stages-crossed","kind":"eventCount","eventType":"growth.stage-changed","operator":"eq","run":"main","value":4},
 {"id":"cedar-reached-sapling","kind":"eventCount","eventType":"growth.stage-changed","operator":"eq","run":"main","value":1,"where":[{"path":["payload","objectId"],"value":"grove.cedar"},{"path":["payload","stageName"],"value":"sapling"}]},
-{"id":"food-appeared","kind":"eventCount","eventType":"resource.appeared","operator":"eq","run":"main","value":205},
-{"id":"food-consumed","kind":"eventCount","eventType":"resource.consumed","operator":"eq","run":"main","value":154},
+{"id":"food-appeared","kind":"eventCount","eventType":"resource.appeared","operator":"eq","run":"main","value":204,"where":[{"path":["payload","kind"],"value":"food"}]},
+{"id":"food-consumed","kind":"eventCount","eventType":"resource.consumed","operator":"eq","run":"main","value":131,"where":[{"path":["payload","kind"],"value":"food"}]},
 {"id":"food-spoiled","kind":"eventCount","eventType":"resource.spoiled","operator":"eq","run":"main","value":200},
 {"id":"lifecycle-stages-changed","kind":"eventCount","eventType":"lifecycle.stage-changed","operator":"eq","run":"main","value":5},
 {"id":"one-birth","kind":"eventCount","eventType":"lifecycle.born","operator":"eq","run":"main","value":1},
@@ -22,4 +22,4 @@
 {"id":"daily-offer-cooldown","kind":"path","operator":"eq","path":["rules","cooldowns",{"equals":"grove.daily-offer","key":"ruleId"},"lastFiredAt"],"run":"main","value":13910400000},
 {"id":"hunger-never-urgent","kind":"eventCount","eventType":"needs.threshold-crossed","operator":"eq","run":"main","value":0,"where":[{"path":["payload","need"],"value":"hunger"}]},
 {"id":"single-equals-halves","kind":"equivalence","equivalence":"single-vs-halves","expect":true}
-],"equivalences":[{"eventTypes":["environment.phase-changed","weather.transitioned","growth.stage-changed","lifecycle.stage-changed","lifecycle.born","lifecycle.died"],"fields":["events"],"id":"single-vs-halves","left":"main","right":"halves"}],"kind":"clockgrove.scenario","name":"months-fast-forward","pack":{"id":"clockgrove.green-lake-yard","version":"1.2.0"},"schemaVersion":1,"steps":[{"key":"span","kind":"advance","mode":"fast-forward","to":{"$bigint":"13910400000"}}],"variants":[{"name":"halves","steps":[{"key":"first-half","kind":"advance","mode":"fast-forward","to":{"$bigint":"9936000000"}},{"key":"second-half","kind":"advance","mode":"fast-forward","to":{"$bigint":"13910400000"}}]}]}
+],"equivalences":[{"eventTypes":["environment.phase-changed","weather.transitioned","growth.stage-changed","lifecycle.stage-changed","lifecycle.born","lifecycle.died"],"fields":["events"],"id":"single-vs-halves","left":"main","right":"halves"}],"kind":"clockgrove.scenario","name":"months-fast-forward","pack":{"id":"clockgrove.green-lake-yard","version":"1.3.0"},"schemaVersion":1,"steps":[{"key":"span","kind":"advance","mode":"fast-forward","to":{"$bigint":"13910400000"}}],"variants":[{"name":"halves","steps":[{"key":"first-half","kind":"advance","mode":"fast-forward","to":{"$bigint":"9936000000"}},{"key":"second-half","kind":"advance","mode":"fast-forward","to":{"$bigint":"13910400000"}}]}]}
