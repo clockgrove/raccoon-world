@@ -1,4 +1,4 @@
-# clockgrove.green-lake-yard@1.1.0
+# clockgrove.green-lake-yard@1.2.0
 
 The Wave 1 reference world: a data-only pack. It holds no code and no engine behaviour. Its
 versioned presentation metadata, `presentation.json` (`presentationVersion` 1, issue 813), binds the stable actor
@@ -27,12 +27,13 @@ state hash depends on it. Every value below is a resource the shared conformance
 - **Actors**: Stevie, Gracie and a kit with `lifecycle` seeds (one household; the kit names Gracie and Stevie as
   parents), plus the placed objects: trash can, snack dish, den stash, pantry bin, water bowl, den, porch, cedar
   hollow, cedar, herb, sky and the fence gate (`grove.fence-gate`, carrying the portal).
-- **Policies**: one clock policy and one `clockgrove.world-behavior-policy` (`grove-yard-1`) covering the clock
+- **Policies**: one clock policy and one `clockgrove.world-behavior-policy` (`grove-yard-2`) covering the clock
   ratio, a three-day weather cycle with day and night, needs, utility, growth and resources, gestation, aging and
   death. Its utility record declares ambiguity (`score-margin` with `maxMargin` 0, so exact score ties are
   ambiguous, and the novelty condition `unperceived-target`): such a decision still takes its routine choice and
   records one planning request beside its trace, never executed
   ([utility decisions](https://github.com/clockgrove/clockgrove/blob/main/packages/kernel/docs/utility-decisions.md)).
+  Its shelter and hunger weights set the threshold below ([Hunger against rain](#hunger-against-rain)).
 - **Scripted cognition** (`grove.learning`): Stevie's repeated snack-house food access and resulting belief, the
   kit's belief attributed to Gracie, and two kit beliefs attributed to Stevie, one effective before his death and
   one after.
@@ -41,6 +42,24 @@ state hash depends on it. Every value below is a resource the shared conformance
 - **Capabilities**: one binding of each kind (`inspect`, `embodied-dialogue`, `interpreted-perspective`,
   `influence`, `operator-authoring`), each bound to at least one actor.
 
+## Hunger against rain
+
+`grove-yard-2` weighs shelter at 926 (`shelterWeight`) against hunger at 5000 (`hungerWeight`), so a hungry
+raccoon eats in the rain instead of sheltering next to food.
+
+- **Threshold: hunger 6000.** Take a dry raccoon in the heaviest rain (9000), with the den (protection 9000) and
+  food 18 hours old (freshness 2500) both at distance 0. It shelters at hunger 6000 or below and eats above it.
+  Its scores are 1250 × hunger for the food and 7,500,600 for the den, so hunger 6000 scores 7,500,000 and 6001
+  scores 7,501,250.
+- **Why 6000.** Hunger rises 800 a day and turns urgent at 7000 (`urgentHunger`), where health starts to fall.
+  A raccoon that shelters at 6000 or below reaches at most 6800 by its next daily decision, so it eats before
+  hunger costs health. This is the hardest case for food in the pack: Gracie decides at midnight, when the food
+  that appeared at 6:00 is 18 hours old.
+- **Other cases.** Food weighs hunger × freshness, and shelter weighs (wetness + rain) × protection. Fresher food,
+  lighter rain or a weaker shelter lowers the threshold; with fresh food it is 1500. Wetness raises it, and from
+  wetness 9000 the reflex shelters whatever the hunger.
+- **Proof.** The `hungry-in-the-rain` scenario.
+
 ## Scenarios
 
 Each scenario in `scenarios/` has a golden of the same name in `goldens/`.
@@ -48,6 +67,7 @@ Each scenario in `scenarios/` has a golden of the same name in `goldens/`.
 | Scenario | What it shows |
 | --- | --- |
 | `favorite-snack-house` | Stevie's scripted memories and belief; his hungry decision before they take effect picks the trash can, a later one picks the snack dish, with a non-zero `expectation` feature linked to the scripted refs |
+| `hungry-in-the-rain` | Gracie is dry in the heaviest rain with the den stash at distance 0: at hunger 5400 she shelters in the den, and at 6200, past the 6000 threshold, she eats from the stash and stays dry. No actor's hunger turns urgent. In the `no-food-in-reach` variant the stash is retired, her hunger crosses 7000 and the hunger alarm fires |
 | `rain-shelter-comfort` | An exposed raccoon gets wetter and less comfortable under rain, a sheltered one does not get wetter, perception differs by location, and a live run equals a fast-forward run |
 | `food-decay-and-conservation` | Food appears, decays and is consumed until depleted; a retried command does nothing twice; quantities never go negative and consumed plus remaining is conserved |
 | `cedar-growth` | A continuous live run and an aggregated fast-forward run cross the same cedar stages; Stevie's and the kit's `unperceived-target` planning requests, raised in calls 2 and 6 of the live run (12-hour steps) and in the fast-forward run's one call, are identical in both progressions |
