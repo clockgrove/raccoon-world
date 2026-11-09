@@ -2,7 +2,7 @@
 
 **The question:** can Raccoon World look like the owner's mockup in real-time 3D? This report shows Stevie and a small corner of the yard as real-time 3D in Clockgrove's product renderer, next to the mockup, and records what matches, what doesn't, and what closing the gap costs.
 
-**Status:** the slice, the renderer path, the CI check and the capture command are done. The shots and the device measurements are **pending**. The owner granted the build sandbox Playwright's browser download (2026-11-09), but the download still failed: `cdn.playwright.dev` redirects to `storage.googleapis.com` (Chrome for Testing) and `playwright.download.prss.microsoft.com`, and the sandbox refuses both. So no frame was rendered there. A maintainer runs one command to fill in every shot and number below (see [Maintainer steps](#maintainer-steps)). Until then, CI is the only renderer evidence: it draws the slice on both backends under SwiftShader (see [CI](#ci)). The decision record says which judgements wait for the shots.
+**Status:** the slice, the renderer path, the CI check and every shot are done. The shots below were rendered on 2026-11-09 by the pinned renderer in Playwright's Chromium 153 under SwiftShader (a software GPU), on both backends. A software GPU draws the same picture as a real one, but its frame times say nothing about performance, so the table below reports none. **Pending:** the desktop mid-range GPU and recent-phone measurements, a maintainer step after merge (see [Maintainer steps](#maintainer-steps)).
 
 The look target is [the mockup](reference/raccoon-world-reference.png). Its camera and devices come from [visual decisions](visual-decisions.md): a fixed isometric camera with deep zoom, on desktop plus recent phones.
 
@@ -57,7 +57,15 @@ All shots use the high tier, reduced motion (held frames), and the camera at the
 | Default yard view (90 px/m, Stevie ≈ 12% of the frame height, as in the mockup; interim zoom ×7.2) | ![](../../references/look-3d/zoom-dusk-rain-yard-1x-webgpu.png) | ![](../../references/look-3d/zoom-dusk-rain-yard-2x-webgpu.png) |
 | Close-up (250 px/m, Stevie ≈ a third of the frame height; interim zoom ×20) | ![](../../references/look-3d/zoom-dusk-rain-close-1x-webgpu.png) | ![](../../references/look-3d/zoom-dusk-rain-close-2x-webgpu.png) |
 
-The night set is `zoom-night-<view>-<dpr>x-<backend>.png`.
+The same views at night (22:00, rain, interim zoom):
+
+| View | 1× DPR | 2× DPR (interim: the 1× canvas upscaled) |
+| --- | --- | --- |
+| Whole slice (interim zoom ×2.2) | ![](../../references/look-3d/zoom-night-whole-1x-webgpu.png) | ![](../../references/look-3d/zoom-night-whole-2x-webgpu.png) |
+| Default yard view (interim zoom ×7.2) | ![](../../references/look-3d/zoom-night-yard-1x-webgpu.png) | ![](../../references/look-3d/zoom-night-yard-2x-webgpu.png) |
+| Close-up (interim zoom ×20) | ![](../../references/look-3d/zoom-night-close-1x-webgpu.png) | ![](../../references/look-3d/zoom-night-close-2x-webgpu.png) |
+
+The WebGL2 backend draws the same pictures; for example, ![whole slice, dusk, WebGL2](../../references/look-3d/zoom-dusk-rain-whole-1x-webgl2.png) and ![close-up, dusk, WebGL2](../../references/look-3d/zoom-dusk-rain-close-1x-webgl2.png). Every WebGL2 file is listed in `results.json`.
 
 **How the zooms are made:** the pinned renderer's camera is fixed at 12.5 px/m, with zoom clamped to 0.75–2 on a 640×400 canvas, so Stevie (0.53 m) can be at most about 13 px tall. The proof therefore magnifies the whole slice uniformly about each view's focus, keeping the camera at zoom 1. This is the interim measure the owner accepted (2026-11-09) for the deep zoom the pinned renderer lacks, filed as [clockgrove/clockgrove#184](https://github.com/clockgrove/clockgrove/issues/184) (see [Gaps](#gaps)). **2× DPR** is the browser at device scale factor 2. The pinned renderer always draws at pixel ratio 1, so the 2× shots show the 640×400 canvas upscaled, not a sharper render.
 
@@ -77,23 +85,56 @@ Close-up (interim zoom ×20, magnified content), dusk in rain. Each strip is 240
 
 Frame times are the adapter's own unsmoothed animation-frame intervals (the last 120). Memory is the renderer's texture accounting plus the browser's JS heap where it reports one. Every row carries its backend and renderer string. Any software renderer (SwiftShader, llvmpipe and the like) is marked "software, not performance", and its times are never reported as performance. **Pending:** desktop with a mid-range GPU, and a recent phone (maintainer step after merge).
 
+The rows below are the software-GPU run that made the shots. They show the memory figures. The renderer reported the low tier during these timed runs: its own tiering stepped down from the high tier the shots used, on a software GPU. The shots themselves were taken at the high tier with held frames. Their raw interval figures are in `results.json` as `softwareFrameMs`. They sit at the headless browser's 60 Hz frame clock (16.7 ms), so they are not a performance measure.
+
 <!-- look3d:measurements:start -->
 | Host | Backend | Renderer | Tier | State | View | Frame p50 / p95 (ms) | Texture MiB | JS heap MiB |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Desktop, mid-range GPU | webgpu, webgl2 | pending | high | dusk-rain, night | whole, yard, close | pending | pending | pending |
-| Recent phone | webgpu or webgl2 | pending | as chosen by the renderer | dusk-rain, night | whole, yard, close | pending | pending | pending |
+| factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software) | webgpu | google / swiftshader | low | dusk-rain | whole | software, not performance | 8.3 | 73.1 |
+| factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software) | webgpu | google / swiftshader | low | dusk-rain | yard | software, not performance | 8.3 | 73.1 |
+| factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software) | webgpu | google / swiftshader | low | dusk-rain | close | software, not performance | 8.3 | 73.1 |
+| factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software) | webgpu | google / swiftshader | low | night | whole | software, not performance | 8.3 | 73.1 |
+| factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software) | webgpu | google / swiftshader | low | night | yard | software, not performance | 8.3 | 73.1 |
+| factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software) | webgpu | google / swiftshader | low | night | close | software, not performance | 8.3 | 73.1 |
+| factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software) | webgl2 | ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver) | low | dusk-rain | whole | software, not performance | 8.3 | 87.5 |
+| factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software) | webgl2 | ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver) | low | dusk-rain | yard | software, not performance | 8.3 | 87.5 |
+| factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software) | webgl2 | ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver) | low | dusk-rain | close | software, not performance | 8.3 | 87.5 |
+| factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software) | webgl2 | ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver) | low | night | whole | software, not performance | 8.3 | 87.5 |
+| factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software) | webgl2 | ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver) | low | night | yard | software, not performance | 8.3 | 87.5 |
+| factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software) | webgl2 | ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver) | low | night | close | software, not performance | 8.3 | 87.5 |
+
+Captured on "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)"; every number and image is in `references/look-3d/results.json`.
 <!-- look3d:measurements:end -->
 
-## Decision record (draft until the shots are in)
+## Decision record
+
+The owner makes the call from the shots. This record gives the builder's reading of them, against the mockup, with cohesion judged first (Kirk, 2026-11-07).
+
+### What the shots show
+
+- **Matches:**
+  - **Camera and composition:** the whole-slice and yard views sit at the mockup's high three-quarter angle, and the house and porch, fence, path and bins land where the mockup has them.
+  - **One light, one grade, one camera and scale:** every object shares the same light and grade on both backends. The props hold together as one diorama: same outline, same flat storybook shading, same palette.
+  - **Palette:** the warm wood, slate siding, mossy ground and green shrubs carry the mockup's colours. Rain reads at every zoom.
+- **Doesn't match, and the biggest finding:** **Stevie doesn't match his props.** His Meshy albedo is a photographic fur texture. Beside flat-coloured props it reads as a realistic animal pasted into a toy yard, most clearly in the close-up and the motion strips. His outline also breaks into speckles across the fur instead of holding a clean silhouette. That fails "matched detail density" and "stylised, not realistic" for Stevie, even though the yard passes both. Closing it is art work, not renderer work: repaint his albedo into the props' flat storybook style (or bring the props up to a painted texture level), and outline him from a simplified hull.
+- **Doesn't match, because of the renderer** (see [Gaps](#gaps)):
+  - "Dusk in rain" is plain daylight.
+  - At night the lantern and window glow, but nothing around them is lit, so the night yard is mostly dark green. The mockup's mood comes from warm light pooling on wet ground.
+  - Nothing casts a shadow except Stevie's contact ellipse.
+  - Puddles read as dark holes, not reflective water.
+  - The 2× DPR shots are soft upscales.
+- **Doesn't match, because of scope:** the mockup's richness (moss, ferns, mushrooms, clutter, textured wood) is far beyond this sparse corner. That is expected of a proof slice.
+
+**Reading:** the yard shows that the renderer's lighting, grade and camera can carry a cohesive, mockup-coloured stylised diorama. It doesn't yet show the mockup's look. That needs Stevie restyled to the props' style, and the lit dusk and night mood that only #184 can give.
 
 ### What should match the mockup, by construction
 
-These are design facts of the slice. Whether they read as the mockup is for the owner to judge from the shots.
+These are design facts of the slice.
 
 - **Camera and composition:** a fixed high three-quarter isometric view, no rotation. The house and porch are upper-left, the fence runs along the top and right, and the bins and path are in the yard, as in the mockup's layout.
 - **Palette:** the mockup's mossy greens, warm wood, slate siding, wet mud and galvanised bins.
 - **Wet, rainy evening:** rain streaks, puddles, wetter surfaces, a warm porch lantern and window from dusk, and the renderer's blue night grade.
-- **Cohesion:** one light, grade, outline, material and scale for Stevie and every prop.
+- **Cohesion:** one light, grade, outline, material and scale for Stevie and every prop. The shots show that this isn't enough on its own: Stevie's photographic albedo still breaks detail density (above).
 - **Stevie's identity:** the Meshy mesh keeps the mask, white brows and ringed tail of the approved turnaround (#77's likeness finding).
 
 ### What will not match yet (known before rendering)
@@ -121,6 +162,7 @@ Each is a Clockgrove change, not one for this repository. The owner filed the fi
 
 - **In the renderer:** gaps 1, 2 and 4 are needed for the mockup's look, and 3 for its time of day (all in #184); 5 is polish.
 - **In the art:**
+  - Stevie restyled to the props' level: his albedo repainted flat and storybook (or regenerated from a stylised turnaround), with an outline from a simplified hull. This is the first gap to close, because it is the cohesion failure.
   - A painterly material layer within the renderer's lighting: texture-painted albedo with hand-drawn wood grain, moss and stone, rather than flat colours.
   - Props from generation or hand modelling, at about Stevie's density.
   - A fur treatment (texture strokes or shells) that holds up at the close-up.
@@ -167,7 +209,7 @@ Its times are never reported as performance.
      --browser "<path to Chrome or Edge>" --browser-arg=--enable-unsafe-webgpu --browser-arg=--use-angle=d3d11
    ```
 
-   It writes every shot above, the motion strips and `results.json` into `references/look-3d/`, and fills in the measurements table. Check that each row's renderer string names the GPU, not SwiftShader. Then commit the PNGs (they go to Git LFS) together with `results.json`.
+   It rewrites every shot above, the motion strips and `results.json` in `references/look-3d/` (replacing this run's SwiftShader set), and rewrites the measurements table. Check that each row's renderer string names the GPU, not SwiftShader. Then commit the PNGs (they go to Git LFS) together with `results.json`.
 2. **Recent phone.**
    - Serve the page with `node spikes/look-3d/scripts/serve.mjs serve`. It binds to 127.0.0.1 only.
    - On Android, forward the port with `adb reverse tcp:<port> tcp:<port>` and open the URL in Chrome.

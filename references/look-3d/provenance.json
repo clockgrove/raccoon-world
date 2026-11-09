@@ -51,9 +51,14 @@
     "three": "0.187.0"
   },
   "shots": {
-    "status": "pending",
+    "status": "captured on a software GPU (SwiftShader); desktop-GPU and phone captures pending (maintainer steps)",
     "how": "node spikes/look-3d/scripts/look.mjs capture --label \"<host>\" writes every shot here with results.json (sha256, size, backend, renderer string, tier and performance flag per file)",
     "outputGrant": { "license": "CC-BY-4.0", "plan": "meshy-free", "commercial": true, "relabel": false },
-    "credit": "Renders include a 3D model generated with Meshy (meshy.ai)"
+    "credit": "Renders include a 3D model generated with Meshy (meshy.ai)",
+    "capturedAt": "2026-11-09T23:36:22.985Z",
+    "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+    "clockgroveCommit": "8bf1957ec223002277a88a0f0aaad52f6e8442af",
+    "results": "references/look-3d/results.json (sha256, bytes, size, backend, renderer string, tier, zoomMethod and performance flag per file)",
+    "files": 44
   }
 }
