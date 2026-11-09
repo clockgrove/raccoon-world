@@ -1,548 +1,449 @@
-// Issue 77's comparison page: Stevie three ways in the #67 lit yard slice (Three.js on WebGL2), at dusk in
-// rain and at night. Each arm adds its characters to the same adapter through `ThreeExtras`, so every arm
-// shares one light rig, one fog, one bloom and output pass and one camera. The page takes every shot
-// (stills at five headings, a walk sequence, an idle sequence and a cohesion shot), times a few frames,
-// and POSTs one JSON record to scripts/stevie.mjs, which writes the PNGs, hashes and report.
-import * as THREE from "three";
-import { createThreeAdapter, type ThreeExtras } from "../candidates/three.js";
-import { webgl2Backend } from "../candidates/three-webgl2.js";
-import type { BakeoffAdapter, CameraState } from "../contract.js";
-import { isoProject, LIGHTING_STATES, SNAPSHOT, TO_NIGHT } from "../inputs/scene.js";
-import {
-  BAKE_CENTRE_Z,
-  BAKE_METRES,
-  type BakedAtlas,
-  type BakeFrame,
-  bakeSprites,
-  cameraDirection,
-} from "./bake.js";
-import {
-  type CharacterInstance,
-  type CharacterSource,
-  type GeneratedModel,
-  generatedStevie,
-  proceduralStevie,
-  toonMaterial,
-} from "./model.js";
-import { CUT_HEIGHT, type CutSheet, cutSheet, SHEET, SHEET_FRAMES } from "./sheet.js";
+// The comparison page: one product renderer (ThreeWorldSceneAdapter) holding every arm as world content, shown
+// one at a time, photographed through the renderer's own composer and streamed to scripts/stevie.mjs shot by shot
+// (the #77 page posted one huge record at the end and hung Edge).
+import { decodeSceneProjection } from "clockgrove-pin/packages/contracts/src/index.js";
+import { ThreeWorldSceneAdapter } from "clockgrove-pin/apps/web/src/renderer.js";
+import type { RendererContent } from "clockgrove-pin/apps/web/src/renderer-content.js";
+import yard from "../yard.json";
+import type { Arm, ArmInstance, Figure, Heading } from "./arm.js";
+import { HEADINGS, STEVIE_HEIGHT } from "./arm.js";
+import { ARMS } from "./arms.js";
 
-// biome-ignore lint/suspicious/noExplicitAny: three ships no type declarations (see three-shim.d.ts)
-type Any = any;
-
+type State = "dusk-rain" | "night";
+const STATES: Record<State, { ms: number; rain: number }> = {
+  "dusk-rain": { ms: 64_800_000, rain: 9000 },
+  night: { ms: 79_200_000, rain: 0 },
+};
 const params = new URLSearchParams(location.search);
-const WIDTH = 960;
-const HEIGHT = 540;
-/** Close shots are cropped to this square around Stevie, so the record stays small. */
-const CROP = 360;
-/** Frames timed per arm and lighting state (recorded, never a performance number under SwiftShader). */
-const TIMED_FRAMES = Number(params.get("timedFrames") ?? 10);
-/** Scene animation time of every shot (rain, flicker); characters are posed explicitly per shot. */
-const SCENE_TIME_MS = 1_250;
-const CLOSE: CameraState = { panX: -0.1, panY: 0.1, zoom: 2.5 };
-const WIDE: CameraState = { panX: 0.6, panY: 0.2, zoom: 1.6 };
-/** Model height in metres, so a generated model lands at the stand-in's scale. */
-const STEVIE_HEIGHT = 0.53;
-/** Metres per sheet pixel for the 2D arm, chosen so its body matches the 3D arm's on screen. */
-const SHEET_METRES_PER_PIXEL = 0.0042;
-/** Pushes the 3D-sprite quad towards the camera so the ground does not clip its feet (assumption 9). */
-const SPRITE_DEPTH_OFFSET = 0.35;
+const backendWanted = params.get("backend") === "webgl2" ? "webgl2" : "webgpu";
+const mode = params.get("mode") === "smoke" ? "smoke" : "full";
+const post = params.get("post") ?? "/run";
+const armNames = params.get("arms")?.split(",").filter(Boolean);
+const arms: Arm[] = armNames
+  ? armNames.map((name) => {
+      const arm = ARMS.find((candidate) => candidate.name === name);
+      if (!arm) throw new Error(`no arm "${name}"; known: ${ARMS.map((a) => a.name).join(", ")}`);
+      return arm;
+    })
+  : // By default: the three arms in smoke mode (CI's check), every arm but the control in full mode.
+    ARMS.filter((arm) => arm.name !== "stub" && (mode === "full" || !arm.name.startsWith("route:")));
+if (backendWanted === "webgl2") Object.defineProperty(navigator, "gpu", { value: undefined, configurable: true });
 
-/** Character headings: radians about z from +x (east-north-east on screen). The camera never moves. */
-export const HEADINGS = {
-  "three-quarter": 0,
-  right: Math.PI / 4,
-  back: (3 * Math.PI) / 4,
-  left: (-3 * Math.PI) / 4,
-  front: -Math.PI / 4,
-} as const;
-type Heading = keyof typeof HEADINGS;
-const STILL_TIME = 0.6;
-const WALK_FRAMES = 8;
-const IDLE_FRAMES = 4;
-
-interface Figure {
-  readonly heading: Heading;
-  readonly clip: "idle" | "walk";
-  /** 0..1 of the clip. */
-  readonly phase: number;
-  readonly x: number;
-  readonly y: number;
-  readonly scale: number;
-  readonly tint: readonly [number, number, number];
+async function send(kind: string, body: unknown): Promise<void> {
+  const response = await fetch(`${post}/${kind}`, { method: "POST", body: JSON.stringify(body) });
+  if (!response.ok) throw new Error(`runner refused ${kind}: ${response.status}`);
 }
-interface Shot {
-  readonly name: string;
-  readonly camera: CameraState;
-  readonly figures: readonly Figure[];
-}
-const NO_TINT = [1, 1, 1] as const;
-/** Juniper: a warmer, redder recolour of the same model or frames (pipeline doc: a placeholder variant). */
-const JUNIPER_TINT = [1.25, 0.95, 0.75] as const;
-const KIT_SCALE = 0.6;
-const stevie = (heading: Heading, clip: "idle" | "walk", phase: number): Figure => ({
-  heading,
-  clip,
-  phase,
-  x: 0,
-  y: 0,
-  scale: 1,
-  tint: NO_TINT,
-});
+const log = (line: string) => send("log", { line });
+const fatal = (error: unknown) => {
+  const e = error as { message?: string; stack?: string } | undefined;
+  document.body.dataset.state = "failed";
+  return send("fatal", { message: String(e?.message ?? error), stack: e?.stack ?? "" }).catch(() => {});
+};
+addEventListener("error", (event) => void fatal(event.error ?? event.message));
+addEventListener("unhandledrejection", (event) => void fatal(event.reason));
 
-export const SHOTS: readonly Shot[] = [
-  ...(Object.keys(HEADINGS) as Heading[]).map((h) => ({
-    name: `still-${h}`,
-    camera: CLOSE,
-    figures: [stevie(h, "idle", STILL_TIME / 2.4)],
-  })),
-  ...Array.from({ length: WALK_FRAMES }, (_, i) => ({
-    name: `walk-${i}`,
-    camera: CLOSE,
-    figures: [stevie("right", "walk", i / WALK_FRAMES)],
-  })),
-  ...Array.from({ length: IDLE_FRAMES }, (_, i) => ({
-    name: `idle-${i}`,
-    camera: CLOSE,
-    figures: [stevie("three-quarter", "idle", i / IDLE_FRAMES)],
-  })),
-  {
-    name: "cohesion",
-    camera: WIDE,
-    figures: [
-      { ...stevie("three-quarter", "idle", STILL_TIME / 2.4), x: 0.35, y: 0 },
-      { ...stevie("front", "idle", STILL_TIME / 2.4), x: 1.15, y: -0.25, tint: JUNIPER_TINT },
-      { ...stevie("right", "idle", STILL_TIME / 2.4), x: 0.7, y: -0.65, scale: KIT_SCALE },
-    ],
+const status = document.getElementById("status")!;
+const nextFrame = () => new Promise<number>((resolve) => requestAnimationFrame(resolve));
+
+// ---- the renderer, with every requested arm as one content
+const instances = new Map<string, ArmInstance>();
+let creationError = "";
+const content: RendererContent = {
+  version: 1,
+  async create(context) {
+    try {
+      const root = new context.THREE.Group();
+      const textures: unknown[] = [];
+      for (const arm of arms) {
+        const started = performance.now();
+        const instance = await arm.create(context);
+        instance.root.visible = false;
+        root.add(instance.root);
+        instances.set(arm.name, instance);
+        textures.push(...(instance.textures ?? []));
+        await log(`created arm ${arm.name} in ${Math.round(performance.now() - started)} ms`);
+      }
+      return {
+        root,
+        textures: textures as never,
+        update() {},
+        dispose() {
+          for (const instance of instances.values()) instance.dispose?.();
+        },
+      };
+    } catch (error) {
+      creationError = String((error as Error)?.stack ?? error);
+      throw error;
+    }
   },
+};
+let snapshot = decodeSceneProjection(yard);
+let handles!: { resolve(): void; reject(e: Error): void };
+const ready = new Promise<void>((resolve, reject) => {
+  handles = { resolve, reject };
+});
+const adapter = new ThreeWorldSceneAdapter(
+  document.getElementById("scene")!,
+  () => handles.resolve(),
+  (reason) => handles.reject(new Error(`renderer unavailable: ${reason}`)),
+  () => {},
+  content,
+);
+const internal = adapter as unknown as {
+  composer: { render(): void };
+  renderer: { domElement: HTMLCanvasElement; setPixelRatio(r: number): void; backend: any };
+  camera: { position: { set(x: number, y: number, z: number): void }; zoom: number; updateProjectionMatrix(): void; updateMatrixWorld(): void };
+  tier: string;
+  dirty: boolean;
+};
+
+function setState(state: State) {
+  const { ms, rain } = STATES[state];
+  snapshot = { ...snapshot, simulationTime: BigInt(ms), weather: { rainIntensity: rain } };
+  adapter.loadSnapshot(snapshot);
+}
+
+// ---- yard positions (metres): lantern-lit ground 32 px below the porch lantern at (8, 8), in a row across the screen
+const AT = {
+  stevie: { x: 10.9, y: 5.7 },
+  juniper: { x: 12.0, y: 6.8 },
+  kit: { x: 9.8, y: 4.6 },
+};
+const iso = (x: number, y: number) => ({ px: (x + y) * 12.5, py: (x - y) * 6.25 });
+const BODY_LIFT_PX = (STEVIE_HEIGHT * 12.5) / 2;
+const ZOOM_FAR = 0.75;
+const ZOOM_DEFAULT = 1;
+const ZOOM_CLOSE = 400 / 3 / 22;
+const stevieFigure = (heading: Heading, clip: "idle" | "walk", phase: number): Figure[] => [
+  { role: "stevie", heading, clip, phase, at: AT.stevie },
+];
+const group = (): Figure[] => [
+  { role: "stevie", heading: "three-quarter", clip: "idle", phase: 0.25, at: AT.stevie },
+  { role: "juniper", heading: "front", clip: "idle", phase: 0.25, at: AT.juniper },
+  { role: "kit", heading: "right", clip: "walk", phase: 0.25, at: AT.kit },
 ];
 
-/** One arm: its scene additions, what it needs prepared, and the notes the report prints. */
-interface Arm {
-  /** `3d`, `2d` and `3d-sprites` for the stand-in; `3d:<model>` and `3d-sprites:<model>` for a generated one. */
-  readonly name: string;
-  prepare(): Promise<void>;
-  extras(): ThreeExtras;
-  show(shot: Shot): void;
-  readonly stepMs: Record<string, number>;
-  readonly notes: string[];
+// ---- identification of the renderer
+function rendererString(): string {
+  const backend = internal.renderer.backend;
+  if (adapter.backend === "webgl2") {
+    const gl = backend.gl as WebGL2RenderingContext;
+    const ext = gl.getExtension("WEBGL_debug_renderer_info");
+    return String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER));
+  }
+  const info = backend.device?.adapterInfo ?? {};
+  return [info.vendor, info.architecture, info.description].filter(Boolean).join(" / ") || "unknown WebGPU adapter";
 }
 
-const frameKey = (figure: Figure) => `${figure.clip}:${figure.heading}:${figure.phase.toFixed(4)}`;
-const clipTime = (instance: CharacterInstance, figure: Figure) =>
-  figure.phase * instance.clipDurations[figure.clip];
-
-/** The arm-name suffix for a model: none for the stand-in (the arms CI checks), `:<name>` otherwise. */
-const suffix = (model: string) => (model === "stand-in" ? "" : `:${model}`);
-
-function arm3d(source: CharacterSource, model = "stand-in"): Arm {
-  let shot: Shot | undefined;
-  let placed: { instance: CharacterInstance; figure: Figure }[] = [];
-  const apply = () => {
-    for (const { instance, figure } of placed) {
-      instance.root.position.set(figure.x, figure.y, 0);
-      instance.root.rotation.z = HEADINGS[figure.heading];
-      instance.root.scale.setScalar(figure.scale);
-      instance.tint(figure.tint);
-      instance.pose(figure.clip, clipTime(instance, figure));
-    }
-  };
-  return {
-    name: `3d${suffix(model)}`,
-    stepMs: { ...source.stepMs },
-    notes: [
-      `model: ${model} (${source.kind})`,
-      "shaded with MeshToonMaterial (3-step ramp) under the scene's own ambient, sky and point lights and fog; inverted-hull outline",
-      "variants: Juniper is a material tint, the kit is the same skeleton scaled to 0.6; no new asset",
-    ],
-    async prepare() {},
-    extras: () => ({
-      omit: ["stevie"],
-      build({ scene }) {
-        const group = new THREE.Group();
-        placed = (shot?.figures ?? []).map((figure) => {
-          const instance = source.instantiate();
-          group.add(instance.root);
-          return { instance, figure };
-        });
-        apply();
-        scene.add(group);
-      },
-      animate() {
-        apply();
-      },
-    }),
-    show(next) {
-      shot = next;
-    },
-  };
+// ---- photography
+interface Spec {
+  name: string;
+  figures: Figure[];
+  zoom: number;
+  ratio: number;
+  /** Centre of the frame (metres) and a square crop (px at the shot's ratio) or the whole canvas. */
+  centre: { x: number; y: number };
+  crop?: number;
 }
-
-/** A quad's material whose map and normal map show one atlas cell; each figure gets its own clones. */
-function cellMaterial(
-  base: Any,
-  maps: { map: Any; normalMap: Any },
-  columns: number,
-  rows: number,
-): { material: Any; select(column: number, rowFromBottom: number): void } {
-  const map = maps.map.clone();
-  const normalMap = maps.normalMap.clone();
-  for (const t of [map, normalMap]) t.repeat.set(1 / columns, 1 / rows);
-  base.map = map;
-  base.normalMap = normalMap;
-  return {
-    material: base,
-    select(column, row) {
-      for (const t of [map, normalMap]) t.offset.set(column / columns, row / rows);
-    },
-  };
-}
-
-/** Rows reversed (a DataTexture's first row is the bottom). */
-function bottomUp(src: Uint8ClampedArray, w: number, h: number): Uint8Array {
-  const out = new Uint8Array(src.length);
-  for (let y = 0; y < h; y++)
-    out.set(src.subarray(y * w * 4, (y + 1) * w * 4), (h - 1 - y) * w * 4);
-  return out;
-}
-function dataTexture(data: Uint8Array, w: number, h: number, srgb: boolean): Any {
-  const t = new THREE.DataTexture(data, w, h, THREE.RGBAFormat, THREE.UnsignedByteType);
-  t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
-  t.magFilter = THREE.LinearFilter;
-  t.minFilter = THREE.LinearFilter;
-  t.generateMipmaps = false;
-  t.needsUpdate = true;
-  return t;
-}
-/** An upright quad facing the camera's azimuth, as #67 drew its sprites (three.ts `facing`). */
-function uprightFacing(): Any {
-  const s = Math.SQRT1_2;
-  const m = new THREE.Matrix4().makeBasis(
-    new THREE.Vector3(s, s, 0),
-    new THREE.Vector3(0, 0, 1),
-    new THREE.Vector3(s, -s, 0),
-  );
-  return new THREE.Quaternion().setFromRotationMatrix(m);
-}
-
-/** The sheet frame a 2D figure shows; the sheet has no back or straight-front view (assumption 5). */
-function sheetFrame(figure: Figure): number {
-  const pick = (frames: readonly number[]) =>
-    frames[Math.floor(figure.phase * frames.length) % frames.length] ?? frames[0] ?? 0;
-  if (figure.heading === "right")
-    return figure.clip === "walk" ? pick(SHEET_FRAMES.walkRight) : SHEET_FRAMES.walkRight[0];
-  if (figure.heading === "left" || figure.heading === "back")
-    return figure.clip === "walk" ? pick(SHEET_FRAMES.walkLeft) : SHEET_FRAMES.walkLeft[0];
-  return pick(SHEET_FRAMES.idle);
-}
-
-function arm2d(sheetUrl: string): Arm & { cut(): CutSheet | null } {
-  let cut: CutSheet | null = null;
-  let maps: { map: Any; normalMap: Any } | null = null;
-  let shot: Shot | undefined;
-  const stepMs: Record<string, number> = {};
-  return {
-    name: "2d",
-    cut: () => cut,
-    stepMs,
-    notes: [
-      `frames: plain crop of the identity sheet's ${SHEET.cellWidth}x${SHEET.cellHeight} grid (Assetforge sheet import not available in the sandbox)`,
-      "maps: alpha keyed from the cell corner colour; normal from Sobel of (0.75 blurred alpha dome + 0.25 luminance); 1-px dark edge",
-      "lit with MeshStandardMaterial as #67's sprites; the painting's own baked rim light (orange fringe) and shading remain under the scene light",
-      "headings: the sheet has three-quarter front-right, side right and side left; 'back' and 'front' show the nearest frame",
-      "variants: Juniper is a material tint, the kit is the quad scaled to 0.6",
-    ],
-    async prepare() {
-      cut = await cutSheet(sheetUrl);
-      Object.assign(stepMs, cut.stepMs);
-      maps = {
-        map: dataTexture(bottomUp(cut.albedo, cut.width, cut.height), cut.width, cut.height, true),
-        normalMap: dataTexture(
-          bottomUp(cut.normal, cut.width, cut.height),
-          cut.width,
-          cut.height,
-          false,
-        ),
-      };
-    },
-    extras: () => ({
-      omit: ["stevie"],
-      build({ scene }) {
-        if (!cut || !maps) return;
-        const group = new THREE.Group();
-        const facing = uprightFacing();
-        const w = SHEET.cellWidth * SHEET_METRES_PER_PIXEL;
-        const h = CUT_HEIGHT * SHEET_METRES_PER_PIXEL;
-        for (const figure of shot?.figures ?? []) {
-          const geometry = new THREE.PlaneGeometry(w * figure.scale, h * figure.scale);
-          geometry.translate(0, (h * figure.scale) / 2, 0);
-          const base = new THREE.MeshStandardMaterial({
-            roughness: 1,
-            metalness: 0,
-            alphaTest: 0.5,
-            fog: true,
-          });
-          const { material, select } = cellMaterial(base, maps, cut.columns, cut.rows);
-          const { column, row } = cut.cell(sheetFrame(figure));
-          select(column, cut.rows - 1 - row);
-          material.color.setRGB(...figure.tint);
-          const quad = new THREE.Mesh(geometry, material);
-          quad.position.set(figure.x, figure.y, 0);
-          quad.quaternion.copy(facing);
-          quad.renderOrder = 3;
-          quad.frustumCulled = false;
-          group.add(quad);
-        }
-        scene.add(group);
-      },
-      animate() {},
-    }),
-    show(next) {
-      shot = next;
-    },
-  };
-}
-
-function armSprites(source: CharacterSource, model = "stand-in"): Arm {
-  let atlas: BakedAtlas | null = null;
-  let shot: Shot | undefined;
-  const stepMs: Record<string, number> = {};
-  const frames: BakeFrame[] = [];
-  const seen = new Set<string>();
-  const durations = source.instantiate().clipDurations;
-  for (const s of SHOTS)
-    for (const figure of s.figures) {
-      const key = frameKey(figure);
-      if (seen.has(key)) continue;
-      seen.add(key);
-      frames.push({
-        key,
-        heading: HEADINGS[figure.heading],
-        clip: figure.clip,
-        time: figure.phase * durations[figure.clip],
-      });
-    }
-  const arm: Arm & { atlas(): BakedAtlas | null } = {
-    name: `3d-sprites${suffix(model)}`,
-    stepMs,
-    notes: [
-      `the 3D arm's model (${model}, ${source.kind}) and clips rendered offline from the scene camera's direction: ${frames.length} frames, albedo + view-space normal + depth from the geometry`,
-      "placed as camera-facing quads with MeshToonMaterial (same ramp as the 3D arm) and the exact normal map, lit by the scene's lights",
-      `the depth map is produced but not used for per-pixel occlusion in the spike; the quad sits ${SPRITE_DEPTH_OFFSET} m towards the camera (assumption 9)`,
-      "variants: Juniper is a material tint, the kit is the quad scaled to 0.6; a new heading or clip is a re-bake",
-    ],
-    async prepare() {},
-    atlas: () => atlas,
-    extras: () => ({
-      omit: ["stevie"],
-      build({ scene, renderer }) {
-        if (!atlas) {
-          atlas = bakeSprites(renderer, source, frames);
-          Object.assign(stepMs, atlas.stepMs);
-        }
-        const group = new THREE.Group();
-        const dir = cameraDirection();
-        for (const figure of shot?.figures ?? []) {
-          const size = BAKE_METRES * figure.scale;
-          const geometry = new THREE.PlaneGeometry(size, size);
-          const base = toonMaterial({ alphaTest: 0.5 });
-          const { material, select } = cellMaterial(
-            base,
-            { map: atlas.albedo, normalMap: atlas.normal },
-            atlas.columns,
-            atlas.rows,
-          );
-          const { column, row } = atlas.cell(frameKey(figure));
-          select(column, row);
-          material.color.setRGB(...figure.tint);
-          const quad = new THREE.Mesh(geometry, material);
-          quad.position
-            .set(figure.x, figure.y, BAKE_CENTRE_Z * figure.scale)
-            .addScaledVector(dir, SPRITE_DEPTH_OFFSET);
-          quad.up.set(0, 0, 1);
-          quad.lookAt(quad.position.clone().add(dir));
-          quad.renderOrder = 3;
-          quad.frustumCulled = false;
-          group.add(quad);
-        }
-        scene.add(group);
-      },
-      animate() {},
-    }),
-    show(next) {
-      shot = next;
-    },
-  };
-  return arm;
-}
-
-/** The crop around Stevie's middle for a close shot, read from the drawn (preserved) canvas. */
-function crop(canvas: HTMLCanvasElement, camera: CameraState): string {
-  const at = isoProject(0, 0, 0.25, camera, WIDTH, HEIGHT);
+const copy = (source: HTMLCanvasElement): HTMLCanvasElement => {
+  const c = document.createElement("canvas");
+  c.width = source.width;
+  c.height = source.height;
+  c.getContext("2d", { willReadFrequently: true })!.drawImage(source, 0, 0);
+  return c;
+};
+const cropOf = (c: HTMLCanvasElement, w: number, h: number): HTMLCanvasElement => {
   const out = document.createElement("canvas");
-  out.width = CROP;
-  out.height = CROP;
-  out
-    .getContext("2d")
-    ?.drawImage(canvas, at.sx - CROP / 2, at.sy - CROP / 2, CROP, CROP, 0, 0, CROP, CROP);
-  return out.toDataURL("image/png");
-}
-
-function stats(samples: readonly number[]) {
-  const sorted = [...samples].sort((a, b) => a - b);
-  const at = (q: number) =>
-    sorted[Math.min(sorted.length - 1, Math.ceil(q * sorted.length) - 1)] ?? 0;
-  const round = (v: number) => Math.round(v * 1_000) / 1_000;
-  return {
-    count: sorted.length,
-    p50: round(at(0.5)),
-    p95: round(at(0.95)),
-    max: round(sorted.at(-1) ?? 0),
-  };
-}
-
-function cutSheetPngs(cut: CutSheet | null): Record<string, string> {
-  if (!cut) return {};
-  const out: Record<string, string> = {};
-  for (const [name, data] of [
-    ["sheet-albedo", cut.albedo],
-    ["sheet-normal", cut.normal],
-  ] as const) {
-    const canvas = document.createElement("canvas");
-    canvas.width = cut.width;
-    canvas.height = cut.height;
-    const context = canvas.getContext("2d");
-    if (!context) continue;
-    const image = context.createImageData(cut.width, cut.height);
-    image.data.set(data);
-    context.putImageData(image, 0, 0);
-    out[name] = canvas.toDataURL("image/png");
-  }
+  out.width = w;
+  out.height = h;
+  out.getContext("2d", { willReadFrequently: true })!.drawImage(c, Math.round((c.width - w) / 2), Math.round((c.height - h) / 2), w, h, 0, 0, w, h);
   return out;
+};
+const pixels = (c: HTMLCanvasElement) => c.getContext("2d")!.getImageData(0, 0, c.width, c.height).data;
+
+let currentRatio = 1;
+function frameFor(spec: Spec) {
+  if (currentRatio !== spec.ratio) {
+    internal.renderer.setPixelRatio(spec.ratio);
+    currentRatio = spec.ratio;
+    adapter.setQuality("high");
+  }
+  if (internal.tier !== "high") adapter.setQuality("high");
+  const { px, py } = iso(spec.centre.x, spec.centre.y);
+  internal.camera.position.set(px, -(py - BODY_LIFT_PX), 1000);
+  internal.camera.zoom = spec.zoom;
+  internal.camera.updateProjectionMatrix();
+  internal.camera.updateMatrixWorld();
 }
 
-async function runArm(arm: Arm, host: HTMLElement) {
-  const shots: Record<string, string> = {};
-  const frameMs: Record<string, ReturnType<typeof stats>> = {};
-  let description: ReturnType<BakeoffAdapter["describe"]> | null = null;
-  let error: string | null = null;
-  let adapter: BakeoffAdapter | null = null;
-  try {
-    let start = performance.now();
-    await arm.prepare();
-    arm.stepMs.prepareTotal = Math.round(performance.now() - start);
-    arm.show(SHOTS[0] as Shot);
-    adapter = createThreeAdapter(
-      { host, width: WIDTH, height: HEIGHT },
-      webgl2Backend,
-      arm.extras(),
-    );
-    await adapter.init();
-    adapter.setQuality("high");
-    adapter.loadSnapshot(SNAPSHOT);
-    for (const state of LIGHTING_STATES) {
-      if (state === "night") adapter.applyPatch(TO_NIGHT);
-      for (const shot of SHOTS) {
-        arm.show(shot);
-        adapter.setCamera(shot.camera);
-        // Rebuilds the scene with this shot's figures (the extras' build), as a patch would.
-        adapter.setQuality("high");
-        await adapter.renderFrame(SCENE_TIME_MS);
-        const canvas = host.querySelector("canvas") as HTMLCanvasElement;
-        shots[`${state}/${shot.name}`] =
-          shot.camera === CLOSE ? crop(canvas, shot.camera) : adapter.capture();
-      }
-      const samples: number[] = [];
-      for (let i = 0; i < TIMED_FRAMES; i++) {
-        start = performance.now();
-        await adapter.renderFrame(SCENE_TIME_MS + i * 16);
-        samples.push(performance.now() - start);
-      }
-      frameMs[state] = stats(samples);
-    }
-    description = adapter.describe();
-  } catch (caught) {
-    error =
-      caught instanceof Error
-        ? `${caught.message}\n${caught.stack ?? ""}`.slice(0, 2_000)
-        : String(caught);
-  } finally {
-    adapter?.destroy();
+interface ShotRecord {
+  arm: string;
+  state: State;
+  shot: string;
+  backend: string;
+  renderer: string;
+  software: boolean;
+  zoom: number;
+  pixelRatio: number;
+  quality: string;
+  width: number;
+  height: number;
+  visiblePixels: number;
+  visible: boolean;
+  zoomBeyondClamp: boolean;
+  pixelRatioBeyondProduct: boolean;
+  /** The product's reduced-motion mode, used so that frames are repeatable (rain and flicker frozen). */
+  reducedMotion: boolean;
+}
+const SOFTWARE = /swiftshader|llvmpipe|lavapipe|software|basic render/i;
+
+async function shoot(arm: Arm, state: State, spec: Spec): Promise<{ canvas: HTMLCanvasElement; record: ShotRecord }> {
+  const instance = instances.get(arm.name)!;
+  frameFor(spec);
+  instance.show(spec.figures);
+  instance.root.visible = true;
+  const render = () => {
+    internal.composer.render();
+    return copy(internal.renderer.domElement);
+  };
+  // One scene pass runs per animation frame, so each state waits for the adapter's own frame; reduced motion
+  // (set once in main) freezes rain and flicker, so the shown and hidden frames differ only by the arm.
+  await nextFrame();
+  await nextFrame();
+  const shown = render();
+  instance.root.visible = false;
+  await nextFrame();
+  await nextFrame();
+  const hidden = render();
+  const quality = internal.tier;
+  const size = spec.crop ?? 0;
+  const [a, b] = size ? [cropOf(shown, size, size), cropOf(hidden, size, size)] : [shown, hidden];
+  const pa = pixels(a);
+  const pb = pixels(b);
+  let visiblePixels = 0;
+  for (let i = 0; i < pa.length; i += 4)
+    if (Math.abs(pa[i] - pb[i]) + Math.abs(pa[i + 1] - pb[i + 1]) + Math.abs(pa[i + 2] - pb[i + 2]) > 24) visiblePixels++;
+  const renderer = rendererString();
+  const record: ShotRecord = {
+    arm: arm.name,
+    state,
+    shot: spec.name,
+    backend: adapter.backend,
+    renderer,
+    software: SOFTWARE.test(renderer),
+    zoom: spec.zoom,
+    pixelRatio: spec.ratio,
+    quality,
+    width: a.width,
+    height: a.height,
+    visiblePixels,
+    visible: visiblePixels >= 40 * spec.ratio * spec.ratio,
+    zoomBeyondClamp: spec.zoom < 0.75 || spec.zoom > 2,
+    pixelRatioBeyondProduct: spec.ratio !== 1,
+    reducedMotion: true,
+  };
+  return { canvas: a, record };
+}
+
+const isRoute = (arm: Arm) => arm.name.startsWith("route:");
+const CLOSE_CROP = 200;
+function specsFor(arm: Arm): Spec[] {
+  const centre = AT.stevie;
+  const close = (name: string, figures: Figure[]): Spec => ({ name, figures, zoom: ZOOM_CLOSE, ratio: 1, centre, crop: CLOSE_CROP });
+  const stills = HEADINGS.map((h) => close(`still-${h}`, stevieFigure(h, "idle", 0.25)));
+  if (mode === "smoke") return [{ name: "zoom-default-1x", figures: group(), zoom: ZOOM_DEFAULT, ratio: 1, centre }];
+  if (isRoute(arm)) return stills;
+  const zooms: Spec[] = [];
+  for (const [label, zoom] of [["far", ZOOM_FAR], ["default", ZOOM_DEFAULT], ["close", ZOOM_CLOSE]] as const)
+    for (const ratio of [1, 2]) zooms.push({ name: `zoom-${label}-${ratio}x`, figures: group(), zoom, ratio, centre });
+  return [
+    { name: "cohesion", figures: group(), zoom: 2, ratio: 1, centre },
+    ...stills,
+    ...Array.from({ length: 8 }, (_, i) => close(`walk-${i}`, stevieFigure("three-quarter", "walk", i / 8))),
+    ...Array.from({ length: 4 }, (_, i) => close(`idle-${i}`, stevieFigure("three-quarter", "idle", i / 4))),
+    ...zooms,
+  ];
+}
+
+// ---- contact sheets
+const LABEL_H = 28;
+function sheetCanvas(width: number, height: number) {
+  const c = document.createElement("canvas");
+  c.width = width;
+  c.height = height;
+  const ctx = c.getContext("2d")!;
+  ctx.fillStyle = "#12140e";
+  ctx.fillRect(0, 0, width, height);
+  ctx.font = "11px sans-serif";
+  ctx.textBaseline = "top";
+  ctx.imageSmoothingEnabled = false;
+  return { c, ctx };
+}
+function tile(ctx: CanvasRenderingContext2D, image: HTMLCanvasElement, x: number, y: number, lines: string[], w = image.width, h = image.height) {
+  ctx.fillStyle = "#ece9d8";
+  lines.slice(0, 2).forEach((line, i) => ctx.fillText(line, x, y + i * 13, w));
+  ctx.drawImage(image, x, y + LABEL_H, w, h);
+}
+async function sendSheet(name: string, canvas: HTMLCanvasElement) {
+  await send("sheet", { name, width: canvas.width, height: canvas.height, png: canvas.toDataURL("image/png") });
+}
+
+// ---- the run
+async function waitForContent() {
+  for (;;) {
+    const status = adapter.metrics.contentStatus;
+    if (status === "ready") return;
+    if (status === "failed") throw new Error(`content failed: ${adapter.metrics.contentFailure}\n${creationError}`);
+    await nextFrame();
   }
+}
+
+async function frameTiming(arm: Arm, state: State) {
+  const instance = instances.get(arm.name)!;
+  adapter.setReducedMotion(false);
+  instance.root.visible = true;
+  frameFor({ name: "timing", figures: [], zoom: ZOOM_DEFAULT, ratio: 1, centre: AT.stevie });
+  adapter.setQuality("high");
+  const intervals: number[] = [];
+  const start = await nextFrame();
+  let last = start;
+  for (let now = start; now - start < 2000; ) {
+    now = await nextFrame();
+    intervals.push(now - last);
+    last = now;
+    instance.show(stevieFigure("right", "walk", ((now - start) / 1000) % 1));
+    internal.dirty = true;
+  }
+  instance.root.visible = false;
+  adapter.setReducedMotion(true);
+  const samples = adapter.metrics.frameMs.slice(-Math.min(intervals.length, adapter.metrics.frameMs.length));
+  const sorted = [...samples].sort((p, q) => p - q);
+  const mean = (xs: number[]) => (xs.length ? xs.reduce((s, v) => s + v, 0) / xs.length : 0);
+  const m = adapter.metrics;
   return {
     arm: arm.name,
-    error,
-    notes: arm.notes,
-    stepMs: arm.stepMs,
-    frameMs,
-    description,
-    shots,
+    state,
+    performance: !SOFTWARE.test(rendererString()),
+    qualityAfter: internal.tier,
+    rafIntervalsMs: { count: intervals.length, mean: mean(intervals), max: Math.max(0, ...intervals) },
+    adapterFrameMs: { count: samples.length, mean: mean(samples), p95: sorted[Math.max(0, Math.ceil(sorted.length * 0.95) - 1)] ?? 0 },
+    contentUpdateMs: m.contentUpdateMs,
+    firstRenderMs: m.firstRenderMs,
+    textureBytes: m.textureBytes,
+    contentObjects: m.contentObjects,
+    entityCount: m.entityCount,
   };
 }
 
-async function main(): Promise<void> {
-  const status = document.getElementById("status");
-  const host = document.getElementById("stage") as HTMLElement;
-  const record: Record<string, unknown> = {
-    schema: "clockgrove.stevie-3d/1",
-    device: { userAgent: navigator.userAgent },
-    shots: SHOTS.map((s) => s.name),
-    states: [...LIGHTING_STATES],
-  };
-  try {
-    // The stand-in always renders (it is what CI checks); generated models come from media/ via `models`.
-    const source = proceduralStevie();
-    record.model = { kind: source.kind, metrics: source.metrics, stepMs: source.stepMs };
-    const two = arm2d("sheet.png");
-    const arms: Arm[] = [arm3d(source), two, armSprites(source)];
-    const models: Record<string, unknown>[] = [
-      { name: "stand-in", kind: source.kind, metrics: source.metrics, stepMs: source.stepMs },
-    ];
-    const wanted = JSON.parse(params.get("models") ?? "[]") as GeneratedModel[];
-    for (const model of wanted) {
-      if (status) status.textContent = `loading ${model.name}`;
-      try {
-        const generated = await generatedStevie(model, STEVIE_HEIGHT);
-        if (!generated) throw new Error(`${model.url} is missing`);
-        models.push({
-          name: model.name,
-          kind: generated.kind,
-          rig: model.rig,
-          metrics: generated.metrics,
-          stepMs: generated.stepMs,
-        });
-        arms.push(arm3d(generated, model.name), armSprites(generated, model.name));
-      } catch (caught) {
-        models.push({
-          name: model.name,
-          rig: model.rig,
-          error: caught instanceof Error ? caught.message : String(caught),
-        });
+async function main() {
+  await ready;
+  setState("dusk-rain");
+  await waitForContent();
+  const backend = adapter.backend;
+  if (backend === "initializing") throw new Error("renderer never initialised");
+  await log(`renderer ready: backend ${backend}, ${rendererString()}`);
+  adapter.setReducedMotion(true);
+  const states: State[] = mode === "smoke" ? ["dusk-rain"] : ["dusk-rain", "night"];
+  const timings: unknown[] = [];
+  let shots = 0;
+  for (const state of states) {
+    setState(state);
+    for (let i = 0; i < 3; i++) await nextFrame();
+    const routeRows: { arm: Arm; tiles: Map<string, HTMLCanvasElement> }[] = [];
+    for (const arm of arms) {
+      const tiles = new Map<string, HTMLCanvasElement>();
+      const regions = new Map<string, HTMLCanvasElement>();
+      for (const spec of specsFor(arm)) {
+        status.textContent = `${arm.name} ${state} ${spec.name}`;
+        const { canvas, record } = await shoot(arm, state, spec);
+        const full = spec.name.startsWith("zoom-") || spec.name === "cohesion";
+        if (spec.name.startsWith("zoom-")) {
+          const w = spec.ratio === 2 ? 320 : 160;
+          const h = spec.ratio === 2 ? 200 : 100;
+          regions.set(spec.name, cropOf(canvas, w, h));
+        } else if (full || spec.crop) tiles.set(spec.name, canvas);
+        await send("shot", { ...record, png: canvas.toDataURL("image/png") });
+        await log(`${arm.name} ${state} ${spec.name}: ${record.visiblePixels} visible px`);
+        shots++;
       }
+      if (mode === "smoke") continue;
+      if (isRoute(arm)) {
+        routeRows.push({ arm, tiles });
+        timings.push(await frameTiming(arm, state));
+        continue;
+      }
+      const instance = instances.get(arm.name)!;
+      const renderer = rendererString();
+      const title = `${arm.label} | ${state} | ${backend} | ${renderer}`;
+      const WALK = 8;
+      const cell = CLOSE_CROP + 4;
+      const width = Math.max(WALK * cell, 644);
+      const { c, ctx } = sheetCanvas(width, 16 + LABEL_H + 400 + 3 * (LABEL_H + cell));
+      ctx.fillStyle = "#ece9d8";
+      ctx.fillText(title, 2, 2);
+      let y = 18;
+      tile(ctx, tiles.get("cohesion")!, 0, y, ["cohesion: Stevie (3/4), Juniper (front), kit (right, walk); zoom 2"]);
+      y += LABEL_H + 400;
+      HEADINGS.forEach((h, i) => {
+        const source = instance.headingSource(h);
+        tile(ctx, tiles.get(`still-${h}`)!, i * cell, y, [`still-${h}`, source.drawn ? "drawn" : `not drawn: ${source.shown}`]);
+      });
+      y += LABEL_H + cell;
+      for (let i = 0; i < 8; i++) tile(ctx, tiles.get(`walk-${i}`)!, i * cell, y, [`walk-${i} (3/4)`]);
+      y += LABEL_H + cell;
+      for (let i = 0; i < 4; i++) tile(ctx, tiles.get(`idle-${i}`)!, i * cell, y, [`idle-${i} (3/4)`]);
+      await sendSheet(`sheet-${arm.name}-${state}-${backend}`, c);
+
+      const zw = 324;
+      const zh = LABEL_H + 200 + 4;
+      const z = sheetCanvas(3 * zw, 18 + 2 * zh);
+      z.ctx.fillStyle = "#ece9d8";
+      z.ctx.fillText(`${title} | centre region, 1x upscaled x2 (nearest) above, native 2x below`, 2, 2);
+      [["far", ZOOM_FAR], ["default", ZOOM_DEFAULT], ["close", ZOOM_CLOSE]].forEach(([label, zoom], col) => {
+        [1, 2].forEach((ratio, row) => {
+          const image = regions.get(`zoom-${label}-${ratio}x`)!;
+          tile(z.ctx, image, col * zw, 18 + row * zh, [`${label} zoom ${(zoom as number).toFixed(2)}, ratio ${ratio}`, ratio === 1 ? "1x region, nearest x2" : "2x native pixels"], 320, 200);
+        });
+      });
+      await sendSheet(`zoom-${arm.name}-${state}-${backend}`, z.c);
+      timings.push(await frameTiming(arm, state));
     }
-    record.models = models;
-    const results = [];
-    for (const arm of arms) {
-      if (status) status.textContent = `rendering ${arm.name}`;
-      results.push(await runArm(arm, host));
+    if (mode === "full" && routeRows.length) {
+      const cell = CLOSE_CROP + 4;
+      const { c, ctx } = sheetCanvas(HEADINGS.length * cell, 18 + routeRows.length * (LABEL_H + cell));
+      ctx.fillStyle = "#ece9d8";
+      ctx.fillText(`Routes | ${state} | ${backend} | ${rendererString()}`, 2, 2);
+      routeRows.forEach(({ arm, tiles }, row) =>
+        HEADINGS.forEach((h, i) => tile(ctx, tiles.get(`still-${h}`)!, i * cell, 18 + row * (LABEL_H + cell), [`${arm.name}: ${h}`, instances.get(arm.name)!.headingSource(h).shown])),
+      );
+      await sendSheet(`routes-${state}-${backend}`, c);
     }
-    record.arms = results;
-    // Atlases: `sprites-<map>` for the stand-in (what CI checks), `sprites-<model>-<map>` for the others.
-    const atlases: Record<string, string> = {};
-    for (const arm of arms) {
-      if (!arm.name.startsWith("3d-sprites")) continue;
-      const atlas = (arm as Arm & { atlas(): BakedAtlas | null }).atlas();
-      const model = arm.name.slice("3d-sprites".length).replace(":", "-");
-      for (const [k, v] of Object.entries(atlas?.pngs() ?? {})) atlases[`sprites${model}-${k}`] = v;
-    }
-    record.atlases = { ...atlases, ...cutSheetPngs(two.cut()) };
-  } catch (caught) {
-    record.fatal = caught instanceof Error ? caught.message : String(caught);
   }
-  const json = JSON.stringify(record);
-  const report = params.get("report");
-  if (report) await fetch(report, { method: "POST", body: json });
+  await send("done", {
+    mode,
+    backend,
+    renderer: rendererString(),
+    software: SOFTWARE.test(rendererString()),
+    shots,
+    arms: arms.map((arm) => {
+      const instance = instances.get(arm.name)!;
+      return {
+        name: arm.name,
+        label: arm.label,
+        licence: arm.licence,
+        credit: arm.credit ?? null,
+        inputs: arm.inputs,
+        notes: instance.notes,
+        stepMs: instance.stepMs,
+        budget: instance.budget,
+        headingSource: Object.fromEntries(HEADINGS.map((h) => [h, instance.headingSource(h)])),
+      };
+    }),
+    metrics: { ...adapter.metrics, frameMs: undefined },
+    frameTimes: timings,
+  });
   document.body.dataset.state = "done";
-  if (status) status.textContent = "done";
+  status.textContent = "done";
 }
 
-void main();
+main().catch(fatal);

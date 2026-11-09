@@ -1,6 +1,6 @@
 # ADR: Character Rendering, Real-Time 3D or 2D Sheets
 
-**Status:** Draft  
+**Status:** Superseded by the [character rendering decision record](character-rendering-decision.md) (issue #11), which re-ran this comparison in Clockgrove's product renderer. This draft is kept as the record of the clockgrove/clockgrove#77 run.  
 **Version:** 0.4  
 **Date:** November 07, 2026  
 **Accepted baseline:** Clockgrove's [`clockgrove-prd-v0.5.md`](https://github.com/clockgrove/clockgrove/blob/main/docs/clockgrove-prd-v0.5.md) v0.5.10, [`clockgrove-cloudflare-implementation-plan.md`](https://github.com/clockgrove/clockgrove/blob/main/docs/clockgrove-cloudflare-implementation-plan.md) v3.12 §20, and implementation Wave 4 §9.1

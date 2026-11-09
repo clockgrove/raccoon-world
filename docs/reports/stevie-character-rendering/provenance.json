@@ -1,0 +1,490 @@
+{
+  "run": {
+    "clockgrove": "8bf1957ec223002277a88a0f0aaad52f6e8442af",
+    "label": "software GPU (SwiftShader) in the Factory sandbox, not performance",
+    "started": "2026-11-09T21:24:53.133Z",
+    "finished": "2026-11-09T21:31:46.236Z"
+  },
+  "images": [
+    {
+      "file": "shots/sheet-2d-dusk-rain-webgpu.png",
+      "sha256": "31f30f4fd840138376e6007aa92fae54bc3ef08506ef9cb9446b527ffc888ea2",
+      "width": 1632,
+      "height": 1140,
+      "arms": [
+        "2d"
+      ],
+      "inputs": {
+        "references/stevie/comparison-candidates/idle/strip.png": "cb2dec6e62ab2901fc72547af3bfc08af678a23d5af7bcca55b9e95cb5b8ce7e",
+        "references/stevie/comparison-candidates/walk/strip.png": "a2dbb71ccf4a2e2d27f95a908e27419c6b1ee7bcb8c9cf51b00ef6fa50cbaeac"
+      },
+      "license": "MIT",
+      "credit": null,
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/zoom-2d-dusk-rain-webgpu.png",
+      "sha256": "7bf603ecc55069afd0cecbfc129ab415d39e54016dfbea86763c9e4a11cef4d9",
+      "width": 972,
+      "height": 482,
+      "arms": [
+        "2d"
+      ],
+      "inputs": {
+        "references/stevie/comparison-candidates/idle/strip.png": "cb2dec6e62ab2901fc72547af3bfc08af678a23d5af7bcca55b9e95cb5b8ce7e",
+        "references/stevie/comparison-candidates/walk/strip.png": "a2dbb71ccf4a2e2d27f95a908e27419c6b1ee7bcb8c9cf51b00ef6fa50cbaeac"
+      },
+      "license": "MIT",
+      "credit": null,
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/sheet-3d-dusk-rain-webgpu.png",
+      "sha256": "e33511499b126a80f484449ce7e359e8e2723cd2b5fb04aaa68936cf519577ce",
+      "width": 1632,
+      "height": 1140,
+      "arms": [
+        "3d"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/zoom-3d-dusk-rain-webgpu.png",
+      "sha256": "ea41b43ac31242716968a9b0269a3814866b642d7a9d783aab657c1dbe82bad1",
+      "width": 972,
+      "height": 482,
+      "arms": [
+        "3d"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/sheet-3d-sprites-dusk-rain-webgpu.png",
+      "sha256": "34f252924329e349c36abde0fe973b95cc538e675232a054d95ee6a34cf3228a",
+      "width": 1632,
+      "height": 1140,
+      "arms": [
+        "3d-sprites"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/zoom-3d-sprites-dusk-rain-webgpu.png",
+      "sha256": "ca672f120dbf2fece65ca2cb6b2029a20d2a6153d2d250a858c83886b771b70c",
+      "width": 972,
+      "height": 482,
+      "arms": [
+        "3d-sprites"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/routes-dusk-rain-webgpu.png",
+      "sha256": "2116c57715929d74333ec7955033a03e3a9cbdcb9209a0e93633adcba0e9e387",
+      "width": 1020,
+      "height": 946,
+      "arms": [
+        "route:meshy-rig",
+        "route:tripo",
+        "route:fal",
+        "route:meshy-fit"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy.glb": "610a0b8d7c6a4bd51c31480cb42ece6e1508dcadea90a96a76ba6cd460863567",
+        "references/stevie/77-3d/ship-tripo.glb": "c239662ae20dbd54774af7496b5c2f362c34eb8d60ec2d0a18ba133113c98276",
+        "references/stevie/77-3d/ship-fal.glb": "c0a350af1be4e828fb93b15858adb3b62c6e777c10d6a582d9fcae1793a97e8d",
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/sheet-2d-night-webgpu.png",
+      "sha256": "55e718b16d4985b69e2625c843328ad0c8916795620858e934f06313e30ce722",
+      "width": 1632,
+      "height": 1140,
+      "arms": [
+        "2d"
+      ],
+      "inputs": {
+        "references/stevie/comparison-candidates/idle/strip.png": "cb2dec6e62ab2901fc72547af3bfc08af678a23d5af7bcca55b9e95cb5b8ce7e",
+        "references/stevie/comparison-candidates/walk/strip.png": "a2dbb71ccf4a2e2d27f95a908e27419c6b1ee7bcb8c9cf51b00ef6fa50cbaeac"
+      },
+      "license": "MIT",
+      "credit": null,
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/zoom-2d-night-webgpu.png",
+      "sha256": "f1a233ae6e612396b4638a81958060294c901f1b048d778c447b1972928c9b31",
+      "width": 972,
+      "height": 482,
+      "arms": [
+        "2d"
+      ],
+      "inputs": {
+        "references/stevie/comparison-candidates/idle/strip.png": "cb2dec6e62ab2901fc72547af3bfc08af678a23d5af7bcca55b9e95cb5b8ce7e",
+        "references/stevie/comparison-candidates/walk/strip.png": "a2dbb71ccf4a2e2d27f95a908e27419c6b1ee7bcb8c9cf51b00ef6fa50cbaeac"
+      },
+      "license": "MIT",
+      "credit": null,
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/sheet-3d-night-webgpu.png",
+      "sha256": "89f91092adb9ac119099e874de83d2fd352755a4e86abdac42e935b05191a2cb",
+      "width": 1632,
+      "height": 1140,
+      "arms": [
+        "3d"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/zoom-3d-night-webgpu.png",
+      "sha256": "d896cba0b9135bbe630607ee420da600b9741765d2c8344715875b6f51a792e5",
+      "width": 972,
+      "height": 482,
+      "arms": [
+        "3d"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/sheet-3d-sprites-night-webgpu.png",
+      "sha256": "8501fc3d84393ef267e854268643c24552e3123710dc33270c6f2a1d4a01d1a0",
+      "width": 1632,
+      "height": 1140,
+      "arms": [
+        "3d-sprites"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/zoom-3d-sprites-night-webgpu.png",
+      "sha256": "292e4baf491d28b8271563fc42945c39100ab980487174ef5a2b7ffe5e330cad",
+      "width": 972,
+      "height": 482,
+      "arms": [
+        "3d-sprites"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/routes-night-webgpu.png",
+      "sha256": "387963ad0be6a5062227a327f60925e078a0b1bf501462831fa5e59a55b06867",
+      "width": 1020,
+      "height": 946,
+      "arms": [
+        "route:meshy-rig",
+        "route:tripo",
+        "route:fal",
+        "route:meshy-fit"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy.glb": "610a0b8d7c6a4bd51c31480cb42ece6e1508dcadea90a96a76ba6cd460863567",
+        "references/stevie/77-3d/ship-tripo.glb": "c239662ae20dbd54774af7496b5c2f362c34eb8d60ec2d0a18ba133113c98276",
+        "references/stevie/77-3d/ship-fal.glb": "c0a350af1be4e828fb93b15858adb3b62c6e777c10d6a582d9fcae1793a97e8d",
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/sheet-2d-dusk-rain-webgl2.png",
+      "sha256": "183523f7771f5c364ac3b524b2e27a4d386a6fd3c91393b492a8e96005fef30a",
+      "width": 1632,
+      "height": 1140,
+      "arms": [
+        "2d"
+      ],
+      "inputs": {
+        "references/stevie/comparison-candidates/idle/strip.png": "cb2dec6e62ab2901fc72547af3bfc08af678a23d5af7bcca55b9e95cb5b8ce7e",
+        "references/stevie/comparison-candidates/walk/strip.png": "a2dbb71ccf4a2e2d27f95a908e27419c6b1ee7bcb8c9cf51b00ef6fa50cbaeac"
+      },
+      "license": "MIT",
+      "credit": null,
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/zoom-2d-dusk-rain-webgl2.png",
+      "sha256": "2b01dfc83fbe8ec541693c006d74d7f8263633035f76bc59bb5c14f240950189",
+      "width": 972,
+      "height": 482,
+      "arms": [
+        "2d"
+      ],
+      "inputs": {
+        "references/stevie/comparison-candidates/idle/strip.png": "cb2dec6e62ab2901fc72547af3bfc08af678a23d5af7bcca55b9e95cb5b8ce7e",
+        "references/stevie/comparison-candidates/walk/strip.png": "a2dbb71ccf4a2e2d27f95a908e27419c6b1ee7bcb8c9cf51b00ef6fa50cbaeac"
+      },
+      "license": "MIT",
+      "credit": null,
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/sheet-3d-dusk-rain-webgl2.png",
+      "sha256": "bed3e8e1906d02c4a732883b505533b180a0e37fe274a2ddc5cc8891856a4601",
+      "width": 1632,
+      "height": 1140,
+      "arms": [
+        "3d"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/zoom-3d-dusk-rain-webgl2.png",
+      "sha256": "a5e04fdd6320b6404e828d1e0df33c0444733d28c6b0108723d4101304a5056a",
+      "width": 972,
+      "height": 482,
+      "arms": [
+        "3d"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/sheet-3d-sprites-dusk-rain-webgl2.png",
+      "sha256": "e4e5f1be7370ca6b0915a25aad78a86b32f4357be61c1723d3be6b795fa308f8",
+      "width": 1632,
+      "height": 1140,
+      "arms": [
+        "3d-sprites"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/zoom-3d-sprites-dusk-rain-webgl2.png",
+      "sha256": "d0382b56c3c3c507eb4fd119ec8c5e2b5bed27f8f9b60572acb75975fd7d1de0",
+      "width": 972,
+      "height": 482,
+      "arms": [
+        "3d-sprites"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/routes-dusk-rain-webgl2.png",
+      "sha256": "be96278b72fcf78ddbff8c3aaaf5b617c80460d52958206ab1c54cca9a403e78",
+      "width": 1020,
+      "height": 946,
+      "arms": [
+        "route:meshy-rig",
+        "route:tripo",
+        "route:fal",
+        "route:meshy-fit"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy.glb": "610a0b8d7c6a4bd51c31480cb42ece6e1508dcadea90a96a76ba6cd460863567",
+        "references/stevie/77-3d/ship-tripo.glb": "c239662ae20dbd54774af7496b5c2f362c34eb8d60ec2d0a18ba133113c98276",
+        "references/stevie/77-3d/ship-fal.glb": "c0a350af1be4e828fb93b15858adb3b62c6e777c10d6a582d9fcae1793a97e8d",
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/sheet-2d-night-webgl2.png",
+      "sha256": "f4c9e1fc8925176cf7e725ddd1d78cb50c0fef4e5388edf730c1052ae6907ae6",
+      "width": 1632,
+      "height": 1140,
+      "arms": [
+        "2d"
+      ],
+      "inputs": {
+        "references/stevie/comparison-candidates/idle/strip.png": "cb2dec6e62ab2901fc72547af3bfc08af678a23d5af7bcca55b9e95cb5b8ce7e",
+        "references/stevie/comparison-candidates/walk/strip.png": "a2dbb71ccf4a2e2d27f95a908e27419c6b1ee7bcb8c9cf51b00ef6fa50cbaeac"
+      },
+      "license": "MIT",
+      "credit": null,
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/zoom-2d-night-webgl2.png",
+      "sha256": "f3909032551de5f295d06233cf1aa5957bd5896f3b8e0a2fb1298616328e1e82",
+      "width": 972,
+      "height": 482,
+      "arms": [
+        "2d"
+      ],
+      "inputs": {
+        "references/stevie/comparison-candidates/idle/strip.png": "cb2dec6e62ab2901fc72547af3bfc08af678a23d5af7bcca55b9e95cb5b8ce7e",
+        "references/stevie/comparison-candidates/walk/strip.png": "a2dbb71ccf4a2e2d27f95a908e27419c6b1ee7bcb8c9cf51b00ef6fa50cbaeac"
+      },
+      "license": "MIT",
+      "credit": null,
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/sheet-3d-night-webgl2.png",
+      "sha256": "d91760d581672b0ae7a9632c01cefa57f5571cb691ce6396597a2c24deecf572",
+      "width": 1632,
+      "height": 1140,
+      "arms": [
+        "3d"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/zoom-3d-night-webgl2.png",
+      "sha256": "4cec4e90eb660f80ec1fa7e362b222ee892ce5d2486bbcdfca7fbfc4511f83e2",
+      "width": 972,
+      "height": 482,
+      "arms": [
+        "3d"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/sheet-3d-sprites-night-webgl2.png",
+      "sha256": "7aa121bbcff6654eaa0d205b0c9d85911a65a2b3be30ae0c184eec6ae8738504",
+      "width": 1632,
+      "height": 1140,
+      "arms": [
+        "3d-sprites"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/zoom-3d-sprites-night-webgl2.png",
+      "sha256": "7086cd0aeae0e4b45be29479c564ddc2a189665b1cdce94769a69bd18701cf98",
+      "width": 972,
+      "height": 482,
+      "arms": [
+        "3d-sprites"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    },
+    {
+      "file": "shots/routes-night-webgl2.png",
+      "sha256": "b05664ff8b8692ae9f56afa3338c5bd4887f421ac3dd613dbd59afd56e6e9757",
+      "width": 1020,
+      "height": 946,
+      "arms": [
+        "route:meshy-rig",
+        "route:tripo",
+        "route:fal",
+        "route:meshy-fit"
+      ],
+      "inputs": {
+        "references/stevie/77-3d/ship-meshy.glb": "610a0b8d7c6a4bd51c31480cb42ece6e1508dcadea90a96a76ba6cd460863567",
+        "references/stevie/77-3d/ship-tripo.glb": "c239662ae20dbd54774af7496b5c2f362c34eb8d60ec2d0a18ba133113c98276",
+        "references/stevie/77-3d/ship-fal.glb": "c0a350af1be4e828fb93b15858adb3b62c6e777c10d6a582d9fcae1793a97e8d",
+        "references/stevie/77-3d/ship-meshy-fit.glb": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97"
+      },
+      "license": "CC-BY-4.0",
+      "credit": "3D model generated with Meshy (meshy.ai)",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+      "madeBy": "spikes/stevie-3d/scripts/stevie.mjs, Clockgrove 8bf1957ec223002277a88a0f0aaad52f6e8442af, software GPU (SwiftShader) in the Factory sandbox, not performance"
+    }
+  ]
+}
