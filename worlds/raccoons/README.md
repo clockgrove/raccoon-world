@@ -1,4 +1,4 @@
-# clockgrove.green-lake-yard@1.1.0
+# clockgrove.green-lake-yard@1.2.0
 
 The Wave 1 reference world: a data-only pack. It holds no code and no engine behaviour. Its
 versioned presentation metadata, `presentation.json` (`presentationVersion` 1, issue 813), binds the stable actor
