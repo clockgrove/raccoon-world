@@ -1,4 +1,4 @@
-// Issue 77: fits the spike's own quadruped skeleton to a generated, unrigged mesh (the owner's decision for
+// Issue 77 (ported to the pinned Three): fits the spike's own quadruped skeleton to a generated, unrigged mesh (the owner's decision for
 // the fal.ai route: "fit the spike's own procedural skeleton, idle and walk to the generated mesh"). The mesh
 // arrives in yard axes (x forward, y left, z up), feet on z = 0. The fit:
 // - maps the stand-in's spine, neck and head joints onto the mesh's bounding box, axis by axis;
@@ -7,7 +7,7 @@
 // - weights every vertex to its two nearest bone segments (inverse-square), with a leg allowed only on its own
 //   side and fading above its hip, and the tail allowed only behind the hips.
 // It is a heuristic with no retopology and no weight painting: the report shows its artefacts.
-import * as THREE from "three";
+import { THREE } from "clockgrove-pin/apps/web/src/renderer-content.js";
 
 // biome-ignore lint/suspicious/noExplicitAny: three ships no type declarations (see three-shim.d.ts)
 type Any = any;

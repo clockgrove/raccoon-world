@@ -25,7 +25,8 @@ const arms: Arm[] = armNames
       if (!arm) throw new Error(`no arm "${name}"; known: ${ARMS.map((a) => a.name).join(", ")}`);
       return arm;
     })
-  : ARMS;
+  : // By default: the three arms in smoke mode (CI's check), every arm but the control in full mode.
+    ARMS.filter((arm) => arm.name !== "stub" && (mode === "full" || !arm.name.startsWith("route:")));
 if (backendWanted === "webgl2") Object.defineProperty(navigator, "gpu", { value: undefined, configurable: true });
 
 async function send(kind: string, body: unknown): Promise<void> {

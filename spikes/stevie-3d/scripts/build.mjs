@@ -24,7 +24,8 @@ export async function build() {
   process.env.CLOCKGROVE_WORLD_ASSETS = path.join(repo, "assets/reviewed");
   const web = path.join(clockgroveDir, "apps/web");
   const vite = await import(pathToFileURL(path.join(web, "node_modules/vite/dist/node/index.js")).href);
-  const dist = path.join(here, "dist");
+  // STEVIE_DIST: another output directory, so two runs on one checkout never share a build.
+  const dist = path.resolve(process.env.STEVIE_DIST ?? path.join(here, "dist"));
   await vite.build({
     configFile: path.join(web, "vite.config.ts"),
     root: here,

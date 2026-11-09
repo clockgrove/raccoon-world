@@ -21,7 +21,7 @@ import { build } from "./build.mjs";
 
 const spike = fileURLToPath(new URL("..", import.meta.url));
 const repo = path.resolve(spike, "../..");
-const dist = path.join(spike, "dist");
+const dist = path.resolve(process.env.STEVIE_DIST ?? path.join(spike, "dist")); // build.mjs writes the same
 const SOFTWARE_FLAGS = [
   "--enable-unsafe-swiftshader",
   "--use-webgpu-adapter=swiftshader",
@@ -83,7 +83,15 @@ const touch = (step) => {
 async function handleRun(request, response, endpoint) {
   const chunks = [];
   for await (const chunk of request) chunks.push(chunk);
-  response.end("ok");
+  // Acknowledge only once the message is stored: the page awaits each POST, so a shot is always recorded
+  // before the page's next message (its final "done" could otherwise overtake the last shot's file write).
+  try {
+    await storeRun(endpoint, chunks);
+  } finally {
+    response.end("ok");
+  }
+}
+async function storeRun(endpoint, chunks) {
   if (!run) return;
   const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
   if (endpoint === "log") {

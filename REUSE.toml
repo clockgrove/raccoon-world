@@ -14,3 +14,12 @@ path = ["references/stevie/77-3d/meshy-*.glb", "references/stevie/77-3d/ship-mes
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Meshy (generated on the Meshy Free plan for Clockgrove)"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+# Renders of Meshy Free-plan models in the Stevie comparison report (issue #11): arm (a) real-time 3D and arm (b)
+# 3D rendered to sprites both draw the meshy-fit model, and the routes sheets include Meshy's own rig. Renders of
+# a CC BY 4.0 model stay CC BY 4.0. Credit: "3D model generated with Meshy (meshy.ai)".
+[[annotations]]
+path = ["docs/reports/stevie-character-rendering/shots/*-3d-*.png", "docs/reports/stevie-character-rendering/shots/*-3d-sprites-*.png", "docs/reports/stevie-character-rendering/shots/routes-*.png"]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 Clockgrove", "2026 Meshy (generated on the Meshy Free plan for Clockgrove); 3D model generated with Meshy (meshy.ai)"]
+SPDX-License-Identifier = "CC-BY-4.0"
