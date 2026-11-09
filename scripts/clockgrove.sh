@@ -69,7 +69,7 @@ fetch() {
 check() {
   ready || fetch
   # The Node.js Clockgrove pins (package.json engines). CI's setup-node and FACTORY_NODE_VERSION must match it.
-  local want have path
+  local want have
   want="$(node -p 'require(process.argv[1]).engines.node' "$dir/package.json")"
   have="$(node --version)"
   if [[ "v$want" != "$have" ]]; then
