@@ -32,7 +32,7 @@ env:
   FACTORY_INSTALL: bash scripts/clockgrove.sh fetch # the pinned Clockgrove checkout, as CI fetches it
   FACTORY_VALIDATION: git lfs fsck --pointers, bash scripts/clockgrove.sh check # CI's pack check
   FACTORY_BUDGET_COMMAND: ""
-  FACTORY_PROTECTED_PATHS: ""
+  FACTORY_PROTECTED_PATHS: CLOCKGROVE_COMMIT # the Clockgrove pin moves only in a maintainer PR
   FACTORY_CI_CHECKS: ci
   FACTORY_NODE_VERSION: 24.21.0 # the Node.js your CI uses (Clockgrove's)
 permissions: # the job token reads code and Actions; every write goes through the App's token

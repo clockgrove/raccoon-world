@@ -31,14 +31,14 @@ Run it locally with the Node.js version the pinned commit names in its `package.
 bash scripts/clockgrove.sh check
 ```
 
-The first run clones the pinned commit into `~/.cache/raccoon-world/clockgrove` (set `CLOCKGROVE_DIR` to use another directory) and installs its locked dependencies with lifecycle scripts off. Later runs reuse that checkout. A golden mismatch writes `<scenario>.actual.json` beside the golden for review; Git ignores it.
+The first run clones the pinned commit into `.clockgrove/` in this repository, which Git ignores (set `CLOCKGROVE_DIR` to use another directory), and installs its locked dependencies with lifecycle scripts off. Later runs reuse that checkout. It sits in the repository, not your home directory, so it also works in sandboxes that may write only the clone, like Factory's local mode. pnpm is the version Clockgrove pins in `packageManager`, through Corepack; where Corepack can't fetch it, the script uses the pnpm on your `PATH` and says so. A golden mismatch writes `<scenario>.actual.json` beside the golden for review; Git ignores it.
 
 To move the pin:
 
 1. Put the new full Clockgrove commit in `CLOCKGROVE_COMMIT`.
 2. If that commit pins a different Node.js, update `node-version` in `.github/workflows/ci.yml` and `FACTORY_NODE_VERSION` in `.github/workflows/factory.yml` to match. The script stops with a message when they differ.
 3. Run `bash scripts/clockgrove.sh check`. If a golden differs, review its `.actual.json` and replace the golden only when the new behaviour is intended.
-4. Open a PR; its `ci` check proves the pack against the new commit.
+4. Open a PR; its `ci` check proves the pack against the new commit. Only a maintainer's PR moves the pin: `CLOCKGROVE_COMMIT` is a Factory protected path, so a Factory worker can't change it.
 
 ## License
 
