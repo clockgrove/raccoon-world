@@ -1,0 +1,276 @@
+{
+  "generator": "transform",
+  "recipe": {
+    "name": "frames-to-strip"
+  },
+  "style": {
+    "alpha": {
+      "mode": "soft",
+      "threshold": 1
+    },
+    "color": {
+      "rule": "full",
+      "palette": []
+    },
+    "edges": "antialiased"
+  },
+  "sources": [
+    {
+      "name": "f001",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-idle-3/2026-11-09T00-03-07-750Z-41d648/frames/f001.png",
+      "sha256": "fe08c85cb44c4ddc84e4147e13b26c5c7ca861ae28bbd25b09136b7a4d611c2f",
+      "mediaType": "image/png",
+      "pixels": "0359bca01721b605f78234d32db14341d499e39eff35db95725c96ce419cde63",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "name": "f002",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-idle-3/2026-11-09T00-03-07-750Z-41d648/frames/f002.png",
+      "sha256": "8b7cd1c3864d901ec16a5fd127d1689711589b2c2e941772609c6c496edec165",
+      "mediaType": "image/png",
+      "pixels": "8cbcc07601aba37b60526eb674f1ecb8e7638ae668be23125c7d5d61e660f137",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "name": "f003",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-idle-3/2026-11-09T00-03-07-750Z-41d648/frames/f003.png",
+      "sha256": "b1ee08f310e893f4513a5bedc0219eff06d87ac02b8921ba6fd33c2fc6bd8f91",
+      "mediaType": "image/png",
+      "pixels": "b069823c566e1a1ab5596589c7ffaf6a2403953fa2665f747673180f977e1946",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "name": "f004",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-idle-3/2026-11-09T00-03-07-750Z-41d648/frames/f004.png",
+      "sha256": "c6164e1fc70c32390cd7f38c78bd411f4247f4a57dbf04110f323b2ee82aac7d",
+      "mediaType": "image/png",
+      "pixels": "8cf5b399e344090b4793757f9be565c3c7ec2e00a3b1afeb501a32121d40d324",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "name": "f005",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-idle-3/2026-11-09T00-03-07-750Z-41d648/frames/f005.png",
+      "sha256": "a799b81f3b425fc59da0f69ac69456b0e54962b475c24c8f0cb35055591f7c03",
+      "mediaType": "image/png",
+      "pixels": "3d0415b12e3571da7db50750bce893b330f937dd4be4330840d413f2c3994ae8",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "name": "f006",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-idle-3/2026-11-09T00-03-07-750Z-41d648/frames/f006.png",
+      "sha256": "bda8aaa83190cd346a4b346c9a788bdb11a74f99e8035fb8f9deae061a72fbc7",
+      "mediaType": "image/png",
+      "pixels": "45e079f212cc201096254fa8ca97b4e3bde67534b22cb0600546cd6c02ba2a46",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "op": "register",
+      "params": {
+        "frame": {
+          "width": 192,
+          "height": 192
+        },
+        "anchor": {
+          "x": 96,
+          "y": 191
+        },
+        "measureThreshold": 128,
+        "margin": 1,
+        "clamp": [
+          0.8,
+          1.25
+        ],
+        "filter": "antialiased"
+      },
+      "engine": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      },
+      "inputs": [
+        "0359bca01721b605f78234d32db14341d499e39eff35db95725c96ce419cde63",
+        "8cbcc07601aba37b60526eb674f1ecb8e7638ae668be23125c7d5d61e660f137",
+        "b069823c566e1a1ab5596589c7ffaf6a2403953fa2665f747673180f977e1946",
+        "8cf5b399e344090b4793757f9be565c3c7ec2e00a3b1afeb501a32121d40d324",
+        "3d0415b12e3571da7db50750bce893b330f937dd4be4330840d413f2c3994ae8",
+        "45e079f212cc201096254fa8ca97b4e3bde67534b22cb0600546cd6c02ba2a46"
+      ],
+      "outputs": [
+        "87d71c1e2822ad135af74b70249fd236efb8ed89f91c380034c107c580e7a519",
+        "7b3f1b242a12d5af3c8233a7374936044c0acdf6e8bc6c8c7301d648a2d406b5",
+        "bf5e8186489d8b47fdfb9ba88ed1d852b0e24d5787826a3f1b8e9eef9d117d3a",
+        "83004b97abea39ed1e060d58593b4204f85682672d997d01de62766ea28fcc7e",
+        "b79335c385e2b6437aba3eee81ce58c040383b94d4422aa0916a3cdaea851264",
+        "ad9d28de1ce9c8762cdf2ee313868d0c000689ba9a2812fa2c061de26dd49501"
+      ],
+      "report": {
+        "scale": 0.4109780469232934,
+        "jitterPx": 0.00045499040490426523
+      }
+    },
+    {
+      "op": "apply-style",
+      "params": {},
+      "engine": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      },
+      "inputs": [
+        "87d71c1e2822ad135af74b70249fd236efb8ed89f91c380034c107c580e7a519",
+        "7b3f1b242a12d5af3c8233a7374936044c0acdf6e8bc6c8c7301d648a2d406b5",
+        "bf5e8186489d8b47fdfb9ba88ed1d852b0e24d5787826a3f1b8e9eef9d117d3a",
+        "83004b97abea39ed1e060d58593b4204f85682672d997d01de62766ea28fcc7e",
+        "b79335c385e2b6437aba3eee81ce58c040383b94d4422aa0916a3cdaea851264",
+        "ad9d28de1ce9c8762cdf2ee313868d0c000689ba9a2812fa2c061de26dd49501"
+      ],
+      "outputs": [
+        "01673ae3fbf1359480c239a50b656531bb57fc6e1788db5ac3c0c8598f2a60eb",
+        "10f3b3764facf00064e9e3d99dd62853e13584b238da477ff7d685c8802da0a4",
+        "dad75633ce296b7a09a9111969717644048d7e0760899e31770f632d1ac2d1f8",
+        "67f376416ac67fd0492bddad1c5d54bc4e8646e8ff5e1d9ed667498fcdf13c40",
+        "a44d702e4e561aa67a44b61a188c913aee5be035a50f0be316a576d45c73103a",
+        "710d3943057c217676784e60c5c34d1e49a24c6767bbb8560fb1c0ff4ece5c96"
+      ]
+    },
+    {
+      "op": "join",
+      "params": {},
+      "engine": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      },
+      "inputs": [
+        "01673ae3fbf1359480c239a50b656531bb57fc6e1788db5ac3c0c8598f2a60eb",
+        "10f3b3764facf00064e9e3d99dd62853e13584b238da477ff7d685c8802da0a4",
+        "dad75633ce296b7a09a9111969717644048d7e0760899e31770f632d1ac2d1f8",
+        "67f376416ac67fd0492bddad1c5d54bc4e8646e8ff5e1d9ed667498fcdf13c40",
+        "a44d702e4e561aa67a44b61a188c913aee5be035a50f0be316a576d45c73103a",
+        "710d3943057c217676784e60c5c34d1e49a24c6767bbb8560fb1c0ff4ece5c96"
+      ],
+      "outputs": [
+        "c421d92fa92f4cf1583270258999dfa3381ad249b4acdd03523c4ad5b15ffe98"
+      ]
+    },
+    {
+      "op": "embed-digital-source-type",
+      "params": {
+        "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia"
+      },
+      "engine": {
+        "name": "assetforge-xmp",
+        "version": "1"
+      },
+      "inputs": [
+        "c421d92fa92f4cf1583270258999dfa3381ad249b4acdd03523c4ad5b15ffe98"
+      ],
+      "outputs": [
+        "c421d92fa92f4cf1583270258999dfa3381ad249b4acdd03523c4ad5b15ffe98"
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "name": "f001-strip",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "path": "/tmp/fx-cg-apply/strips/work/strips/idle-3/f001-strip.png",
+      "sha256": "cb2dec6e62ab2901fc72547af3bfc08af678a23d5af7bcca55b9e95cb5b8ce7e",
+      "mediaType": "image/png",
+      "width": 1152,
+      "height": 192,
+      "pixels": "c421d92fa92f4cf1583270258999dfa3381ad249b4acdd03523c4ad5b15ffe98",
+      "encodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      },
+      "meta": {
+        "cell": {
+          "width": 192,
+          "height": 192
+        },
+        "columns": 6,
+        "rows": 1,
+        "placed": [
+          {
+            "name": "f001",
+            "box": {
+              "x": 0,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          },
+          {
+            "name": "f002",
+            "box": {
+              "x": 192,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          },
+          {
+            "name": "f003",
+            "box": {
+              "x": 384,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          },
+          {
+            "name": "f004",
+            "box": {
+              "x": 576,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          },
+          {
+            "name": "f005",
+            "box": {
+              "x": 768,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          },
+          {
+            "name": "f006",
+            "box": {
+              "x": 960,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
