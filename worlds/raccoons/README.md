@@ -3,9 +3,9 @@
 The Wave 1 reference world: a data-only pack. It holds no code and no engine behaviour. Its
 versioned presentation metadata, `presentation.json` (`presentationVersion` 1, issue 813), binds the stable actor
 IDs and the scene effects to reviewed asset manifests under `assets/manifests/`
-([asset pipeline](../../packages/assets/docs/pipeline.md)); it sits outside the pack source, so no pack or
+([asset pipeline](https://github.com/clockgrove/clockgrove/blob/main/packages/assets/docs/pipeline.md)); it sits outside the pack source, so no pack or
 state hash depends on it. Every value below is a resource the shared conformance suite
-([conformance](../../packages/simulator/docs/conformance.md)) builds, runs and checks on Node and on Workers.
+([conformance](https://github.com/clockgrove/clockgrove/blob/main/packages/simulator/docs/conformance.md)) builds, runs and checks on Node and on Workers.
 
 ## Contents
 
@@ -32,7 +32,7 @@ state hash depends on it. Every value below is a resource the shared conformance
   death. Its utility record declares ambiguity (`score-margin` with `maxMargin` 0, so exact score ties are
   ambiguous, and the novelty condition `unperceived-target`): such a decision still takes its routine choice and
   records one planning request beside its trace, never executed
-  ([utility decisions](../../packages/kernel/docs/utility-decisions.md)).
+  ([utility decisions](https://github.com/clockgrove/clockgrove/blob/main/packages/kernel/docs/utility-decisions.md)).
 - **Scripted cognition** (`grove.learning`): Stevie's repeated snack-house food access and resulting belief, the
   kit's belief attributed to Gracie, and two kit beliefs attributed to Stevie, one effective before his death and
   one after.

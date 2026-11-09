@@ -18,6 +18,7 @@ What's here:
 - `worlds/raccoons`: the world pack (actors, archetypes, rules, scenarios, goldens, long runs, the placeholder-art generator);
 - `assets/`: the world's art, manifests, review sheet, golden scene and licence report;
 - `docs/design/`: the UI description and the reference images (the mockup and Jimothy's sheet);
+- `docs/adr/`: the draft decision record on how the world draws its characters (3D, 2D or 3D rendered to sprites);
 - `references/stevie/`: Stevie's approved turnaround and the 3D spike's models;
 - `spikes/stevie-3d/`: the 3D Stevie spike code from Clockgrove's renderer bake-off.
 

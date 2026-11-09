@@ -1,10 +1,10 @@
 # Raccoon World UI composition
 
-Authority: the [visual and interaction contract](../waves/clockgrove-wave-4-visual-projection-web-client-implementation-plan.md#4-visual-and-interaction-contract) (wave plan section 4). This note records how `apps/web` composes it; if they differ, the wave plan wins. Styles are in `apps/web/src/raccoon-world.css`, markup in `apps/web/src/yard.tsx`.
+Authority: the [visual and interaction contract](https://github.com/clockgrove/clockgrove/blob/main/docs/waves/clockgrove-wave-4-visual-projection-web-client-implementation-plan.md#4-visual-and-interaction-contract) (wave plan section 4). This note records how `apps/web` composes it; if they differ, the wave plan wins. Styles are in `apps/web/src/raccoon-world.css`, markup in `apps/web/src/yard.tsx`.
 
 ## Reference
 
-The owner-supplied mockup, [reference/raccoon-world-reference.png](reference/raccoon-world-reference.png) (1672×941), is the visual target for composition and art style. It is a reference only: wave plan [section 4.5](../waves/clockgrove-wave-4-visual-projection-web-client-implementation-plan.md#45-never-fake-the-world) forbids using it, or any static image, as a runtime background with hotspots.
+The owner-supplied mockup, [reference/raccoon-world-reference.png](reference/raccoon-world-reference.png) (1672×941), is the visual target for composition and art style. It is a reference only: wave plan [section 4.5](https://github.com/clockgrove/clockgrove/blob/main/docs/waves/clockgrove-wave-4-visual-projection-web-client-implementation-plan.md#45-never-fake-the-world) forbids using it, or any static image, as a runtime background with hotspots.
 
 What it shows, for agents that cannot view images:
 
@@ -82,4 +82,4 @@ Run state is the words Running or Paused plus a glyph; rain is the words Dry or 
 
 ## Out of scope
 
-Card actions, and art and assets. The navigation icons and the capture, safety and menu utilities are deferred to Wave 8: see the [RW-0807 amendment](../waves/clockgrove-wave-8-living-neighborhood-demo-implementation-plan.md#rw-0807--complete-visualaudio-pack-and-reference-ui-polish).
+Card actions, and art and assets. The navigation icons and the capture, safety and menu utilities are deferred to Wave 8: see the [RW-0807 amendment](https://github.com/clockgrove/clockgrove/blob/main/docs/waves/clockgrove-wave-8-living-neighborhood-demo-implementation-plan.md#rw-0807--complete-visualaudio-pack-and-reference-ui-polish).
