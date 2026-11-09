@@ -31,8 +31,8 @@ Shots, at the high tier in both lighting states:
 Close shots are 360×360 crops around Stevie. The cohesion shot is the full 960×540 canvas.
 
 ```sh
-node spikes/renderer-bakeoff/scripts/build.mjs
-node spikes/renderer-bakeoff/scripts/stevie.mjs --browser <chromium-family exe> [--browser-arg=<flag>]... \
+node scripts/build.mjs
+node scripts/stevie.mjs --browser <chromium-family exe> [--browser-arg=<flag>]... \
   --out <dir outside git> --label "<host description>"
 ```
 
@@ -48,6 +48,15 @@ node spikes/renderer-bakeoff/scripts/stevie.mjs --browser <chromium-family exe> 
 A software renderer's times are marked `performance: false`. No media is committed.
 
 ## Generating the models
+
+Run these from `spikes/stevie-3d/` after `pnpm install` there (the package pins the tools). `generate.mjs`, `ship.mjs`
+and `png.mjs` need only Node and the provider keys; they were restored from Clockgrove commit `70232d9`, where the
+spike lived in `spikes/renderer-bakeoff/`.
+
+Not restored here: the page and its build (`build.mjs`, `measure.mjs` and the `src/stevie/` imports of the bake-off's
+scene and adapter). They draw Stevie through Clockgrove's renderer and wait for its world-content seam
+([clockgrove#112](https://github.com/clockgrove/clockgrove/issues/112)). `stevie.mjs` and the commands that serve the
+page do not run until that lands.
 
 `scripts/generate.mjs` runs the owner's chosen route, and every output lands in the git-ignored `media/`. Keys come
 from the environment and are never printed. Each call reserves its cost against the $10 cap before it runs, and is
