@@ -3,7 +3,8 @@
 # CI, Factory and local runs all use this script, so they run the same check.
 #
 # Usage: bash scripts/clockgrove.sh fetch   clone the pinned commit and install its locked dependencies
-#        bash scripts/clockgrove.sh check   fetch if needed, then run Clockgrove's world-pack check
+#        bash scripts/clockgrove.sh slice   fetch if needed, then run the 3D look proof's browser journey
+#        bash scripts/clockgrove.sh check   fetch if needed, then run Clockgrove's world-pack check and the slice journey
 #
 # CLOCKGROVE_DIR names the checkout (default: .clockgrove in this repository, which Git ignores; inside
 # the repository so that sandboxes which may write only the clone, such as Factory's local mode, can
@@ -66,8 +67,7 @@ fetch() {
   printf '%s\n' "$pin" > "$marker"
 }
 
-check() {
-  ready || fetch
+require_node() {
   # The Node.js Clockgrove pins (package.json engines). CI's setup-node and FACTORY_NODE_VERSION must match it.
   local want have
   want="$(node -p 'require(process.argv[1]).engines.node' "$dir/package.json")"
@@ -76,13 +76,30 @@ check() {
     echo "clockgrove: Node $have, but Clockgrove $pin pins $want; use that version (CI's setup-node and FACTORY_NODE_VERSION too)" >&2
     exit 2
   fi
+}
+
+pack_check() {
+  ready || fetch
+  require_node
   cd "$root"
   # The optional Cloudflare geolocation fetch is off: the check needs no network once installed.
   CLOUDFLARE_CF_FETCH_ENABLED=false node "$dir/scripts/check-world-pack.mjs" --pack worlds/raccoons --assets assets/manifests
 }
 
+slice() {
+  ready || fetch
+  require_node
+  CLOCKGROVE_DIR="$dir" node "$root/spikes/look-3d/scripts/look.mjs" journey
+}
+
+check() {
+  pack_check
+  slice
+}
+
 case "${1:-}" in
   fetch) fetch ;;
   check) check ;;
-  *) echo "Usage: bash scripts/clockgrove.sh fetch|check" >&2; exit 2 ;;
+  slice) slice ;;
+  *) echo "Usage: bash scripts/clockgrove.sh fetch|check|slice" >&2; exit 2 ;;
 esac

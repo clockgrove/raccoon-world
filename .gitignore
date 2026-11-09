@@ -8,3 +8,4 @@ coverage/
 /.clockgrove/
 /.assetforge-src/
 /.assetforge/
+.vite/
