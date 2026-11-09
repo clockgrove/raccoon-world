@@ -27,6 +27,8 @@ const SWIFTSHADER_FLAGS = [
   "--use-vulkan=swiftshader",
 ];
 const DUSK = 63_000_000;
+/** Every zoom shot's label (owner, 2026-11-09): the pinned renderer cannot deep-zoom or draw above DPR 1. */
+const ZOOM_METHOD = "magnified content, interim until clockgrove/clockgrove#184 (camera at zoom 1, canvas 640x400 at pixel ratio 1)";
 const NIGHT = 79_200_000;
 
 const { chromium } = await import(pathToFileURL(path.join(pinned, "node_modules/playwright/index.mjs")).href);
@@ -291,7 +293,7 @@ async function captureReport(args) {
             const buffer = await page.locator("canvas").screenshot();
             const file = `zoom-${state.name}-${view}-${dpr}x-${backend}.png`;
             await writeFile(path.join(outDir, file), buffer);
-            shots.push({ file, sha256: sha256(buffer), bytes: buffer.length, ...pngSize(buffer), state: state.name, view, ...(await info()) });
+            shots.push({ file, sha256: sha256(buffer), bytes: buffer.length, ...pngSize(buffer), state: state.name, view, zoomMethod: ZOOM_METHOD, ...(await info()) });
           }
         }
         if (dpr !== 1) {
@@ -320,7 +322,7 @@ async function captureReport(args) {
             const buffer = await strip(page, frames, center);
             const file = `motion-${heading}-${clip}-${backend}.png`;
             await writeFile(path.join(outDir, file), buffer);
-            motion.push({ file, sha256: sha256(buffer), bytes: buffer.length, ...pngSize(buffer), state: "dusk-rain", view: "close", heading, clip, seconds, ...(await info()) });
+            motion.push({ file, sha256: sha256(buffer), bytes: buffer.length, ...pngSize(buffer), state: "dusk-rain", view: "close", zoomMethod: ZOOM_METHOD, heading, clip, seconds, ...(await info()) });
           }
         }
 

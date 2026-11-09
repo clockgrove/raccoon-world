@@ -2,7 +2,7 @@
 
 **The question:** can Raccoon World look like the owner's mockup in real-time 3D? This report shows Stevie and a small corner of the yard as real-time 3D in Clockgrove's product renderer, next to the mockup, and records what matches, what doesn't, and what closing the gap costs.
 
-**Status:** the slice, the renderer path, the CI check and the capture command are done. The shots and the device measurements are **pending**. The sandbox that built this proof could not install a browser, so no frame was rendered there. A maintainer runs one command to fill in every shot and number below (see [Maintainer steps](#maintainer-steps)). Until then, CI is the only renderer evidence: it draws the slice on both backends under SwiftShader (see [CI](#ci)). The decision record says which judgements wait for the shots.
+**Status:** the slice, the renderer path, the CI check and the capture command are done. The shots and the device measurements are **pending**. The owner granted the build sandbox Playwright's browser download (2026-11-09), but the download still failed: `cdn.playwright.dev` redirects to `storage.googleapis.com` (Chrome for Testing) and `playwright.download.prss.microsoft.com`, and the sandbox refuses both. So no frame was rendered there. A maintainer runs one command to fill in every shot and number below (see [Maintainer steps](#maintainer-steps)). Until then, CI is the only renderer evidence: it draws the slice on both backends under SwiftShader (see [CI](#ci)). The decision record says which judgements wait for the shots.
 
 The look target is [the mockup](reference/raccoon-world-reference.png). Its camera and devices come from [visual decisions](visual-decisions.md): a fixed isometric camera with deep zoom, on desktop plus recent phones.
 
@@ -39,29 +39,31 @@ The look target is [the mockup](reference/raccoon-world-reference.png). Its came
 
 ## The shots
 
+**Every shot below is an interim zoom:** magnified content, not the renderer's own camera, until [clockgrove/clockgrove#184](https://github.com/clockgrove/clockgrove/issues/184) lands (owner's answer, 2026-11-09). Each one is labelled so here, and each record in `results.json` carries `zoomMethod`. Re-capturing them once #184 lands is a follow-up.
+
 All shots use the high tier, reduced motion (held frames), and the camera at the product's zoom 1. Each shot appears once per backend (WebGPU and WebGL2). The tables show the WebGPU set; the WebGL2 files have the same names ending `-webgl2.png`. File names, sizes, hashes, backend, renderer string and tier for every image are in `references/look-3d/results.json`.
 
 ### Dusk in rain and night, next to the mockup
 
-| Dusk in rain (17:30) | Night in rain (22:00) |
+| Dusk in rain (17:30, interim zoom, day state) | Night in rain (22:00, interim zoom) |
 | --- | --- |
 | ![dusk, yard view](../../references/look-3d/zoom-dusk-rain-yard-1x-webgpu.png) | ![night, yard view](../../references/look-3d/zoom-night-yard-1x-webgpu.png) |
 
 ### The zoom test
 
-| View | 1× DPR | 2× DPR |
+| View | 1× DPR | 2× DPR (interim: the 1× canvas upscaled) |
 | --- | --- | --- |
-| Whole slice (28 px/m) | ![](../../references/look-3d/zoom-dusk-rain-whole-1x-webgpu.png) | ![](../../references/look-3d/zoom-dusk-rain-whole-2x-webgpu.png) |
-| Default yard view (90 px/m, Stevie ≈ 12% of the frame height, as in the mockup) | ![](../../references/look-3d/zoom-dusk-rain-yard-1x-webgpu.png) | ![](../../references/look-3d/zoom-dusk-rain-yard-2x-webgpu.png) |
-| Close-up (250 px/m, Stevie ≈ a third of the frame height) | ![](../../references/look-3d/zoom-dusk-rain-close-1x-webgpu.png) | ![](../../references/look-3d/zoom-dusk-rain-close-2x-webgpu.png) |
+| Whole slice (28 px/m; interim zoom ×2.2) | ![](../../references/look-3d/zoom-dusk-rain-whole-1x-webgpu.png) | ![](../../references/look-3d/zoom-dusk-rain-whole-2x-webgpu.png) |
+| Default yard view (90 px/m, Stevie ≈ 12% of the frame height, as in the mockup; interim zoom ×7.2) | ![](../../references/look-3d/zoom-dusk-rain-yard-1x-webgpu.png) | ![](../../references/look-3d/zoom-dusk-rain-yard-2x-webgpu.png) |
+| Close-up (250 px/m, Stevie ≈ a third of the frame height; interim zoom ×20) | ![](../../references/look-3d/zoom-dusk-rain-close-1x-webgpu.png) | ![](../../references/look-3d/zoom-dusk-rain-close-2x-webgpu.png) |
 
 The night set is `zoom-night-<view>-<dpr>x-<backend>.png`.
 
-**How the zooms are made:** the pinned renderer's camera is fixed at 12.5 px/m, with zoom clamped to 0.75–2 on a 640×400 canvas, so Stevie (0.53 m) can be at most about 13 px tall. The proof therefore magnifies the whole slice uniformly about each view's focus, keeping the camera at zoom 1. This stands in for the deep zoom the pinned renderer lacks (see [Gaps](#gaps)). **2× DPR** is the browser at device scale factor 2. The pinned renderer always draws at pixel ratio 1, so the 2× shots show the 640×400 canvas upscaled, not a sharper render.
+**How the zooms are made:** the pinned renderer's camera is fixed at 12.5 px/m, with zoom clamped to 0.75–2 on a 640×400 canvas, so Stevie (0.53 m) can be at most about 13 px tall. The proof therefore magnifies the whole slice uniformly about each view's focus, keeping the camera at zoom 1. This is the interim measure the owner accepted (2026-11-09) for the deep zoom the pinned renderer lacks, filed as [clockgrove/clockgrove#184](https://github.com/clockgrove/clockgrove/issues/184) (see [Gaps](#gaps)). **2× DPR** is the browser at device scale factor 2. The pinned renderer always draws at pixel ratio 1, so the 2× shots show the 640×400 canvas upscaled, not a sharper render.
 
 ### Stevie in motion, from the five headings
 
-Close-up, dusk in rain. Each strip is 240×240 crops: the idle at 0, 0.6, 1.2 and 1.8 s, and the walk at every 0.1 s of its 0.8 s cycle.
+Close-up (interim zoom ×20, magnified content), dusk in rain. Each strip is 240×240 crops: the idle at 0, 0.6, 1.2 and 1.8 s, and the walk at every 0.1 s of its 0.8 s cycle.
 
 | Heading | Idle | Walk |
 | --- | --- | --- |
@@ -105,18 +107,19 @@ These are design facts of the slice. Whether they read as the mockup is for the 
 
 ### Gaps
 
-Each is a Clockgrove change (clockgrove/clockgrove), not one for this repository:
+Each is a Clockgrove change, not one for this repository. The owner filed the first four as [clockgrove/clockgrove#184](https://github.com/clockgrove/clockgrove/issues/184) (full-resolution viewport at device pixel ratio, deep zoom, continuous time of day including dusk, content lights and shadows). Re-capturing this report once #184 lands is a follow-up.
 
-1. **Deep zoom:** a zoom range reaching a raccoon close-up (about ×20 of today's 12.5 px/m), instead of the clamp at 2.
-2. **Device pixel ratio:** the canvas follows `devicePixelRatio` (capped per tier), instead of a fixed 640×400 at pixel ratio 1.
-3. **Lights from world content:** point or spot lights, or a projected light from a lit effect, so the porch lamp lights Stevie and the ground.
-4. **Shadows for content:** soft shadows from the sky light, at least at the high tier.
-5. **A dusk lighting state,** between day and night.
-6. **Wet surfaces and reflections for content:** a rain-driven wetness input, and puddle reflections that include content.
+| Gap | What this proof can show without it | What it can't show |
+| --- | --- | --- |
+| 1. **Deep zoom** (#184): a zoom range reaching a raccoon close-up (about ×20 of today's 12.5 px/m), instead of the clamp at 2 | The slice's forms, palette, outline and Stevie's silhouette at the mockup's scale and at a close-up, by magnifying the content (interim, labelled on every shot) | How the renderer's own layers (atlas ground, rain streaks, fog, bloom) hold up at those zooms; they stay at zoom 1 while the content is magnified, so their scale relative to Stevie is wrong in the yard and close-up views |
+| 2. **Device pixel ratio** (#184): the canvas follows `devicePixelRatio` (capped per tier), instead of a fixed 640×400 at pixel ratio 1 | Composition and colour at 2× | Sharpness at 2×: the 2× shots are the 1× canvas upscaled, so edge quality, outline width and texture detail on a high-DPR screen are unproven, and so is the 2× frame cost |
+| 3. **Dusk lighting state** (#184, continuous time of day) | The night grade, and the lamps lit at 17:30 | The mockup's golden-and-blue dusk: "dusk in rain" renders in the day state |
+| 4. **Lights and shadows from world content** (#184) | The lantern and window glowing and blooming; a contact ellipse under Stevie; a warm decal for the light pool | Lamp light falling on Stevie and the ground, rim light, and soft cast shadows: the mockup's strongest mood cues |
+| 5. **Wet surfaces and reflections for content** (not in #184) | Puddles as dark low-roughness discs, and lower roughness while it rains | Reflections in the puddles of Stevie, the lamps and the house |
 
 ### What it would take to close the gap
 
-- **In the renderer:** gaps 1 to 4 are needed for the mockup's look; 5 and 6 are polish.
+- **In the renderer:** gaps 1, 2 and 4 are needed for the mockup's look, and 3 for its time of day (all in #184); 5 is polish.
 - **In the art:**
   - A painterly material layer within the renderer's lighting: texture-painted albedo with hand-drawn wood grain, moss and stone, rather than flat colours.
   - Props from generation or hand modelling, at about Stevie's density.
@@ -170,4 +173,5 @@ Its times are never reported as performance.
    - On Android, forward the port with `adb reverse tcp:<port> tcp:<port>` and open the URL in Chrome.
    - In remote DevTools, call `look3d.setView("yard")`, wait 5 s, and record `look3d.metrics()` and `look3d.rendererString()` for each view.
    - Add a row to the table with the phone's name.
-3. **The owner judges** this report against the mockup. The 2D options (#11) stay open until then. clockgrove/clockgrove#158 and #23 stay on hold.
+3. **After clockgrove/clockgrove#184 lands:** bump `CLOCKGROVE_COMMIT`, replace the interim magnified zoom with the renderer's own zoom and DPR, and re-run step 1 (follow-up).
+4. **The owner judges** this report against the mockup. The 2D options (#11) stay open until then. clockgrove/clockgrove#158 and #23 stay on hold.
