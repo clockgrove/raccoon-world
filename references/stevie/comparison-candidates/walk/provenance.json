@@ -1,0 +1,328 @@
+{
+  "generator": "transform",
+  "recipe": {
+    "name": "frames-to-strip"
+  },
+  "style": {
+    "alpha": {
+      "mode": "soft",
+      "threshold": 1
+    },
+    "color": {
+      "rule": "full",
+      "palette": []
+    },
+    "edges": "antialiased"
+  },
+  "sources": [
+    {
+      "name": "f001",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-walk-2/2026-11-09T00-03-02-521Z-f2c960/frames/f001.png",
+      "sha256": "8b1d1de21782c1310bfe4fa197b854fc716cecb062959911b2f6415c373a0e25",
+      "mediaType": "image/png",
+      "pixels": "8e32e093ae4c93caedf0a876def833d09324a1303033d39825c5d5256c445d49",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "name": "f002",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-walk-2/2026-11-09T00-03-02-521Z-f2c960/frames/f002.png",
+      "sha256": "4f173bf7d6a6863f18ed77c807a45b077ecdc5b12e7c472a4a6c3137c60430cb",
+      "mediaType": "image/png",
+      "pixels": "abe3bdb14cf58579eec5eceecd50e6ae8ad49492e89a86c3d07f2d9f134d67a7",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "name": "f003",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-walk-2/2026-11-09T00-03-02-521Z-f2c960/frames/f003.png",
+      "sha256": "7a567e829c68d2ae474fd64ef22a50d1f98a8f945e52de81717110d4324145c1",
+      "mediaType": "image/png",
+      "pixels": "dbbf441585de00c2db17f43bfebb50dee2c4e5c46e440efa625e2e3c3b07f4de",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "name": "f004",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-walk-2/2026-11-09T00-03-02-521Z-f2c960/frames/f004.png",
+      "sha256": "38f9fb3809e812b16e93e23e17f193fecc641579815d468b1f9bd0fcebec5a01",
+      "mediaType": "image/png",
+      "pixels": "31540daf6ecfad8db3c33517128ab81d8b9b76dba1b1ba5d25153fdc0049cc95",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "name": "f005",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-walk-2/2026-11-09T00-03-02-521Z-f2c960/frames/f005.png",
+      "sha256": "c1c7fef4c279526780ff9a43f27d46c56d8533c711b5dec1d453e0cc8deea938",
+      "mediaType": "image/png",
+      "pixels": "fc27583abff54059ed0f37a690621a6da2037a277ccd1bddb3a1426868db0582",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "name": "f006",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-walk-2/2026-11-09T00-03-02-521Z-f2c960/frames/f006.png",
+      "sha256": "11272e26ecc70ba9b856b5eedaadc4d1adb2c65b254a21b32c4ff64d08fabdb8",
+      "mediaType": "image/png",
+      "pixels": "c8181a95d6bee19ebbc26d65c189300c6e0e8a3f0f992c34753f964496ac4ed0",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "name": "f007",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-walk-2/2026-11-09T00-03-02-521Z-f2c960/frames/f007.png",
+      "sha256": "4d1bb020c89e4012e91af479285eeda2f6dde8667f5e5256821f1e298a5e25ae",
+      "mediaType": "image/png",
+      "pixels": "4e6160d923c5de6cde0fb75ed1a8edd68735093b068cae5c798480517259e4b7",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    },
+    {
+      "name": "f008",
+      "path": "/tmp/fx-cg-apply/strips/work/imports-walk-2/2026-11-09T00-03-02-521Z-f2c960/frames/f008.png",
+      "sha256": "dc0555badee955c344a25a87ad4c6a11931782c52c4513df05dfe98956d4fafc",
+      "mediaType": "image/png",
+      "pixels": "028d1d0a166abf1fb8f49fbc06f7fc6382ee16d3edae3cdcb77b3c4f02baebaa",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "decodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "op": "register",
+      "params": {
+        "frame": {
+          "width": 192,
+          "height": 192
+        },
+        "anchor": {
+          "x": 96,
+          "y": 191
+        },
+        "measureThreshold": 128,
+        "margin": 1,
+        "clamp": [
+          0.8,
+          1.25
+        ],
+        "filter": "antialiased"
+      },
+      "engine": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      },
+      "inputs": [
+        "8e32e093ae4c93caedf0a876def833d09324a1303033d39825c5d5256c445d49",
+        "abe3bdb14cf58579eec5eceecd50e6ae8ad49492e89a86c3d07f2d9f134d67a7",
+        "dbbf441585de00c2db17f43bfebb50dee2c4e5c46e440efa625e2e3c3b07f4de",
+        "31540daf6ecfad8db3c33517128ab81d8b9b76dba1b1ba5d25153fdc0049cc95",
+        "fc27583abff54059ed0f37a690621a6da2037a277ccd1bddb3a1426868db0582",
+        "c8181a95d6bee19ebbc26d65c189300c6e0e8a3f0f992c34753f964496ac4ed0",
+        "4e6160d923c5de6cde0fb75ed1a8edd68735093b068cae5c798480517259e4b7",
+        "028d1d0a166abf1fb8f49fbc06f7fc6382ee16d3edae3cdcb77b3c4f02baebaa"
+      ],
+      "outputs": [
+        "7f0f36a0277d5b4c4d859a38816bd6dcd6cd64a106726c6e805afb5717ce3e51",
+        "125bf7f607e035828a0900f1e991bd21f365a6d64af08edef29f750a50c64fa4",
+        "3e28be8bb804e3f69dbd13351bb0f2962a845ad9dae34214478330ba7f115a36",
+        "fd854c022170be28db4605549e03dfdb83fb7d64a58a4516ae288c51295d752e",
+        "65ac6f366c4144174c865bdf39af5a15fee30dcad40c3fe26bb6a7976d4bea87",
+        "fa3f89a88da764f7dbd08b21dd4c2ad6260f5597570dc611b2a11bcf646dbe71",
+        "8b767cbf5bde5815bb9c1aea5b552f6a2231e21efbe0289a969cf34462608cea",
+        "44f4528ee32b8c24b8da34639084c71e3c082d93dd262c18b06d79d58c22cca9"
+      ],
+      "report": {
+        "scale": 0.5032031058445584,
+        "jitterPx": 0.0019390519067172818
+      }
+    },
+    {
+      "op": "apply-style",
+      "params": {},
+      "engine": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      },
+      "inputs": [
+        "7f0f36a0277d5b4c4d859a38816bd6dcd6cd64a106726c6e805afb5717ce3e51",
+        "125bf7f607e035828a0900f1e991bd21f365a6d64af08edef29f750a50c64fa4",
+        "3e28be8bb804e3f69dbd13351bb0f2962a845ad9dae34214478330ba7f115a36",
+        "fd854c022170be28db4605549e03dfdb83fb7d64a58a4516ae288c51295d752e",
+        "65ac6f366c4144174c865bdf39af5a15fee30dcad40c3fe26bb6a7976d4bea87",
+        "fa3f89a88da764f7dbd08b21dd4c2ad6260f5597570dc611b2a11bcf646dbe71",
+        "8b767cbf5bde5815bb9c1aea5b552f6a2231e21efbe0289a969cf34462608cea",
+        "44f4528ee32b8c24b8da34639084c71e3c082d93dd262c18b06d79d58c22cca9"
+      ],
+      "outputs": [
+        "a8949e26cce464ca79a52b8de282940a538f69d4e939064d983587fd3ba4c98a",
+        "9d4382983bb99562672fb0ad3c472b8c00031ff7f932449f8c8c1f27327f3b21",
+        "00360b0324066b22d2bd7ff640a4531bf7a914fb840b40ab6a9dda2a1fc49fbe",
+        "b2bf5af7ca9ff7457b09cbae9c935242fb6b23e53d76c10cb9304e3898eb4e2a",
+        "b61d770775b6a355d8b4caf8f0297b29bfb0be208661095ff70e2343057e9bea",
+        "ef2c74d0b2267fe43b8a49d88f05c080718ba98b1e968b4a8db8da36938bbb28",
+        "6293c91c112b45523def19bf50412bc69096cca9f52aa1596a8aac1a7ff9984e",
+        "973732527421510df7c1fe7d2046fa64931c089bff3d3e7786356fa6a33b5bcc"
+      ]
+    },
+    {
+      "op": "join",
+      "params": {},
+      "engine": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      },
+      "inputs": [
+        "a8949e26cce464ca79a52b8de282940a538f69d4e939064d983587fd3ba4c98a",
+        "9d4382983bb99562672fb0ad3c472b8c00031ff7f932449f8c8c1f27327f3b21",
+        "00360b0324066b22d2bd7ff640a4531bf7a914fb840b40ab6a9dda2a1fc49fbe",
+        "b2bf5af7ca9ff7457b09cbae9c935242fb6b23e53d76c10cb9304e3898eb4e2a",
+        "b61d770775b6a355d8b4caf8f0297b29bfb0be208661095ff70e2343057e9bea",
+        "ef2c74d0b2267fe43b8a49d88f05c080718ba98b1e968b4a8db8da36938bbb28",
+        "6293c91c112b45523def19bf50412bc69096cca9f52aa1596a8aac1a7ff9984e",
+        "973732527421510df7c1fe7d2046fa64931c089bff3d3e7786356fa6a33b5bcc"
+      ],
+      "outputs": [
+        "d5a0443f21016baddf59bc9095410cb47eaf2fe93a995603bb3ac04ff935d21a"
+      ]
+    },
+    {
+      "op": "embed-digital-source-type",
+      "params": {
+        "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia"
+      },
+      "engine": {
+        "name": "assetforge-xmp",
+        "version": "1"
+      },
+      "inputs": [
+        "d5a0443f21016baddf59bc9095410cb47eaf2fe93a995603bb3ac04ff935d21a"
+      ],
+      "outputs": [
+        "d5a0443f21016baddf59bc9095410cb47eaf2fe93a995603bb3ac04ff935d21a"
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "name": "f001-strip",
+      "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+      "path": "/tmp/fx-cg-apply/strips/work/strips/walk-2/f001-strip.png",
+      "sha256": "a2dbb71ccf4a2e2d27f95a908e27419c6b1ee7bcb8c9cf51b00ef6fa50cbaeac",
+      "mediaType": "image/png",
+      "width": 1536,
+      "height": 192,
+      "pixels": "d5a0443f21016baddf59bc9095410cb47eaf2fe93a995603bb3ac04ff935d21a",
+      "encodedBy": {
+        "name": "assetforge-raster",
+        "version": "1.1.0"
+      },
+      "meta": {
+        "cell": {
+          "width": 192,
+          "height": 192
+        },
+        "columns": 8,
+        "rows": 1,
+        "placed": [
+          {
+            "name": "f001",
+            "box": {
+              "x": 0,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          },
+          {
+            "name": "f002",
+            "box": {
+              "x": 192,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          },
+          {
+            "name": "f003",
+            "box": {
+              "x": 384,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          },
+          {
+            "name": "f004",
+            "box": {
+              "x": 576,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          },
+          {
+            "name": "f005",
+            "box": {
+              "x": 768,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          },
+          {
+            "name": "f006",
+            "box": {
+              "x": 960,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          },
+          {
+            "name": "f007",
+            "box": {
+              "x": 1152,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          },
+          {
+            "name": "f008",
+            "box": {
+              "x": 1344,
+              "y": 0,
+              "width": 192,
+              "height": 192
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

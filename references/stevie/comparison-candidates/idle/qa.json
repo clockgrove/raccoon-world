@@ -1,0 +1,295 @@
+{
+  "family": "idle",
+  "template": "idle",
+  "frameCount": 6,
+  "passed": false,
+  "reasons": [
+    {
+      "check": "template",
+      "passed": true,
+      "reason": "6 frames is within the idle template's 2..12",
+      "source": "deterministic"
+    },
+    {
+      "check": "beats",
+      "passed": true,
+      "reason": "beats fall on rest → frame 1, breathe-in → frame 4",
+      "source": "deterministic",
+      "frames": [
+        1,
+        4
+      ]
+    },
+    {
+      "check": "ground-contact",
+      "passed": true,
+      "reason": "frames 1, 2, 3, 4, 5, 6 rest on the ground line 191",
+      "source": "deterministic"
+    },
+    {
+      "check": "anchor-drift",
+      "passed": true,
+      "reason": "every frame's centre of mass is within 1 px of the anchor",
+      "source": "deterministic"
+    },
+    {
+      "check": "footprint-drift",
+      "passed": true,
+      "reason": "footprints stay within 2 px of frame 1's",
+      "source": "deterministic"
+    },
+    {
+      "check": "silhouette",
+      "passed": true,
+      "reason": "silhouette change stays within 0..0.15 between every pair of frames",
+      "source": "deterministic"
+    },
+    {
+      "check": "loop-seam",
+      "passed": true,
+      "reason": "frame 6 → frame 1 distance 0.07 is within 1.5 × the largest step, floor 0.02 (0.11)",
+      "source": "deterministic",
+      "frames": [
+        6,
+        1
+      ]
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        1,
+        2
+      ],
+      "reason": "frame 1 → frame 2: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        2,
+        3
+      ],
+      "reason": "frame 2 → frame 3: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": false,
+      "source": "vision",
+      "frames": [
+        3,
+        4
+      ],
+      "reason": "frame 3 → frame 4: flicker (confidence 0.9 ≥ cutoff 0.7): While the overall design is consistent, the specific shapes and details of the black facial markings—particularly the patches around the eyes and the spots on the snout—change noticeably between frames 3 and 4, indicating a lack of identity stability in the markings."
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        4,
+        5
+      ],
+      "reason": "frame 4 → frame 5: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        5,
+        6
+      ],
+      "reason": "frame 5 → frame 6: same (1)"
+    },
+    {
+      "check": "identity-flicker",
+      "passed": true,
+      "source": "vision",
+      "frames": [
+        6,
+        1
+      ],
+      "reason": "frame 6 → frame 1: same (1)"
+    }
+  ],
+  "measures": [
+    {
+      "frame": 1,
+      "baseline": 191,
+      "centerX": 96.50031636813075,
+      "centerY": 120.75450478702798,
+      "area": 12738,
+      "footprint": [
+        68,
+        81
+      ]
+    },
+    {
+      "frame": 2,
+      "baseline": 191,
+      "centerX": 96.49982651618922,
+      "centerY": 122.02872841983083,
+      "area": 12545,
+      "footprint": [
+        68,
+        80
+      ]
+    },
+    {
+      "frame": 3,
+      "baseline": 191,
+      "centerX": 96.50019693964383,
+      "centerY": 121.29953292787899,
+      "area": 12765,
+      "footprint": [
+        67,
+        80
+      ]
+    },
+    {
+      "frame": 4,
+      "baseline": 191,
+      "centerX": 96.50028820076659,
+      "centerY": 120.51975415647678,
+      "area": 12769,
+      "footprint": [
+        69,
+        82
+      ]
+    },
+    {
+      "frame": 5,
+      "baseline": 191,
+      "centerX": 96.5004549904049,
+      "centerY": 121.39754502066991,
+      "area": 12712,
+      "footprint": [
+        68,
+        81
+      ]
+    },
+    {
+      "frame": 6,
+      "baseline": 191,
+      "centerX": 96.50015380673172,
+      "centerY": 121.2101528760348,
+      "area": 12961,
+      "footprint": [
+        67,
+        80
+      ]
+    }
+  ],
+  "silhouetteChange": [
+    0.07572874647994521,
+    0.04480494399381996,
+    0.07406848695127466,
+    0.05562762304463942,
+    0.0669377305925759,
+    0.07829208105884988
+  ],
+  "thresholds": {
+    "groundTolerancePx": 1,
+    "anchorDriftPx": 1,
+    "footprintDriftPx": 2,
+    "loopSeamRatio": 1.5,
+    "loopSeamFloor": 0.02,
+    "flickerCutoff": 0.7
+  },
+  "identityFlicker": "checked",
+  "decisions": [
+    {
+      "pair": [
+        1,
+        2
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YSXVMV4E1SH0VBRTCXYYRG",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, markings (especially the intricate mask and tail stripes), colors, and proportions are identical between the two frames. Only the pose changes slightly as part of an animation.",
+      "costUsd": 0.0019265,
+      "at": "2026-11-09T00:04:34.032Z"
+    },
+    {
+      "pair": [
+        2,
+        3
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YSXYGRPNFRN271ZHYTMS17",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's markings, including the specific pattern of the eye mask and tail stripes, as well as the colors and overall design, are identical between both frames. Only the pose shows a minor shift consistent with an idle animation.",
+      "costUsd": 0.0027155,
+      "at": "2026-11-09T00:04:37.873Z"
+    },
+    {
+      "pair": [
+        3,
+        4
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YSY28KNATY27TKDH2Y5QKD",
+      "label": "flicker",
+      "confidence": 0.9,
+      "cutoff": 0.7,
+      "flagged": true,
+      "reason": "While the overall design is consistent, the specific shapes and details of the black facial markings—particularly the patches around the eyes and the spots on the snout—change noticeably between frames 3 and 4, indicating a lack of identity stability in the markings.",
+      "costUsd": 0.0056525,
+      "at": "2026-11-09T00:04:50.155Z"
+    },
+    {
+      "pair": [
+        4,
+        5
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YSYE88K8GNG6QB8MX84V0R",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The raccoon's design, including its facial mask markings, fur texture, and the specific pattern of rings on its tail, is perfectly consistent between the two frames. The only difference is a slight shift in pose consistent with an idle animation.",
+      "costUsd": 0.0026435,
+      "at": "2026-11-09T00:04:53.922Z"
+    },
+    {
+      "pair": [
+        5,
+        6
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YSYHXVFA3CRT68JC70760J",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, facial markings, fur texture, and color palette are identical between the two frames. The slight shift in the head and body position is expected for an idle animation and does not change the character's identity.",
+      "costUsd": 0.0023135,
+      "at": "2026-11-09T00:04:57.443Z"
+    },
+    {
+      "pair": [
+        6,
+        1
+      ],
+      "model": "google/gemini-3-flash",
+      "requestId": "gen_01M6YSYNB0SN4REXVGGWHTX11S",
+      "label": "same",
+      "confidence": 1,
+      "cutoff": 0.7,
+      "flagged": false,
+      "reason": "The character's design, including specific facial markings, fur texture, and tail stripe patterns, is perfectly consistent between the two frames.",
+      "costUsd": 0.0021935,
+      "at": "2026-11-09T00:05:00.693Z"
+    }
+  ]
+}
