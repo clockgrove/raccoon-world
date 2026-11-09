@@ -1,0 +1,327 @@
+{
+  "tenantId": "tenant-raccoon-world",
+  "worldId": "world-raccoon-world",
+  "timelineId": "timeline-comparison",
+  "spaceId": "grove.neighborhood",
+  "privacyClass": "public_scene",
+  "compatibility": {
+    "projectionVersion": 2,
+    "assetManifestVersion": 2,
+    "clientVersion": 1
+  },
+  "revision": "1",
+  "simulationTime": "64800000",
+  "weather": {
+    "rainIntensity": 9000
+  },
+  "hierarchy": [
+    {
+      "spaceId": "grove.neighborhood",
+      "label": "The yard"
+    }
+  ],
+  "frames": [
+    {
+      "frameId": "frame-yard",
+      "version": 1,
+      "dimensions": 2,
+      "unit": {
+        "name": "millimetre",
+        "fractionalDigits": 0
+      },
+      "axes": {
+        "axes": [
+          {
+            "name": "x",
+            "positiveDirection": "east"
+          },
+          {
+            "name": "y",
+            "positiveDirection": "north"
+          }
+        ]
+      },
+      "origin": [
+        "0",
+        "0"
+      ],
+      "gravity": {
+        "kind": "constant-vector",
+        "vector": [
+          "0",
+          "0"
+        ]
+      }
+    }
+  ],
+  "entities": [
+    {
+      "objectId": "grove.cedar-hollow",
+      "archetypeId": "grove.hollow-kind",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "22000",
+          "20000"
+        ]
+      },
+      "presentation": {
+        "kind": "placeholder",
+        "label": "grove.cedar-hollow"
+      }
+    },
+    {
+      "objectId": "grove.cedar",
+      "archetypeId": "grove.cedar-kind",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "22000",
+          "20000"
+        ]
+      },
+      "presentation": {
+        "kind": "placeholder",
+        "label": "The cedar tree"
+      }
+    },
+    {
+      "objectId": "grove.den-stash",
+      "archetypeId": "grove.food-source-kind",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "8000",
+          "22000"
+        ]
+      },
+      "presentation": {
+        "kind": "placeholder",
+        "label": "grove.den-stash"
+      }
+    },
+    {
+      "objectId": "grove.den",
+      "archetypeId": "grove.den-kind",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "8000",
+          "22000"
+        ]
+      },
+      "presentation": {
+        "kind": "placeholder",
+        "label": "The den"
+      }
+    },
+    {
+      "objectId": "grove.fence-gate",
+      "archetypeId": "grove.gate-kind",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "27000",
+          "15000"
+        ]
+      },
+      "presentation": {
+        "kind": "placeholder",
+        "label": "grove.fence-gate"
+      }
+    },
+    {
+      "objectId": "grove.herb",
+      "archetypeId": "grove.herb-kind",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "23000",
+          "8000"
+        ]
+      },
+      "presentation": {
+        "kind": "placeholder",
+        "label": "The herb patch"
+      }
+    },
+    {
+      "objectId": "grove.pantry-bin",
+      "archetypeId": "grove.food-source-kind",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "38000",
+          "28000"
+        ]
+      },
+      "presentation": {
+        "kind": "placeholder",
+        "label": "grove.pantry-bin"
+      }
+    },
+    {
+      "objectId": "grove.porch",
+      "archetypeId": "grove.porch-kind",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "8000",
+          "8000"
+        ]
+      },
+      "presentation": {
+        "kind": "placeholder",
+        "label": "grove.porch"
+      }
+    },
+    {
+      "objectId": "grove.sky",
+      "archetypeId": "grove.sky-kind",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "20000",
+          "15000"
+        ]
+      },
+      "presentation": {
+        "kind": "placeholder",
+        "label": "grove.sky"
+      }
+    },
+    {
+      "objectId": "grove.snack-dish",
+      "archetypeId": "grove.food-source-kind",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "30000",
+          "13000"
+        ]
+      },
+      "presentation": {
+        "kind": "placeholder",
+        "label": "The snack feeder"
+      }
+    },
+    {
+      "objectId": "grove.trash-can",
+      "archetypeId": "grove.food-source-kind",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "15000",
+          "8000"
+        ]
+      },
+      "presentation": {
+        "kind": "placeholder",
+        "label": "The trash can"
+      }
+    },
+    {
+      "objectId": "grove.water-bowl",
+      "archetypeId": "grove.water-source-kind",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "22000",
+          "8000"
+        ]
+      },
+      "presentation": {
+        "kind": "placeholder",
+        "label": "grove.water-bowl"
+      }
+    }
+  ],
+  "presentationBindings": [
+    {
+      "objectId": "grove.den",
+      "assetId": "den",
+      "animationFamily": "static",
+      "accessibilityLabel": "The den"
+    },
+    {
+      "objectId": "grove.trash-can",
+      "assetId": "trash-can",
+      "animationFamily": "static",
+      "accessibilityLabel": "The trash can"
+    },
+    {
+      "objectId": "grove.snack-dish",
+      "assetId": "feeder",
+      "animationFamily": "static",
+      "accessibilityLabel": "The snack feeder"
+    },
+    {
+      "objectId": "grove.cedar",
+      "assetId": "tree",
+      "animationFamily": "static",
+      "accessibilityLabel": "The cedar tree"
+    },
+    {
+      "objectId": "grove.herb",
+      "assetId": "plant",
+      "animationFamily": "static",
+      "accessibilityLabel": "The herb patch"
+    }
+  ],
+  "interactions": [],
+  "feedCursor": "1",
+  "audienceHash": "stevie-comparison",
+  "effects": [
+    {
+      "role": "puddle",
+      "assetId": "puddle",
+      "animationFamily": "loop",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "8000",
+          "8000"
+        ]
+      }
+    },
+    {
+      "role": "lantern",
+      "assetId": "lantern",
+      "animationFamily": "loop",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "8000",
+          "8000"
+        ]
+      }
+    },
+    {
+      "role": "window",
+      "assetId": "window",
+      "animationFamily": "static",
+      "pose": {
+        "frameId": "frame-yard",
+        "frameVersion": 1,
+        "coordinates": [
+          "8000",
+          "8000"
+        ]
+      }
+    }
+  ]
+}

@@ -2,16 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Clockgrove 3D Stevie spike</title>
+    <title>Clockgrove</title>
     <style>
-      body { margin: 0; font: 14px system-ui, sans-serif; background: #1d1b22; color: #eee; }
-      #stage { width: 960px; height: 540px; }
+      body { margin: 0; font: 14px system-ui, sans-serif; background: #12140e; color: #ece9d8; }
+      #scene { width: 640px; height: 400px; }
+      canvas { width: 100%; height: 100%; }
     </style>
   </head>
   <body data-state="running">
-    <p id="status">starting</p>
-    <div id="stage"></div>
-    <!-- Served by scripts/stevie.mjs (the sheet and any generated model come from its routes). -->
-    <script src="./stevie.js"></script>
+    <div id="scene"></div>
+    <p id="status" role="status">starting</p>
+    <!-- Served by scripts/stevie.mjs, which receives each shot the page posts. -->
+    <script type="module" src="./src/stevie/page.ts"></script>
   </body>
 </html>
