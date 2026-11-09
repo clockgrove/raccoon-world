@@ -1,0 +1,11 @@
+{
+  "status": "confirmed",
+  "families": [
+    {
+      "name": "shelter",
+      "frames": [1, 2, 3, 4],
+      "reason": "Proof test data over the scripted sheet, not an art decision: every frame in order."
+    }
+  ],
+  "unassigned": []
+}

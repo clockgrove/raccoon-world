@@ -1,0 +1,12 @@
+{
+  "styleProfileVersion": 1,
+  "alpha": { "mode": "soft", "boundsThreshold": 16 },
+  "colour": { "mode": "unrestricted" },
+  "edge": "transparent-pixel",
+  "sizes": {
+    "actor": { "maxWidth": 32, "maxHeight": 32 },
+    "object": { "maxWidth": 64, "maxHeight": 96 },
+    "terrain": { "maxWidth": 16, "maxHeight": 16 },
+    "effect": { "maxWidth": 32, "maxHeight": 32 }
+  }
+}

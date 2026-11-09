@@ -19,6 +19,9 @@ What's here:
 - `assets/`: the world's art, manifests, review sheet, golden scene and licence report;
 - `docs/design/`: the UI description and the reference images (the mockup and Jimothy's sheet);
 - `docs/adr/`: the draft decision record on how the world draws its characters (3D, 2D or 3D rendered to sprites);
+- `art/`: the style bible, the Assetforge target profile and the inputs for Stevie's six animation families, with the offline art proof ([art/README.md](art/README.md));
+- `reference/asset-style.json`: the world's painterly style profile as Clockgrove reads it;
+- `docs/art/author-guide.md`: how art is made, from these inputs to the live yard;
 - `references/stevie/`: Stevie's approved turnaround and the 3D spike's models;
 - `spikes/stevie-3d/`: the 3D Stevie spike code from Clockgrove's renderer bake-off.
 
@@ -40,6 +43,17 @@ To move the pin:
 2. If that commit pins a different Node.js, update `node-version` in `.github/workflows/ci.yml` and `FACTORY_NODE_VERSION` in `.github/workflows/factory.yml` to match. The script stops with a message when they differ.
 3. Run `bash scripts/clockgrove.sh check`. If a golden differs, review its `.actual.json` and replace the golden only when the new behaviour is intended.
 4. Open a PR; its `ci` check proves the pack against the new commit. Only a maintainer's PR moves the pin: `CLOCKGROVE_COMMIT` is a Factory protected path, so a Factory worker can't change it.
+
+## Making art with Assetforge
+
+Art is generated with Assetforge from a source checkout at the commit in [`ASSETFORGE_COMMIT`](ASSETFORGE_COMMIT), never from npm. [`scripts/assetforge.sh`](scripts/assetforge.sh) fetches it into `.assetforge-src/` (ignored) and runs it. Check the art direction, the target profile against Clockgrove's validator, each family's run forecast and the offline end-to-end proof, with no key and no spend:
+
+```sh
+bash scripts/clockgrove.sh fetch
+bash scripts/assetforge.sh check
+```
+
+The whole path, from the inputs to the live yard, is in [docs/art/author-guide.md](docs/art/author-guide.md).
 
 ## License
 

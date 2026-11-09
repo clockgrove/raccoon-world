@@ -1,0 +1,11 @@
+{
+  "purpose": "animation strip: Stevie's walk family, one 4-frame looping cycle",
+  "appearsIn": "the yard at dusk in the rain, seen from the mockup's high three-quarter isometric camera, at about 32 px a frame",
+  "neighbouringAssets": [
+    "path stones",
+    "puddle",
+    "trash can"
+  ],
+  "mood": "curious",
+  "context": "Stevie crosses the wet stepping stones between the den and the trash can. Motion: a four-legged walk cycle along the ground plane's diagonal, legs alternating, tail level."
+}

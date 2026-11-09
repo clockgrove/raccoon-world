@@ -1,0 +1,72 @@
+{
+  "$comment": "Derived from art/style-bible.md by art/tools/derive-bible.mjs; do not edit by hand.",
+  "version": "1",
+  "palette": [
+    "#1c1b1f",
+    "#6b6662",
+    "#282323",
+    "#e2d7c2",
+    "#ae9675",
+    "#f2a348",
+    "#5e3d28",
+    "#556836",
+    "#5f6b75",
+    "#7e96a9"
+  ],
+  "references": [
+    {
+      "path": "../references/jimothy/jimothy-peanut-painted.png",
+      "role": "painted style anchor",
+      "subject": "jimothy"
+    },
+    {
+      "path": "../references/stevie/turnaround-three-quarter.png",
+      "role": "approved turnaround, three-quarter view (identity lock)",
+      "subject": "stevie"
+    },
+    {
+      "path": "../references/stevie/turnaround-front.png",
+      "role": "approved turnaround, front view",
+      "subject": "stevie"
+    },
+    {
+      "path": "../references/stevie/turnaround-side.png",
+      "role": "approved turnaround, side view",
+      "subject": "stevie"
+    },
+    {
+      "path": "../references/jimothy/sheet-cell-03.png",
+      "role": "contact sheet cell 3 (identity lock)",
+      "subject": "jimothy"
+    }
+  ],
+  "perspective": "../docs/design/reference/raccoon-world-reference.png",
+  "perspectiveDescription": "high three-quarter isometric view from above, the camera looking down on the yard at roughly 30 to 35 degrees, ground plane receding to the upper right",
+  "subjects": {
+    "stevie": {
+      "description": "Stevie, a lean, upright, long-bodied adult raccoon with a dark eye mask, cream muzzle and brows, rounded pale-rimmed ears and a full tail with five dark rings"
+    },
+    "jimothy": {
+      "description": "Jimothy, a short-spined, round, hunched and chubby raccoon with a very fluffy coat and a big fluffy banded tail"
+    }
+  },
+  "mood": [
+    "cosy",
+    "curious",
+    "calm",
+    "playful",
+    "rainy"
+  ],
+  "notes": [
+    "rendering: painterly; rendered storybook realism; believable animal anatomy and fur, gently softened, never photographic and never cartoon-flat",
+    "shading: soft; outline: none",
+    "texture: soft visible brushwork, fine fur strands at every silhouette edge, wet sheen on stone and wood",
+    "detail: high on the characters' faces, masks and banded tails; medium on fur bodies; lower on background foliage",
+    "lighting: warm amber lantern and window light against cool blue-grey dusk and rain; soft rim light separating fur from the background",
+    "colour: full colour, soft alpha; never pixel art",
+    "no graphic violence or injury",
+    "no sexual content",
+    "no hateful imagery",
+    "no text, logos or watermarks in the art"
+  ]
+}

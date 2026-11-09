@@ -1,0 +1,33 @@
+{
+  "kind": "sprite-sheet",
+  "assetId": "stevie",
+  "subject": "stevie",
+  "animationFamily": "shelter",
+  "gait": "quadruped",
+  "frames": {
+    "count": 4,
+    "width": 32,
+    "height": 32
+  },
+  "anchor": {
+    "x": 16,
+    "y": 30
+  },
+  "fields": {
+    "semantic": {
+      "role": "actor",
+      "entity": "grove.stevie",
+      "archetype": "grove.raccoon-kind"
+    },
+    "footprint": {
+      "width": 700,
+      "depth": 400
+    },
+    "atlas": {
+      "atlasId": "raccoon-world",
+      "x": 128,
+      "y": 112
+    },
+    "accessibilityLabel": "Stevie sheltering"
+  }
+}
