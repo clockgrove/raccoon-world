@@ -2,7 +2,8 @@ name: CI
 
 # The one required check: every Git LFS object is present and intact, every file has licence
 # metadata under REUSE 3.3, and the world pack passes Clockgrove's world-pack check at the commit
-# pinned in CLOCKGROVE_COMMIT (scripts/clockgrove.sh, the same command Factory and people run).
+# pinned in CLOCKGROVE_COMMIT (scripts/clockgrove.sh, the same command Factory and people run), and
+# the art inputs pass Assetforge's checks and offline proof at ASSETFORGE_COMMIT (scripts/assetforge.sh).
 on:
   pull_request:
   merge_group:
@@ -46,3 +47,12 @@ jobs:
 
       - name: Check the world pack against Clockgrove
         run: bash scripts/clockgrove.sh check
+
+      # Raccoon World's art inputs against Assetforge at the commit pinned in ASSETFORGE_COMMIT: the
+      # derived bible copy, the style profile match, the run forecasts and the offline proof. The model
+      # provider is scripted (art/proof/provider.mjs), so no key is passed and nothing is spent.
+      - name: Fetch and install the pinned Assetforge
+        run: bash scripts/assetforge.sh fetch
+
+      - name: Check the art inputs and run the offline art proof
+        run: bash scripts/assetforge.sh check
