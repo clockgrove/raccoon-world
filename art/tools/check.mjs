@@ -14,6 +14,8 @@
 // 5. proof:       an offline Assetforge run writes Stevie's shelter strip into a throwaway copy of
 //                 this repository and Clockgrove's validator accepts it on the first try, with
 //                 review pending and complete provenance; a short sheet is refused, never padded.
+// 6. licences:    every committed manifest's licence is the licence REUSE.toml gives its source file,
+//                 so a CC-BY-4.0 pick can't land under the `**` MIT annotation.
 //
 // ASSETFORGE_DIR and CLOCKGROVE_DIR name the pinned checkouts (defaults .assetforge-src, .clockgrove).
 import { execFile } from "node:child_process";
@@ -193,6 +195,52 @@ async function checkPlaceholders() {
   }
 }
 
+/** REUSE.toml's annotations, in file order: { paths: [glob], precedence, license }. */
+export function reuseAnnotations(text) {
+  return text.split(/^\[\[annotations\]\]\s*$/m).slice(1).map((block) => {
+    const pathLine = block.match(/^path\s*=\s*(.+)$/m)?.[1] ?? "";
+    return {
+      paths: [...pathLine.matchAll(/"([^"]+)"/g)].map((m) => m[1]),
+      precedence: block.match(/^precedence\s*=\s*"([^"]+)"/m)?.[1] ?? "closest",
+      license: block.match(/^SPDX-License-Identifier\s*=\s*"([^"]+)"/m)?.[1],
+    };
+  });
+}
+
+const globRegex = (glob) =>
+  new RegExp(`^${glob.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*/g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, ".*")}$`);
+
+/** The licence REUSE.toml gives a path: the last matching override, else the last match. */
+export function reuseLicense(annotations, path) {
+  const matches = annotations.filter((a) => a.paths.some((g) => globRegex(g).test(path)));
+  const overrides = matches.filter((a) => a.precedence === "override");
+  return (overrides.at(-1) ?? matches.at(-1))?.license;
+}
+
+/** Problems where a manifest's licence differs from REUSE.toml's licence for its source file. */
+export function licenceMismatches(manifests, reuseText) {
+  const annotations = reuseAnnotations(reuseText);
+  return manifests
+    .map((m) => ({ m, reuse: reuseLicense(annotations, m.source.path) }))
+    .filter(({ m, reuse }) => reuse !== m.license)
+    .map(({ m, reuse }) =>
+      `${m.source.path} is ${m.license} in its manifest but ${reuse ?? "unannotated"} in REUSE.toml; add an override annotation for it`);
+}
+
+async function checkLicences() {
+  const reuse = await readFile(join(root, "REUSE.toml"), "utf8");
+  const manifests = [];
+  for (const asset of await readdir(join(root, "assets/manifests")))
+    for (const file of await readdir(join(root, "assets/manifests", asset)))
+      if (file.endsWith(".json")) manifests.push(await json(`assets/manifests/${asset}/${file}`));
+  for (const problem of licenceMismatches(manifests, reuse)) fail("licences", problem);
+  // The check itself: a CC-BY-4.0 strip under only the `**` MIT annotation must be caught.
+  const ccBy = { license: "CC-BY-4.0", source: { path: "assets/source/stevie/shelter.png" } };
+  if (licenceMismatches([ccBy], reuse).length !== 1)
+    fail("licences", "a CC-BY-4.0 strip without a REUSE override annotation was not caught");
+  return manifests.length;
+}
+
 async function proof() {
   const target = await throwawayCopy("proof");
   const imports = await mkdtemp(join(tmpdir(), "raccoon-world-imports-"));
@@ -250,6 +298,7 @@ async function proof() {
     const reuse = await readFile(join(root, "REUSE.toml"), "utf8");
     if (!/path = "\*\*"[\s\S]*?SPDX-License-Identifier = "MIT"/.test(reuse))
       fail("proof", "REUSE.toml no longer covers generated assets as MIT");
+    for (const problem of licenceMismatches([manifest], reuse)) fail("proof", problem);
     // Agent QA's vision checks for one candidate, forecast offline on the written strip.
     const qa = await assetforge([
       "animation-qa", "--strip", join(target, manifest.source.path), "--profile", "art/target-profile.json",
@@ -271,12 +320,13 @@ try {
   const proved = await proof();
   const forecasts = await checkInputs(proved?.qaPerCandidateUsd ?? 0);
   const placeholders = await checkPlaceholders();
+  const licensedManifests = await checkLicences();
   if (failures.length) {
     console.error(failures.join("\n"));
     process.exitCode = 1;
   } else
     console.log(
-      JSON.stringify({ status: "ok", validator: proved.validator, placeholders, runForecastUsd: forecasts }),
+      JSON.stringify({ status: "ok", validator: proved.validator, placeholders, licensedManifests, runForecastUsd: forecasts }),
     );
 } catch (error) {
   console.error(error.message);
