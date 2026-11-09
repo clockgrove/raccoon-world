@@ -21,35 +21,35 @@ This sheet is not Stevie. Stevie's approved reference is the lean, upright GPT-i
 
 ## Tokens
 
-Tokens are CSS variables on `[data-tokens="raccoon-world-ui@1"]`, the shell root. The version is `raccoon-world-ui@1` and every variable carries the `--rw-v1-` prefix. A breaking change to a value's meaning adds a new prefix and token version instead of editing these.
+Tokens are CSS variables on `[data-tokens="raccoon-world-ui@1"]`, the shell root. The version is `raccoon-world-ui@1` and every variable carries the `--cg-v1-` prefix. A breaking change to a value's meaning adds a new prefix and token version instead of editing these.
 
 | Token | Role |
 | --- | --- |
-| `--rw-v1-bg` | Near-black charcoal page background with a warm olive undertone |
-| `--rw-v1-panel` | Translucent charcoal/olive panel (HUD, rail, feed) |
-| `--rw-v1-panel-solid` | Opaque panel equivalent |
-| `--rw-v1-control` | Button, select and input background |
-| `--rw-v1-border` | Aged-brass/khaki hairline border |
-| `--rw-v1-text` | Primary text |
-| `--rw-v1-text-muted` | Secondary text (event times, disabled controls) |
-| `--rw-v1-accent` | Sage primary accent: selection, live, focus outline |
-| `--rw-v1-rain` | Rain blue (weather) |
-| `--rw-v1-event` | Event amber |
-| `--rw-v1-affection` | Affection coral (wellbeing) |
-| `--rw-v1-warning` | Warning rust |
-| `--rw-v1-error` | Error red |
-| `--rw-v1-font` | Humanist sans stack |
-| `--rw-v1-radius` | Modest corner radius |
-| `--rw-v1-space-1`, `-2`, `-3` | 4, 8 and 16 px spacing steps |
-| `--rw-v1-hud-height` | HUD height, 60px |
-| `--rw-v1-rail-width` | Rail share of the desktop width, 20% |
-| `--rw-v1-feed-width` | Desktop feed width and scene-column gutter, min(320px, 24vw) |
-| `--rw-v1-sheet-bar` | Narrow-layout sheet bar, 56px: the collapsed rail's minimum height and the feed sheet's bottom offset |
+| `--cg-v1-bg` | Near-black charcoal page background with a warm olive undertone |
+| `--cg-v1-panel` | Translucent charcoal/olive panel (HUD, rail, feed) |
+| `--cg-v1-panel-solid` | Opaque panel equivalent |
+| `--cg-v1-control` | Button, select and input background |
+| `--cg-v1-border` | Aged-brass/khaki hairline border |
+| `--cg-v1-text` | Primary text |
+| `--cg-v1-text-muted` | Secondary text (event times, disabled controls) |
+| `--cg-v1-primary` | Sage primary accent: selection, live, focus outline |
+| `--cg-v1-rain` | Rain blue (weather) |
+| `--cg-v1-event` | Event amber |
+| `--cg-v1-affection` | Affection coral (wellbeing) |
+| `--cg-v1-warning` | Warning rust |
+| `--cg-v1-error` | Error red |
+| `--cg-v1-font` | Humanist sans stack |
+| `--cg-v1-radius-md` | Modest corner radius |
+| `--cg-v1-space-1`, `-2`, `-3` | 4, 8 and 16 px spacing steps |
+| `--cg-v1-hud-height` | HUD height, 60px |
+| `--cg-v1-rail-width` | Rail share of the desktop width, 20% |
+| `--cg-v1-feed-width` | Desktop feed width and scene-column gutter, min(320px, 24vw) |
+| `--cg-v1-sheet-bar` | Narrow-layout sheet bar, 56px: the collapsed rail's minimum height and the feed sheet's bottom offset |
 
 The HUD height, the breakpoint and the 4:1 column split come from wave plan section 4. The other sizes are decisions of this note, not of the wave plan:
 
-- `--rw-v1-sheet-bar`, 56px: a 48px touch target (WCAG 2.5.8 recommends at least 24px; 48px is the Material touch-target size) plus the 8px sheet padding. The collapsed rail has this as its minimum height, so the feed sheet at `bottom: 56px` sits exactly on the rail's top edge; the narrow Chromium step checks that the feed clears the rail.
-- `--rw-v1-feed-width`, `min(320px, 24vw)`: 320px is the narrowest common phone width, so a feed item wraps the same as on a phone; 24vw keeps the scene column at 1280px wide enough for the 640px canvas (1024px column less the gutter and padding leaves 669px).
+- `--cg-v1-sheet-bar`, 56px: a 48px touch target (WCAG 2.5.8 recommends at least 24px; 48px is the Material touch-target size) plus the 8px sheet padding. The collapsed rail has this as its minimum height, so the feed sheet at `bottom: 56px` sits exactly on the rail's top edge; the narrow Chromium step checks that the feed clears the rail.
+- `--cg-v1-feed-width`, `min(320px, 24vw)`: 320px is the narrowest common phone width, so a feed item wraps the same as on a phone; 24vw keeps the scene column at 1280px wide enough for the 640px canvas (1024px column less the gutter and padding leaves 669px).
 - Sheet heights 40vh (feed) and 60vh (open rail): an open sheet leaves at least 40% of the viewport for the scene.
 - World selector `max-width: 180px`: keeps the HUD's start column on one line at 1280px with the wordmark beside it.
 
@@ -62,7 +62,7 @@ Text and background pairs meet WCAG AA (4.5:1); axe checks them in the browser. 
 - HUD (`.rw-hud`, row 1, one line): content-sized minimum tracks keep the wordmark and selector together without wrapping; small-caps spaced wordmark and World selector at the left, the world clock (`.rw-clock`: day and time, Running or Paused, speed, weather) centered.
 - Scene (`.rw-main`, about 4/5): the canvas and the complete text scene.
 - Entity rail (`.rw-rail`, about 1/5, right): the rail collapses to its toggle but keeps its column; selection is unaffected.
-- Material event feed (`.rw-feed-dock`): fixed at the lower left of the scene, in a left gutter of the scene column (`--rw-v1-feed-width`), so it never covers the canvas or a control; it scrolls past 40vh. It is a floating dark card; each row is one button holding a round icon, the generated sentence and the world time.
+- Material event feed (`.rw-feed-dock`): fixed at the lower left of the scene, in a left gutter of the scene column (`--cg-v1-feed-width`), so it never covers the canvas or a control; it scrolls past 40vh. It is a floating dark card; each row is one button holding a round icon, the generated sentence and the world time.
 
 The clock and feed read the authorized world-status read; activating a feed row selects the entity it concerns, opens the rail, and opens the event's Recorded Why; the per-row trace buttons are gone. A row whose entity is not in the viewed scene (it left, or the audience filter hides it) says "(not in view)" and opens only the Recorded Why. The read is issued for the scene's committed revision at most once a second (`STATUS_INTERVAL_MS` in `apps/web/src/yard.tsx`); while the clock's revision is behind the scene's, the clock says "updating".
 
