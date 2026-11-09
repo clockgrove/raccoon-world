@@ -1,5 +1,5 @@
 {
-  "assetManifestVersion": 1,
+  "assetManifestVersion": 2,
   "assetId": "den",
   "animationFamily": "static",
   "source": {
@@ -11,7 +11,17 @@
   "license": "MIT",
   "provenance": {
     "prompt": "procedural den; fixed palette; family static; 1 frame",
-    "references": []
+    "references": [],
+    "model": "procedural-generator",
+    "provider": "clockgrove",
+    "route": "packages/assets/scripts/generate-raccoon-world.ts",
+    "providerTermsVersion": "1",
+    "outputGrant": {
+      "license": "MIT",
+      "plan": "repository",
+      "commercial": true,
+      "relabel": true
+    }
   },
   "review": {
     "status": "approved",
