@@ -68,8 +68,8 @@ raccoon eats in the rain instead of sheltering next to food.
 
 - **Placement.** The water bowl (`grove.water-bowl`) sits in the den on the den stash (8000, 22000), where Gracie
   and the kits born in the den live. A second bowl, `grove.snack-house-bowl`, sits on the snack dish (30000,
-  13000), where Stevie, the kit and the kit's young live. Each is at distance 0 from its home's food and shelter,
-  so drinking never takes a raccoon out of sight of them. The old bowl stood at the garden edge (22000, 8000), at
+  13000), where Stevie, the kit and the kit's young live. Each is at distance 0 from its home's food, so drinking
+  never takes a raccoon out of sight of it. The old bowl stood at the garden edge (22000, 8000), at
   least 7 m from everywhere a raccoon stays and outside the 5 m perception range (`perceptionRange` 5000), so
   nobody drank: from about day 170, every raccoon that lived 70 days passed thirst 7000.
 - **Why placement.** A perception range wide enough to see the garden bowl from the den would be at least 19.8 m.
