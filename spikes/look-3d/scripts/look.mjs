@@ -151,11 +151,23 @@ async function journey(args) {
         const content = await differingPixels(page, withContent, without, 30);
         check(content > 200, `${backend}/${tier}: content changes only ${content} pixels against the no-content picture (need > 200)`);
         const weak = [];
+        const tierNow = () => page.evaluate(() => globalThis.look3d.status().qualityTier);
+        const ran = new Set();
         for (const name of ["stevie", ...PROPS]) {
-          await page.evaluate((n) => globalThis.look3d.setHidden([n]), name);
-          const hidden = await page.evaluate(() => globalThis.look3d.capture());
-          const changed = await differingPixels(page, withContent, hidden, 30);
-          if (!(changed > 8)) weak.push(`${name} (${changed} pixels)`);
+          // The renderer may downgrade a tier on SwiftShader's slow frames, so each object gets its own
+          // baseline taken at the same tier as its hidden picture.
+          for (let attempt = 0; ; attempt++) {
+            const before = await tierNow();
+            await page.evaluate(() => globalThis.look3d.setHidden([]));
+            const shown = await page.evaluate(() => globalThis.look3d.capture());
+            await page.evaluate((n) => globalThis.look3d.setHidden([n]), name);
+            const hidden = await page.evaluate(() => globalThis.look3d.capture());
+            if ((await tierNow()) !== before && attempt < 2) continue;
+            ran.add(before);
+            const changed = await differingPixels(page, shown, hidden, 30);
+            if (!(changed > 8)) weak.push(`${name} at ${before} (${changed} pixels)`);
+            break;
+          }
         }
         await page.evaluate(() => globalThis.look3d.setHidden([]));
         check(weak.length === 0, `${backend}/${tier}: hiding these objects does not change the picture: ${weak.join(", ")}`);
@@ -163,11 +175,13 @@ async function journey(args) {
           await mkdir(outDir, { recursive: true });
           await writeFile(path.join(outDir, `journey-${backend}-${tier}.png`), Buffer.from(withContent.split(",")[1], "base64"));
         }
-        tiers.push(`${tier}: ${content} pixels from content, each of ${PROPS.length + 1} objects changes the picture`);
+        tiers.push(`${tier} requested (ran at ${[...ran].join("/")}): ${content} pixels from content, each of ${PROPS.length + 1} objects changes the picture`);
       }
 
       await page.evaluate(() => {
         const l = globalThis.look3d;
+        // No rain, so the only motion between the two captures is Stevie's walk.
+        l.setEnvironment(63_000_000, 0);
         l.setReducedMotion(false);
         l.setStevie({ clip: "walk", heading: "right", seconds: null });
       });

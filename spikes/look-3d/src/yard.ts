@@ -195,7 +195,7 @@ function puddles(): Any {
     const g = new THREE.CylinderGeometry(1, 1, 0.004, 20);
     g.rotateX(Math.PI / 2);
     g.scale(rx, ry, 1);
-    b.add(g, PALETTE.puddle, matrix([x, y, 0.004], 0.4), 0);
+    b.add(g, PALETTE.puddle, matrix([x, y, 0.02], 0.4), 0);
   }
   return b.build("puddles", surface({ vertex: true, roughness: 0.12 }), false);
 }
@@ -284,7 +284,7 @@ function porch(): Any {
 /** The porch lamp: a bracket and lantern on the wall beside the door, its glass glowing when lit. */
 function porchLamp(): { group: Any; glass: Any; pool: Any } {
   const b = new Builder();
-  const [y, z] = [2.85, 2.05];
+  const [y, z] = [1.7, 1.95];
   b.box([0.28, 0.04, 0.04], [0.14, y, z + 0.28], PALETTE.brass);
   b.box([0.2, 0.2, 0.05], [0.24, y, z + 0.2], PALETTE.brass);
   b.box([0.18, 0.18, 0.04], [0.24, y, z - 0.12], PALETTE.brass);
@@ -297,10 +297,11 @@ function porchLamp(): { group: Any; glass: Any; pool: Any } {
   const glass = new THREE.Mesh(glassGeometry, surface({ color: 0xffe2b0, roughness: 0.3, emissive: WARM, emissiveIntensity: 0 }));
   glass.name = "porch-lamp-glass";
   group.add(glass);
-  // A warm pool on the deck under the lamp: a stand-in for the light content cannot cast (see the report).
+  // A warm pool on the ground under the lamp: a stand-in for the light content cannot cast (see the report).
+  // Decision: lamp and pool sit south of the porch roof, which would otherwise hide them from the camera.
   const poolGeometry = new THREE.CircleGeometry(1, 28);
-  poolGeometry.scale(0.95, 1.2, 1);
-  poolGeometry.translate(0.75, y + 0.2, 0.465);
+  poolGeometry.scale(0.8, 0.55, 1);
+  poolGeometry.translate(0.8, y - 0.1, 0.03);
   const pool = new THREE.Mesh(
     poolGeometry,
     surface({ color: 0x000000, roughness: 1, emissive: WARM, emissiveIntensity: 0, transparent: true, opacity: 0 }),
@@ -468,7 +469,7 @@ export function buildYard(): Yard {
       puddles: [3.95, 2.35, 0],
       house: [0, 1.6, 1.4],
       porch: [1.0, 2.7, 0.46],
-      "porch-lamp": [0.24, 2.85, 2.05],
+      "porch-lamp": [0.24, 1.7, 1.95],
       window: [0, 5.3, 1.75],
       fence: [4.0, 6.55, 0.7],
       "bin-1": [5.75, 5.6, 0.5],

@@ -96,7 +96,7 @@ These are design facts of the slice. Whether they read as the mockup is for the 
 
 ### What will not match yet (known before rendering)
 
-- **Light falling on things:** in the mockup, warm lamp light pools on the ground and rim-lights the raccoons. World content cannot add a light in the pinned renderer, so the lantern and window glow but light nothing. A faint warm decal on the porch deck stands in for the pool.
+- **Light falling on things:** in the mockup, warm lamp light pools on the ground and rim-lights the raccoons. World content cannot add a light in the pinned renderer, so the lantern and window glow but light nothing. A faint warm decal on the ground under the lantern stands in for the pool.
 - **Shadows:** the mockup has soft cast shadows. The pinned renderer has no shadow maps for content, so the slice has only a contact ellipse under Stevie. Props sit on the ground with no shadow.
 - **Dusk:** the mockup's 4:37 PM rain is a dusky, golden-and-blue grade. The pinned renderer has only a day state and a night state (night from 18:00), so 17:30 renders in the day state with the lamps lit.
 - **Richness of detail:** the mockup is painterly, with moss, ferns, mushrooms, fine fur and textured wood. The slice is simple flat-coloured forms. That keeps the detail density matched, but it is sparse next to the mockup. Stevie's fur is his Meshy albedo, not strands.

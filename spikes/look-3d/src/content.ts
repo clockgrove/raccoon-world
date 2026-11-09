@@ -80,7 +80,7 @@ export function yardContent(initialView: ViewName) {
       // A soft contact shadow: the product draws footprints as ground ellipses, and content has no shadow maps.
       const shadowGeometry = new THREE.CircleGeometry(1, 24);
       shadowGeometry.scale(0.36, 0.2, 1);
-      shadowGeometry.translate(0, 0, 0.008);
+      shadowGeometry.translate(0, 0, 0.02);
       const shadow = new THREE.Mesh(
         shadowGeometry,
         surface({ color: 0x000000, roughness: 1, transparent: true, opacity: 0.3 }),
