@@ -14,3 +14,10 @@ path = ["references/stevie/77-3d/meshy-*.glb", "references/stevie/77-3d/ship-mes
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Meshy (generated on the Meshy Free plan for Clockgrove)"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+# The 3D look proof's renders (issue 26) show Stevie, a Meshy Free-plan model, so they are CC BY 4.0 too.
+[[annotations]]
+path = ["references/look-3d/*.png"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Clockgrove; includes a 3D model generated with Meshy (meshy.ai)"
+SPDX-License-Identifier = "CC-BY-4.0"

@@ -1,0 +1,59 @@
+{
+  "issue": 26,
+  "purpose": "3D look proof: a reference, not game art; nothing here ships or goes into assets/",
+  "generation": {
+    "capUsd": 25,
+    "reservedUsd": 0,
+    "spentUsd": 0,
+    "calls": [],
+    "note": "No generation call was made. Stevie is the #77 Meshy model already in references/stevie/77-3d/, re-shaded and rigged in code; every prop is procedural geometry in spikes/look-3d/src/yard.ts."
+  },
+  "inputs": [
+    {
+      "role": "Stevie's mesh and albedo",
+      "file": "references/stevie/77-3d/ship-meshy-fit.glb",
+      "sha256": "36da0b47a8d9b7669cd9c56dd704650dfb498e63ace750d01dc13f2f31aafd97",
+      "derivedFrom": {
+        "file": "references/stevie/77-3d/meshy-model.glb",
+        "sha256": "07856f9fc7043505d6c714ab98b5c38ad008649e27d0524cb971646f6e1bda56",
+        "call": "meshy-1794118719180 in references/stevie/77-3d/provenance.json",
+        "provider": "Meshy",
+        "model": "Meshy multi-image-to-3D (latest)",
+        "route": "https://api.meshy.ai/openapi/v1/multi-image-to-3d from the four approved turnaround views",
+        "costUsd": 0.7,
+        "costBasis": "Meshy credit balance before and after (exact credits), valued at $0.02 per credit (estimate); spent under issue 77, not this run"
+      },
+      "outputGrant": { "license": "CC-BY-4.0", "plan": "meshy-free", "commercial": true, "relabel": false },
+      "credit": "3D model generated with Meshy (meshy.ai)"
+    },
+    {
+      "role": "Stevie's rig and clips",
+      "file": "spikes/look-3d/src/stevie.ts, spikes/look-3d/src/fit.ts",
+      "derivedFrom": "spikes/stevie-3d/src/stevie/model.ts and fit.ts (issue 77): the quadruped skeleton fitted at load, procedural idle 2.4 s and walk 0.8 s",
+      "outputGrant": { "license": "MIT", "plan": "repository", "commercial": true, "relabel": true }
+    },
+    {
+      "role": "The yard corner (house corner, porch and lamp, window, fence, bins, plants, shrubs, ground, path, puddles)",
+      "file": "spikes/look-3d/src/yard.ts",
+      "derivedFrom": "procedural geometry written for this proof; palette picked by eye from docs/design/reference/raccoon-world-reference.png",
+      "outputGrant": { "license": "MIT", "plan": "repository", "commercial": true, "relabel": true }
+    },
+    {
+      "role": "The look target",
+      "file": "docs/design/reference/raccoon-world-reference.png",
+      "sha256": "c2162df16789bb754318d4e88bf4ae289bc060ed144a6306d30449250a54615a"
+    }
+  ],
+  "renderer": {
+    "repository": "clockgrove/clockgrove",
+    "commit": "8bf1957ec223002277a88a0f0aaad52f6e8442af",
+    "seam": "renderer content v1 (apps/web/src/renderer-content.ts, clockgrove/clockgrove#112)",
+    "three": "0.187.0"
+  },
+  "shots": {
+    "status": "pending",
+    "how": "node spikes/look-3d/scripts/look.mjs capture --label \"<host>\" writes every shot here with results.json (sha256, size, backend, renderer string, tier and performance flag per file)",
+    "outputGrant": { "license": "CC-BY-4.0", "plan": "meshy-free", "commercial": true, "relabel": false },
+    "credit": "Renders include a 3D model generated with Meshy (meshy.ai)"
+  }
+}
