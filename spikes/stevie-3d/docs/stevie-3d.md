@@ -3,7 +3,7 @@
 A second page, `stevie.html` (bundle `stevie`, `src/stevie/`), draws Stevie three ways in this same lit slice through
 the WebGL2 Three.js adapter. Each arm adds its characters through `createThreeAdapter`'s optional `ThreeExtras`
 hook, so every arm shares one light rig, one fog, one bloom and output pass, and one camera. The draft decision record is the
-[character rendering ADR](../../../docs/adr/clockgrove-adr-character-rendering-3d-vs-2d.md).
+[character rendering ADR](../../../docs/adr/character-rendering-3d-vs-2d.md).
 
 - **3d** (`model.ts`): a rigged Stevie playing `idle` and `walk` clips, with `MeshToonMaterial` (a three-step ramp)
   and an inverted-hull outline. CI renders the **procedural stand-in**: 18 joints, two-bone skin weights and
