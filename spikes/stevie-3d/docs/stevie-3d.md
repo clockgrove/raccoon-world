@@ -45,7 +45,9 @@ through the same handle Clockgrove's own fixture page uses. Every shot made this
 bash scripts/clockgrove.sh fetch                     # the pinned Clockgrove checkout (.clockgrove/)
 bash scripts/stevie-comparison.sh smoke              # CI's check: each arm draws a visible character on WebGPU
                                                      # and on WebGL2 under SwiftShader (a few minutes)
+node --test spikes/stevie-3d/tests/stevie-3d.journey.browser.test.mjs   # the smoke check, asserting its record
 bash scripts/stevie-comparison.sh full <out-dir>     # the full shot set under SwiftShader
+node spikes/stevie-3d/scripts/publish.mjs <out-dir>  # the report's sheets, results.json and provenance.json
 node spikes/stevie-3d/scripts/stevie.mjs --out <dir> --browser <exe> [--browser-arg=<flag>]... \
   [--software] [--backends webgpu,webgl2] [--arms 3d,3d-sprites,2d,...] [--mode full|smoke] --label "<host>"
 ```
