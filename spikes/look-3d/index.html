@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clockgrove</title>
+  <style>
+    body { margin: 0; color: #eee9d9; background: #1e2116; font: 14px system-ui; }
+    #scene { width: 640px; height: 400px; }
+    canvas { width: 100%; height: 100%; display: block; }
+    #status { position: absolute; left: -9999px; }
+  </style>
+</head>
+<body>
+  <p id="status" role="status">Loading the yard slice</p>
+  <div id="scene" aria-label="Raccoon World 3D look proof: Stevie in a yard corner"></div>
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>
