@@ -34,9 +34,9 @@ Every shot is the page's own camera and canvas: no magnification and no upscalin
 
 The WebGL2 backend draws the same frame (1× DPR):
 
-| Hero | Dusk | Night | Close-up |
-| --- | --- | --- | --- |
-| ![](../../references/ceiling-3d/hero-1x-webgl2.png) | ![](../../references/ceiling-3d/dusk-1x-webgl2.png) | ![](../../references/ceiling-3d/night-1x-webgl2.png) | ![](../../references/ceiling-3d/close-1x-webgl2.png) |
+| Hero | Dusk | Night | Close-up | Close-up at night |
+| --- | --- | --- | --- | --- |
+| ![](../../references/ceiling-3d/hero-1x-webgl2.png) | ![](../../references/ceiling-3d/dusk-1x-webgl2.png) | ![](../../references/ceiling-3d/night-1x-webgl2.png) | ![](../../references/ceiling-3d/close-1x-webgl2.png) | ![](../../references/ceiling-3d/close-night-1x-webgl2.png) |
 
 ### Stevie on his rig
 
@@ -49,7 +49,7 @@ Close-up, 4:37 PM, rain hidden so the motion reads. The idle at 0, 0.6, 1.2 and 
 
 ## What is drawn, and how
 
-The page is [`spikes/ceiling-3d/`](../../spikes/ceiling-3d/). It uses Clockgrove's stack, Three.js 0.187.0 (the version the pinned checkout, `CLOCKGROVE_COMMIT` 8bf1957, locks) with `WebGPURenderer` and its WebGL2 fallback, built with the pinned Vite. It does not use Clockgrove's renderer or its world-content seam: the page owns its renderer, camera, lights and post-processing. Nothing in it ships, and nothing in Clockgrove changes.
+The page is [`spikes/ceiling-3d/`](../../spikes/ceiling-3d/). It uses Clockgrove's stack, Three.js 0.187.0 (the version the pinned checkout, `CLOCKGROVE_COMMIT` 8bf1957, locks) with `WebGPURenderer` and its WebGL2 fallback, built with the pinned Vite. It is not limited by Clockgrove's renderer or its world-content seam: the page owns its renderer, camera, lights and post-processing. Stevie's rig code is shared with the look proof (`spikes/look-3d/src/stevie.ts` and `fit.ts`), which takes its `THREE` export from the seam module `apps/web/src/renderer-content.ts`, so that module is in the ceiling's build graph for its Three re-export (and a type); the frame does not draw through the seam. Nothing in it ships, and nothing in Clockgrove changes.
 
 - **One camera.** An orthographic three-quarter camera (heading 54°, elevation 42°, 5.1 m frame height at zoom 1), fixed, no rotation. The set is laid out by mockup pixel: each piece is placed at the ground point under the pixel where the mockup paints it (`anchor` in [`look.ts`](../../spikes/ceiling-3d/src/look.ts)), so the composition holds whatever the camera's foreshortening. Stevie (0.53 m) lands at the mockup's size. The close-up is the same camera at zoom 3.3, centred on Stevie.
 - **One scale:** yard metres, z up, as in the look proof, so Stevie's #77 rig fits unchanged.

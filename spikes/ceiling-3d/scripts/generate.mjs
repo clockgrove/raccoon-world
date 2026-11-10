@@ -27,9 +27,9 @@ const RESERVE_CREDITS = 40;
 const STEP_CREDITS = { preview: 20, refine: 10 };
 
 const OUTPUT_GRANT = {
-  licence: "CC-BY-4.0",
+  license: "CC-BY-4.0",
   plan: "Meshy Free",
-  commercialUse: true,
+  commercial: true,
   relabel: false,
   attribution: "3D model generated with Meshy (meshy.ai)",
   source: "https://www.meshy.ai/terms",
@@ -230,9 +230,9 @@ const TRIPO_USD_PER_CREDIT = 0.01;
 const TRIPO_RESERVE_USD = 0.8;
 /** Tripo's terms: the API does not expose this key's plan, so the Free plan's terms (CC BY 4.0) are assumed. */
 const TRIPO_GRANT = {
-  licence: "CC-BY-4.0",
+  license: "CC-BY-4.0",
   plan: "Tripo (plan not exposed by the API; Free-plan terms assumed)",
-  commercialUse: true,
+  commercial: true,
   relabel: false,
   attribution: "3D model generated with Tripo (tripo3d.ai)",
   source: "https://www.tripo3d.ai/terms",

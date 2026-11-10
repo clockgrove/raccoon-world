@@ -549,9 +549,9 @@
       "sha256": "ac918ca271332f7f7682fd7c8fc488d15d6b9644ae788784c4381fb6e669d963",
       "bytes": 3977132,
       "outputGrant": {
-        "licence": "CC-BY-4.0",
+        "license": "CC-BY-4.0",
         "plan": "Meshy Free",
-        "commercialUse": true,
+        "commercial": true,
         "relabel": false,
         "attribution": "3D model generated with Meshy (meshy.ai)",
         "source": "https://www.meshy.ai/terms"
@@ -573,9 +573,9 @@
       "sha256": "ab423ea6dd0f5536e38aab62b7027e8a0f662f8af8160d5d66df12fabeee8ba9",
       "bytes": 3626644,
       "outputGrant": {
-        "licence": "CC-BY-4.0",
+        "license": "CC-BY-4.0",
         "plan": "Meshy Free",
-        "commercialUse": true,
+        "commercial": true,
         "relabel": false,
         "attribution": "3D model generated with Meshy (meshy.ai)",
         "source": "https://www.meshy.ai/terms"
@@ -596,9 +596,9 @@
       "sha256": "09d1ed2ea8d3dc56c83d654d9a9e4bf0ebbd5e06ea4db9e9382a1a07f2109480",
       "bytes": 2600088,
       "outputGrant": {
-        "licence": "CC-BY-4.0",
+        "license": "CC-BY-4.0",
         "plan": "Tripo (plan not exposed by the API; Free-plan terms assumed)",
-        "commercialUse": true,
+        "commercial": true,
         "relabel": false,
         "attribution": "3D model generated with Tripo (tripo3d.ai)",
         "source": "https://www.tripo3d.ai/terms"
@@ -619,9 +619,9 @@
       "sha256": "7c8e44eaec67ce8b516cb1ea466656560e889ddcef8c2786433ffa483cb1525b",
       "bytes": 3198420,
       "outputGrant": {
-        "licence": "CC-BY-4.0",
+        "license": "CC-BY-4.0",
         "plan": "Tripo (plan not exposed by the API; Free-plan terms assumed)",
-        "commercialUse": true,
+        "commercial": true,
         "relabel": false,
         "attribution": "3D model generated with Tripo (tripo3d.ai)",
         "source": "https://www.tripo3d.ai/terms"
@@ -642,9 +642,9 @@
       "sha256": "180a7969299235e53461dc108360ca215d19762ad46e4a28ed5d094c23409402",
       "bytes": 2715756,
       "outputGrant": {
-        "licence": "CC-BY-4.0",
+        "license": "CC-BY-4.0",
         "plan": "Tripo (plan not exposed by the API; Free-plan terms assumed)",
-        "commercialUse": true,
+        "commercial": true,
         "relabel": false,
         "attribution": "3D model generated with Tripo (tripo3d.ai)",
         "source": "https://www.tripo3d.ai/terms"
@@ -665,9 +665,9 @@
       "sha256": "19fa80b4f6f52796364fd4379ff4b356363b1e61714054f6b9eae0ac49743583",
       "bytes": 4712612,
       "outputGrant": {
-        "licence": "CC-BY-4.0",
+        "license": "CC-BY-4.0",
         "plan": "Tripo (plan not exposed by the API; Free-plan terms assumed)",
-        "commercialUse": true,
+        "commercial": true,
         "relabel": false,
         "attribution": "3D model generated with Tripo (tripo3d.ai)",
         "source": "https://www.tripo3d.ai/terms"
@@ -688,9 +688,9 @@
       "sha256": "c6bddb0b2e83969a6a7ba753b1f6be0e2ce46b6fee3e94b2dca813df63a5a752",
       "bytes": 1128664,
       "outputGrant": {
-        "licence": "CC-BY-4.0",
+        "license": "CC-BY-4.0",
         "plan": "Tripo (plan not exposed by the API; Free-plan terms assumed)",
-        "commercialUse": true,
+        "commercial": true,
         "relabel": false,
         "attribution": "3D model generated with Tripo (tripo3d.ai)",
         "source": "https://www.tripo3d.ai/terms"
@@ -711,9 +711,9 @@
       "sha256": "d74d58ee1423b570d3f0dd828408fb101f81907621bbf966deea321bd27cf60c",
       "bytes": 2987624,
       "outputGrant": {
-        "licence": "CC-BY-4.0",
+        "license": "CC-BY-4.0",
         "plan": "Tripo (plan not exposed by the API; Free-plan terms assumed)",
-        "commercialUse": true,
+        "commercial": true,
         "relabel": false,
         "attribution": "3D model generated with Tripo (tripo3d.ai)",
         "source": "https://www.tripo3d.ai/terms"

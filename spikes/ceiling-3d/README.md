@@ -1,6 +1,6 @@
 # 3D visual ceiling (issue 34)
 
-This folder holds the page and scripts behind [the report](../../docs/design/3d-ceiling.md): the mockup's main frame rebuilt in real-time 3D at full strength. It uses Clockgrove's stack (Three.js with WebGPU and a WebGL2 fallback, at the version the pinned checkout locks) but not Clockgrove's renderer or its content seam. Nothing here ships.
+This folder holds the page and scripts behind [the report](../../docs/design/3d-ceiling.md): the mockup's main frame rebuilt in real-time 3D at full strength. It uses Clockgrove's stack (Three.js with WebGPU and a WebGL2 fallback, at the version the pinned checkout locks) but is not limited by Clockgrove's renderer or its content seam: it owns its renderer, camera, lights and post. Stevie's rig code is shared with the look proof (`spikes/look-3d/src/stevie.ts`, `fit.ts`), which imports `THREE` from the seam module `apps/web/src/renderer-content.ts`, so that module is in the build graph. Nothing here ships.
 
 - `index.html`, `src/main.ts`: the renderer, lights, post-processing and grade, and `globalThis.ceiling` (view, state, Stevie's clip and pose, rain, hidden objects, measurements).
 - `src/look.ts`: the one camera, the mockup anchors and the three lighting states.
