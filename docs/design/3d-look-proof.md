@@ -2,7 +2,7 @@
 
 **The question:** can Raccoon World look like the owner's mockup in real-time 3D? This report shows Stevie and a small corner of the yard as real-time 3D in Clockgrove's product renderer, next to the mockup, and records what matches, what doesn't, and what closing the gap costs.
 
-**Status:** the slice, the renderer path, the slice's software-GPU journey and every shot are done. The shots below were rendered on 2026-11-09 by the pinned renderer in Playwright's Chromium 153 under SwiftShader (a software GPU), on both backends. A software GPU draws the same picture as a real one, but its frame times say nothing about performance, so the table below reports none. **Pending:** the desktop mid-range GPU and recent-phone measurements, and wiring the slice journey into CI's `check` step, all maintainer steps after merge (see [Maintainer steps](#maintainer-steps)).
+**Status:** the slice, the renderer path, the slice's software-GPU journey and every shot are done. The shots below were rendered on 2026-11-09 by the pinned renderer in Playwright's Chromium 153 under SwiftShader (a software GPU), on both backends. A software GPU draws the same picture as a real one, but its frame times say nothing about performance, so the table below reports none. **Pending:** the desktop mid-range GPU and recent-phone measurements, maintainer steps after merge (see [Maintainer steps](#maintainer-steps)).
 
 The look target is [the mockup](reference/raccoon-world-reference.png). Its camera and devices come from [visual decisions](visual-decisions.md): a fixed isometric camera with deep zoom, on desktop plus recent phones.
 
@@ -216,7 +216,7 @@ Measured figures are from #77's recorded calls (`references/stevie/77-3d/provena
 
 ## CI
 
-`node spikes/look-3d/scripts/look.mjs journey` is the slice's CI check. It:
+`bash scripts/clockgrove.sh slice` is the slice's CI check, its own step in the `ci` workflow after the world-pack check. It fetches the pinned checkout if needed, applies the shared Node version gate, then runs `node spikes/look-3d/scripts/look.mjs journey`, which:
 
 - builds this page at the pinned commit with the pinned Vite;
 - opens it in Playwright's Chromium under SwiftShader on WebGPU and on forced WebGL2, at the low and high tiers, each held and checked;
@@ -225,7 +225,7 @@ Measured figures are from #77's recorded calls (`references/stevie/77-3d/provena
 - checks that hiding Stevie, or any of the 12 props, changes the picture;
 - checks that the walk animates.
 
-Its times are never reported as performance. **Not yet wired into CI:** CI's existing step is `bash scripts/clockgrove.sh check`, and both `scripts/clockgrove.sh` and `.github/` are Factory-protected paths that only a maintainer changes. Wiring the journey in is maintainer step 3 below. It downloads Playwright's Chromium (about 115 MiB for the headless shell) when it is missing and runs about two to three minutes.
+Its times are never reported as performance. It is not part of `check`, so Factory's validation and local `check` runs never download a browser. The step downloads Playwright's Chromium (about 115 MiB for the headless shell) when it is missing and runs about two to three minutes.
 
 ## Maintainer steps
 
@@ -242,6 +242,5 @@ Its times are never reported as performance. **Not yet wired into CI:** CI's exi
    - On Android, forward the port with `adb reverse tcp:<port> tcp:<port>` and open the URL in Chrome.
    - In remote DevTools, call `look3d.setView("yard")`, wait 5 s, and record `look3d.metrics()` and `look3d.rendererString()` for each view.
    - Add a row to the table with the phone's name.
-3. **Wire the slice into CI.** Add a `slice` command to `scripts/clockgrove.sh` that runs `ready || fetch`, the Node version gate, then `CLOCKGROVE_DIR="$dir" node "$root/spikes/look-3d/scripts/look.mjs" journey`, and run it as its own step in the `ci` workflow (rather than inside `check`, so Factory's validation and local `check` runs don't download a browser).
-4. **After clockgrove/clockgrove#184 lands:** bump `CLOCKGROVE_COMMIT`, replace the interim magnified zoom with the renderer's own zoom and DPR, and re-run step 1 (follow-up).
-5. **The owner judges** this report against the mockup. The 2D options (#11) stay open until then. clockgrove/clockgrove#158 and #23 stay on hold.
+3. **After clockgrove/clockgrove#184 lands:** bump `CLOCKGROVE_COMMIT`, replace the interim magnified zoom with the renderer's own zoom and DPR, and re-run step 1 (follow-up).
+4. **The owner judges** this report against the mockup. The 2D options (#11) stay open until then. clockgrove/clockgrove#158 and #23 stay on hold.
