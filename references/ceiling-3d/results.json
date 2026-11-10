@@ -1,0 +1,1970 @@
+{
+  "records": [
+    {
+      "file": "close-1x-webgl2.png",
+      "sha256": "a97c93d6140605c010f7f1537a2cd73d20e1f2df9957102afb0f3d86b8017346",
+      "bytes": 1216715,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgl2",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 156
+      },
+      "shot": "close",
+      "view": "close",
+      "state": "hero",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 121,
+        "textures": 55,
+        "textureMiB": 534.7,
+        "drawCalls": 1081,
+        "triangles": 1602607,
+        "jsHeapMiB": 496.9,
+        "softwareFrameMs": [
+          466.6,
+          616.7
+        ]
+      }
+    },
+    {
+      "file": "close-1x-webgpu.png",
+      "sha256": "a2f5c7b871d5e6d2b0bcf4473bfc7087c4fc8534eda0bea7f30bbf04f0c69ebf",
+      "bytes": 1360756,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 145
+      },
+      "shot": "close",
+      "view": "close",
+      "state": "hero",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 121,
+        "textures": 55,
+        "textureMiB": 534.7,
+        "drawCalls": 1137,
+        "triangles": 1657687,
+        "jsHeapMiB": 595.1,
+        "softwareFrameMs": [
+          2533.2,
+          2866.5
+        ]
+      }
+    },
+    {
+      "file": "close-2x-webgpu.png",
+      "sha256": "4b6e7630f924435cd81cb319e3693c6b1df7f9c8ddd98fe0053227fb2b695047",
+      "bytes": 4300779,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 2,
+      "canvas": [
+        3344,
+        1882
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 143
+      },
+      "shot": "close",
+      "view": "close",
+      "state": "hero",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 121,
+        "textures": 55,
+        "textureMiB": 698.3,
+        "drawCalls": 1137,
+        "triangles": 1657687,
+        "jsHeapMiB": 242.2,
+        "softwareFrameMs": [
+          6733.1,
+          7049.7
+        ]
+      }
+    },
+    {
+      "file": "close-night-1x-webgl2.png",
+      "sha256": "c65450860c3e81e7a6e88d29dcba4f467ff07f38d468a5ca16126ec6f1670b24",
+      "bytes": 1011155,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgl2",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 156
+      },
+      "shot": "close-night",
+      "view": "close",
+      "state": "night",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 122,
+        "textures": 56,
+        "textureMiB": 534.7,
+        "drawCalls": 1081,
+        "triangles": 1602607,
+        "jsHeapMiB": 496.9,
+        "softwareFrameMs": [
+          433.3,
+          566.7
+        ]
+      }
+    },
+    {
+      "file": "close-night-1x-webgpu.png",
+      "sha256": "99b9e805d9d60677471c0e2b4a349b32f554453106c76996b6321ebea6f2a876",
+      "bytes": 1153562,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 145
+      },
+      "shot": "close-night",
+      "view": "close",
+      "state": "night",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 122,
+        "textures": 56,
+        "textureMiB": 534.7,
+        "drawCalls": 1137,
+        "triangles": 1657687,
+        "jsHeapMiB": 595.1,
+        "softwareFrameMs": [
+          2549.8,
+          2616.6
+        ]
+      }
+    },
+    {
+      "file": "close-night-2x-webgpu.png",
+      "sha256": "603baa4b674a6b969002eb00bda17c11d4d1c94db8378e9fc3e4b429964404ac",
+      "bytes": 3454970,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 2,
+      "canvas": [
+        3344,
+        1882
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 143
+      },
+      "shot": "close-night",
+      "view": "close",
+      "state": "night",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 122,
+        "textures": 56,
+        "textureMiB": 698.3,
+        "drawCalls": 1137,
+        "triangles": 1657687,
+        "jsHeapMiB": 242.2,
+        "softwareFrameMs": [
+          7066.4,
+          7333.1
+        ]
+      }
+    },
+    {
+      "file": "dusk-1x-webgl2.png",
+      "sha256": "14cd10627f0f6b314033566fbc52cb8bfa8d816554f6175836079e7f74f29f6e",
+      "bytes": 1565273,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgl2",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 156
+      },
+      "shot": "dusk",
+      "view": "hero",
+      "state": "dusk",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 119,
+        "textures": 53,
+        "textureMiB": 534.7,
+        "drawCalls": 1145,
+        "triangles": 1643146,
+        "jsHeapMiB": 496.9,
+        "softwareFrameMs": [
+          750,
+          900
+        ]
+      }
+    },
+    {
+      "file": "dusk-1x-webgpu.png",
+      "sha256": "6e4d7d0dd7bdc7d1750fb666ca83aa7f5e46a6e2cf6e7e8151becd03b50ea7f9",
+      "bytes": 1599345,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 145
+      },
+      "shot": "dusk",
+      "view": "hero",
+      "state": "dusk",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 119,
+        "textures": 53,
+        "textureMiB": 534.7,
+        "drawCalls": 1252,
+        "triangles": 1738259,
+        "jsHeapMiB": 595.1,
+        "softwareFrameMs": [
+          2566.6,
+          2683.2
+        ]
+      }
+    },
+    {
+      "file": "dusk-2x-webgpu.png",
+      "sha256": "1fae05ef0867bee4eeb1f59a43c2166bda1d9855666045ab9ed4c67ed32f44fe",
+      "bytes": 4679881,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 2,
+      "canvas": [
+        3344,
+        1882
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 143
+      },
+      "shot": "dusk",
+      "view": "hero",
+      "state": "dusk",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 119,
+        "textures": 53,
+        "textureMiB": 698.3,
+        "drawCalls": 1252,
+        "triangles": 1738259,
+        "jsHeapMiB": 242.2,
+        "softwareFrameMs": [
+          6633.1,
+          8799.7
+        ]
+      }
+    },
+    {
+      "file": "hero-1x-webgl2.png",
+      "sha256": "c057a258f269360129b4694f5e59197a91c62306caafa8722c3e3b1270f95a13",
+      "bytes": 1898827,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgl2",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 156
+      },
+      "shot": "hero",
+      "view": "hero",
+      "state": "hero",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 118,
+        "textures": 52,
+        "textureMiB": 534.7,
+        "drawCalls": 1145,
+        "triangles": 1643146,
+        "jsHeapMiB": 496.9,
+        "softwareFrameMs": [
+          716.6,
+          949.9
+        ]
+      }
+    },
+    {
+      "file": "hero-1x-webgpu.png",
+      "sha256": "827067c91fcc805c2dcec4366cbdd3009e559f0a23dac8c64e9340c081f81b8e",
+      "bytes": 1935152,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 145
+      },
+      "shot": "hero",
+      "view": "hero",
+      "state": "hero",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 118,
+        "textures": 52,
+        "textureMiB": 534.7,
+        "drawCalls": 1252,
+        "triangles": 1738259,
+        "jsHeapMiB": 595.1,
+        "softwareFrameMs": [
+          2649.9,
+          2783.1
+        ]
+      }
+    },
+    {
+      "file": "hero-2x-webgpu.png",
+      "sha256": "85e35db18dd80b82943dba9a2bcfc4c44dbfef1f9b28a5274174d91b5043595e",
+      "bytes": 5902011,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 2,
+      "canvas": [
+        3344,
+        1882
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 143
+      },
+      "shot": "hero",
+      "view": "hero",
+      "state": "hero",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 118,
+        "textures": 52,
+        "textureMiB": 698.3,
+        "drawCalls": 1252,
+        "triangles": 1738259,
+        "jsHeapMiB": 242.2,
+        "softwareFrameMs": [
+          6683.1,
+          12982.8
+        ]
+      }
+    },
+    {
+      "file": "motion-idle-webgl2.png",
+      "sha256": "e6f0bbe844a6e3c65701f279150375ab1e980cfc90dad7655a4b98be43cbd1cf",
+      "bytes": 459553,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgl2",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 156
+      },
+      "shot": "Stevie idle, close-up",
+      "times": [
+        0,
+        0.6,
+        1.2,
+        1.8
+      ]
+    },
+    {
+      "file": "motion-idle-webgpu.png",
+      "sha256": "dac990372d84e1ce72d66631cdd91525b145435ac8dbf65da415d0cd4194b9ac",
+      "bytes": 457753,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 145
+      },
+      "shot": "Stevie idle, close-up",
+      "times": [
+        0,
+        0.6,
+        1.2,
+        1.8
+      ]
+    },
+    {
+      "file": "motion-walk-webgl2.png",
+      "sha256": "4d9d679f742960dee771068f642936174b2f17ac8d032a331ce792c578bee1c4",
+      "bytes": 891716,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgl2",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 156
+      },
+      "shot": "Stevie walk, close-up",
+      "times": [
+        0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7
+      ]
+    },
+    {
+      "file": "motion-walk-webgpu.png",
+      "sha256": "a9025b817ba743fa9f3abb214cfa4c083b5e6963b47d807f415e535803b0d0b9",
+      "bytes": 890931,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 145
+      },
+      "shot": "Stevie walk, close-up",
+      "times": [
+        0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7
+      ]
+    },
+    {
+      "file": "night-1x-webgl2.png",
+      "sha256": "4edfee8eb6dd33c4891b53cf139625a9ae4dacc74e2022cadaaf6bb6c88c060a",
+      "bytes": 1271609,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgl2",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 156
+      },
+      "shot": "night",
+      "view": "hero",
+      "state": "night",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 120,
+        "textures": 54,
+        "textureMiB": 534.7,
+        "drawCalls": 1145,
+        "triangles": 1643146,
+        "jsHeapMiB": 496.9,
+        "softwareFrameMs": [
+          716.6,
+          966.6
+        ]
+      }
+    },
+    {
+      "file": "night-1x-webgpu.png",
+      "sha256": "a7e30df0364a85081279db160ca5c73691dbfe827bb9fde1f25d95f3551bc3d0",
+      "bytes": 1304875,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 145
+      },
+      "shot": "night",
+      "view": "hero",
+      "state": "night",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 120,
+        "textures": 54,
+        "textureMiB": 534.7,
+        "drawCalls": 1252,
+        "triangles": 1738259,
+        "jsHeapMiB": 595.1,
+        "softwareFrameMs": [
+          2583.3,
+          2783.2
+        ]
+      }
+    },
+    {
+      "file": "night-2x-webgpu.png",
+      "sha256": "c087aee04aece211b3ed1642fd9755407d2ab3b113454c3652c380251929edf9",
+      "bytes": 3756651,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 2,
+      "canvas": [
+        3344,
+        1882
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 143
+      },
+      "shot": "night",
+      "view": "hero",
+      "state": "night",
+      "metrics": {
+        "frames": 12,
+        "frameMsP50": "software, not performance",
+        "frameMsP95": "software, not performance",
+        "geometries": 120,
+        "textures": 54,
+        "textureMiB": 698.3,
+        "drawCalls": 1252,
+        "triangles": 1738259,
+        "jsHeapMiB": 242.2,
+        "softwareFrameMs": [
+          6466.4,
+          6833.1
+        ]
+      }
+    },
+    {
+      "file": "vs-mockup-dusk-webgpu.png",
+      "sha256": "c819919f9f1af42dd53c2abc6eac18b250f3d19c65f2869f2d0a72081a2c4d0a",
+      "bytes": 5843018,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 145
+      },
+      "shot": "side-by-side dusk",
+      "view": "hero",
+      "state": "dusk"
+    },
+    {
+      "file": "vs-mockup-hero-webgpu.png",
+      "sha256": "ef4d3d9cedeab0d065239615cfcf7f7e0966ac6a1a084dbd94afef08e71963fb",
+      "bytes": 6251068,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 145
+      },
+      "shot": "side-by-side hero",
+      "view": "hero",
+      "state": "hero"
+    },
+    {
+      "file": "vs-mockup-night-webgpu.png",
+      "sha256": "2f24e3a5dac1613bb2a1bdcd5d21fe7300c07fb8e550dee61edab7b9749c91f7",
+      "bytes": 5374364,
+      "host": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)",
+      "backend": "webgpu",
+      "renderer": "google / swiftshader",
+      "dpr": 1,
+      "canvas": [
+        1672,
+        941
+      ],
+      "performance": false,
+      "props": [
+        {
+          "name": "tree-base",
+          "source": "generated",
+          "triangles": 11808
+        },
+        {
+          "name": "trash-can",
+          "source": "generated",
+          "triangles": 8130
+        },
+        {
+          "name": "mailbox",
+          "source": "generated",
+          "triangles": 5663
+        },
+        {
+          "name": "lamp-post",
+          "source": "generated",
+          "triangles": 5652
+        },
+        {
+          "name": "mushrooms",
+          "source": "generated",
+          "triangles": 3765
+        },
+        {
+          "name": "bird-feeder",
+          "source": "generated",
+          "triangles": 4740
+        },
+        {
+          "name": "watering-can",
+          "source": "generated",
+          "triangles": 4570
+        },
+        {
+          "name": "garden-bed",
+          "source": "generated",
+          "triangles": 10989
+        }
+      ],
+      "stevie": {
+        "source": "references/stevie/77-3d/ship-meshy-fit.glb",
+        "triangles": 9799,
+        "furShells": 8,
+        "drawnTriangles": 88191,
+        "joints": 18,
+        "texture": "2048×2048 KTX2",
+        "clips": [
+          {
+            "name": "idle",
+            "seconds": 2.4
+          },
+          {
+            "name": "walk",
+            "seconds": 0.8
+          }
+        ],
+        "loadMs": 145
+      },
+      "shot": "side-by-side night",
+      "view": "hero",
+      "state": "night"
+    }
+  ],
+  "capturedOn": "factory sandbox, WSL2, headless Chromium 153 on SwiftShader (software)"
+}

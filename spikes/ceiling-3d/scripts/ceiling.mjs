@@ -217,6 +217,10 @@ async function capture(args) {
     await writeFile(path.join(outDir, file), bytes);
     results.records = results.records.filter((r) => r.file !== file);
     results.records.push({ file, sha256: createHash("sha256").update(bytes).digest("hex"), bytes: bytes.length, host: label, ...record });
+    results.records.sort((x, y) => x.file.localeCompare(y.file));
+    results.capturedOn = label;
+    // Written after every shot, so a long software-GPU run keeps what it has made if it is stopped.
+    await writeFile(resultsFile, `${JSON.stringify(results, null, 2)}\n`);
     console.log(`ceiling capture: ${file}`);
   };
   for (const backend of backends) {
@@ -261,9 +265,6 @@ async function capture(args) {
       }
     }
   }
-  results.records.sort((a, b) => a.file.localeCompare(b.file));
-  results.capturedOn = label;
-  await writeFile(resultsFile, `${JSON.stringify(results, null, 2)}\n`);
   await writeTable(results);
 }
 
@@ -308,6 +309,7 @@ const command = args._[0];
 if (command === "journey") await journey();
 else if (command === "capture") await capture(args);
 else if (command === "shot") await shot(args);
+else if (command === "table") await writeTable(JSON.parse(await readFile(path.join(repo, "references/ceiling-3d/results.json"), "utf8")));
 else {
   console.error("Usage: node spikes/ceiling-3d/scripts/ceiling.mjs journey | capture --label <host> | shot <file>");
   process.exit(2);
