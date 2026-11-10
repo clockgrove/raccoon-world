@@ -48,6 +48,9 @@ jobs:
       - name: Check the world pack against Clockgrove
         run: bash scripts/clockgrove.sh check
 
+      - name: Draw the 3D look proof's slice on both backends (software GPU)
+        run: bash scripts/clockgrove.sh slice
+
       # Raccoon World's art inputs against Assetforge at the commit pinned in ASSETFORGE_COMMIT: the
       # derived bible copy, the style profile match, the run forecasts and the offline proof. The model
       # provider is scripted (art/proof/provider.mjs), so no key is passed and nothing is spent.

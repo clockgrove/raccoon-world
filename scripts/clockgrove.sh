@@ -66,8 +66,7 @@ fetch() {
   printf '%s\n' "$pin" > "$marker"
 }
 
-check() {
-  ready || fetch
+node_gate() {
   # The Node.js Clockgrove pins (package.json engines). CI's setup-node and FACTORY_NODE_VERSION must match it.
   local want have
   want="$(node -p 'require(process.argv[1]).engines.node' "$dir/package.json")"
@@ -76,13 +75,28 @@ check() {
     echo "clockgrove: Node $have, but Clockgrove $pin pins $want; use that version (CI's setup-node and FACTORY_NODE_VERSION too)" >&2
     exit 2
   fi
+}
+
+check() {
+  ready || fetch
+  node_gate
   cd "$root"
   # The optional Cloudflare geolocation fetch is off: the check needs no network once installed.
   CLOUDFLARE_CF_FETCH_ENABLED=false node "$dir/scripts/check-world-pack.mjs" --pack worlds/raccoons --assets assets/manifests
 }
 
+# The 3D look proof's journey (#26): draws Stevie and every yard prop on both backends under a software GPU.
+# Its own CI step, not part of check, so Factory's validation and local checks never download a browser.
+slice() {
+  ready || fetch
+  node_gate
+  cd "$root"
+  CLOCKGROVE_DIR="$dir" node "$root/spikes/look-3d/scripts/look.mjs" journey
+}
+
 case "${1:-}" in
   fetch) fetch ;;
   check) check ;;
-  *) echo "Usage: bash scripts/clockgrove.sh fetch|check" >&2; exit 2 ;;
+  slice) slice ;;
+  *) echo "Usage: bash scripts/clockgrove.sh fetch|check|slice" >&2; exit 2 ;;
 esac
