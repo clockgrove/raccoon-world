@@ -1,0 +1,723 @@
+{
+  "capUsd": 75,
+  "calls": [
+    {
+      "id": "trash-can-1794272740883",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "a dented galvanised steel garbage can with ribbed sides, lying on its side, lid off, weathered and wet, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 8000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:05:40.883Z",
+      "status": "failed",
+      "taskIds": {
+        "preview": "01a1c2fd-4655-73d5-bed0-c78131d4c40e"
+      },
+      "minutes": 1.18,
+      "error": "meshy refine: HTTP 429 {\"message\":\"NoMorePendingTasks: Upgrade your plan to queue up more tasks. You can manage your plan on https://www.meshy.ai/settings/subscription\"}"
+    },
+    {
+      "id": "mailbox-1794272740883",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "a weathered dark grey metal rural mailbox on a short wooden post, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 6000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:05:40.883Z",
+      "status": "failed",
+      "minutes": 0.03,
+      "error": "meshy preview: HTTP 429 {\"message\":\"NoMorePendingTasks: Upgrade your plan to queue up more tasks. You can manage your plan on https://www.meshy.ai/settings/subscription\"}"
+    },
+    {
+      "id": "lamp-post-1794272740883",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "a short black iron garden lamp post with a glass lantern head, about 1.2 m, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 6000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:05:40.883Z",
+      "status": "failed",
+      "minutes": 0.04,
+      "error": "meshy preview: HTTP 429 {\"message\":\"NoMorePendingTasks: Upgrade your plan to queue up more tasks. You can manage your plan on https://www.meshy.ai/settings/subscription\"}"
+    },
+    {
+      "id": "mushrooms-1794272740883",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "a small cluster of brown-capped wild mushrooms with pale stems, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 4000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:05:40.883Z",
+      "status": "failed",
+      "minutes": 0.04,
+      "error": "meshy preview: HTTP 429 {\"message\":\"NoMorePendingTasks: Upgrade your plan to queue up more tasks. You can manage your plan on https://www.meshy.ai/settings/subscription\"}"
+    },
+    {
+      "id": "tree-base-1794272740883",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "the base of a large old tree trunk with thick spreading roots and mossy bark, cut off at the top, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 12000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:05:40.883Z",
+      "status": "failed",
+      "minutes": 0.04,
+      "error": "meshy preview: HTTP 429 {\"message\":\"NoMorePendingTasks: Upgrade your plan to queue up more tasks. You can manage your plan on https://www.meshy.ai/settings/subscription\"}"
+    },
+    {
+      "id": "bird-feeder-1794272740883",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "a hanging cylindrical glass bird feeder full of seeds with a dark metal cap and a hook, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 5000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:05:40.883Z",
+      "status": "failed",
+      "minutes": 0.04,
+      "error": "meshy preview: HTTP 429 {\"message\":\"NoMorePendingTasks: Upgrade your plan to queue up more tasks. You can manage your plan on https://www.meshy.ai/settings/subscription\"}"
+    },
+    {
+      "id": "watering-can-1794272740883",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "an old galvanised metal watering can, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 5000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:05:40.883Z",
+      "status": "failed",
+      "minutes": 0.04,
+      "error": "meshy preview: HTTP 429 {\"message\":\"NoMorePendingTasks: Upgrade your plan to queue up more tasks. You can manage your plan on https://www.meshy.ai/settings/subscription\"}"
+    },
+    {
+      "id": "garden-bed-1794272740883",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "a rectangular raised garden bed made of weathered wooden planks filled with dark soil and small leafy vegetable plants, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 12000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:05:40.883Z",
+      "status": "done",
+      "taskIds": {
+        "preview": "01a1c2fd-47b5-7231-8dfd-b3d87139938e",
+        "refine": "01a1c2fe-5362-7038-b093-5d81048f3e64"
+      },
+      "minutes": 1.89,
+      "steps": [
+        {
+          "step": "preview",
+          "minutes": 1.12,
+          "taskId": "01a1c2fd-47b5-7231-8dfd-b3d87139938e",
+          "credits": 20
+        },
+        {
+          "step": "refine",
+          "minutes": 0.69,
+          "taskId": "01a1c2fe-5362-7038-b093-5d81048f3e64",
+          "credits": 10
+        }
+      ],
+      "credits": 30,
+      "costUsd": 0.6,
+      "costBasis": "Meshy's documented credits per step (preview 20, refine 10; calls ran concurrently so per-call balance diffs are not possible), valued at $0.02 per credit (estimate); the batch record holds the measured balance diff"
+    },
+    {
+      "id": "trash-can-1794272860908-retry1",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "a dented galvanised steel garbage can with ribbed sides, lying on its side, lid off, weathered and wet, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 8000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:07:40.908Z",
+      "status": "done",
+      "taskIds": {
+        "preview": "01a1c2ff-1b2f-7512-8ebf-f58260f935f9",
+        "refine": "01a1c2ff-faf0-7614-b87f-9e05b2628f81"
+      },
+      "minutes": 1.69,
+      "steps": [
+        {
+          "step": "preview",
+          "minutes": 0.94,
+          "taskId": "01a1c2ff-1b2f-7512-8ebf-f58260f935f9",
+          "credits": 20
+        },
+        {
+          "step": "refine",
+          "minutes": 0.69,
+          "taskId": "01a1c2ff-faf0-7614-b87f-9e05b2628f81",
+          "credits": 10
+        }
+      ],
+      "credits": 30,
+      "costUsd": 0.6,
+      "costBasis": "Meshy's documented credits per step (preview 20, refine 10; calls may run concurrently so per-call balance diffs are not possible), valued at $0.02 per credit (estimate); the batch record holds the measured balance diff"
+    },
+    {
+      "id": "mailbox-1794272962521-retry1",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "a weathered dark grey metal rural mailbox on a short wooden post, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 6000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:09:22.521Z",
+      "status": "failed",
+      "minutes": 0.01,
+      "error": "meshy preview: HTTP 402 {\"message\":\"Insufficient funds. Upgrade your plan at https://www.meshy.ai/settings/subscription to continue using the API.\"}"
+    },
+    {
+      "id": "lamp-post-1794272963140-retry1",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "a short black iron garden lamp post with a glass lantern head, about 1.2 m, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 6000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:09:23.140Z",
+      "status": "failed",
+      "minutes": 0.01,
+      "error": "meshy preview: HTTP 402 {\"message\":\"Insufficient funds. Upgrade your plan at https://www.meshy.ai/settings/subscription to continue using the API.\"}"
+    },
+    {
+      "id": "mushrooms-1794272964029-retry1",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "a small cluster of brown-capped wild mushrooms with pale stems, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 4000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:09:24.029Z",
+      "status": "failed",
+      "minutes": 0.02,
+      "error": "meshy preview: HTTP 402 {\"message\":\"Insufficient funds. Upgrade your plan at https://www.meshy.ai/settings/subscription to continue using the API.\"}"
+    },
+    {
+      "id": "tree-base-1794272965246-retry1",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "the base of a large old tree trunk with thick spreading roots and mossy bark, cut off at the top, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 12000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:09:25.246Z",
+      "status": "failed",
+      "minutes": 0.01,
+      "error": "meshy preview: HTTP 402 {\"message\":\"Insufficient funds. Upgrade your plan at https://www.meshy.ai/settings/subscription to continue using the API.\"}"
+    },
+    {
+      "id": "bird-feeder-1794272965982-retry1",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "a hanging cylindrical glass bird feeder full of seeds with a dark metal cap and a hook, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 5000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:09:25.982Z",
+      "status": "failed",
+      "minutes": 0.01,
+      "error": "meshy preview: HTTP 402 {\"message\":\"Insufficient funds. Upgrade your plan at https://www.meshy.ai/settings/subscription to continue using the API.\"}"
+    },
+    {
+      "id": "watering-can-1794272966589-retry1",
+      "step": "text to 3D (preview then refine)",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "endpoint": "POST https://api.meshy.ai/openapi/v2/text-to-3d (mode preview, then refine)",
+      "parameters": {
+        "prompt": "an old galvanised metal watering can, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 5000,
+        "enable_pbr": false
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:09:26.589Z",
+      "status": "failed",
+      "minutes": 0.01,
+      "error": "meshy preview: HTTP 402 {\"message\":\"Insufficient funds. Upgrade your plan at https://www.meshy.ai/settings/subscription to continue using the API.\"}"
+    },
+    {
+      "id": "mushrooms-tripo-1794273065375",
+      "step": "text to model (Tripo)",
+      "provider": "Tripo",
+      "model": "Tripo text-to-model v3.1-20260211",
+      "endpoint": "POST https://openapi.tripo3d.ai/v3/generation/text-to-model",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "prompt": "a small cluster of brown-capped wild mushrooms with pale stems, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "texture": true,
+        "pbr": true,
+        "face_limit": 4000
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:11:05.375Z",
+      "status": "done",
+      "taskIds": {
+        "model": "4acc12e6-ad00-4c47-a227-2fc94bde874a"
+      },
+      "minutes": 2.1,
+      "output": "model_url",
+      "credits": 20,
+      "costUsd": 0.2,
+      "costBasis": "Tripo credit balance before and after this call (exact credits), valued at $0.01 per credit (estimate, as in #77)"
+    },
+    {
+      "id": "mailbox-tripo-1794273193315",
+      "step": "text to model (Tripo)",
+      "provider": "Tripo",
+      "model": "Tripo text-to-model v3.1-20260211",
+      "endpoint": "POST https://openapi.tripo3d.ai/v3/generation/text-to-model",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "prompt": "a weathered dark grey metal rural mailbox on a short wooden post, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "texture": true,
+        "pbr": true,
+        "face_limit": 6000
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:13:13.315Z",
+      "status": "done",
+      "taskIds": {
+        "model": "443ae9d5-450a-48e0-9136-be7e77771fd6"
+      },
+      "minutes": 2.04,
+      "output": "model_url",
+      "credits": 20,
+      "costUsd": 0.2,
+      "costBasis": "Tripo credit balance before and after this call (exact credits), valued at $0.01 per credit (estimate, as in #77)"
+    },
+    {
+      "id": "lamp-post-tripo-1794273315533",
+      "step": "text to model (Tripo)",
+      "provider": "Tripo",
+      "model": "Tripo text-to-model v3.1-20260211",
+      "endpoint": "POST https://openapi.tripo3d.ai/v3/generation/text-to-model",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "prompt": "a short black iron garden lamp post with a glass lantern head, about 1.2 m, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "texture": true,
+        "pbr": true,
+        "face_limit": 6000
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:15:15.533Z",
+      "status": "done",
+      "taskIds": {
+        "model": "e3341a86-d68f-4e13-b1f9-d7fe92a3b724"
+      },
+      "minutes": 1.33,
+      "output": "model_url",
+      "credits": 20,
+      "costUsd": 0.2,
+      "costBasis": "Tripo credit balance before and after this call (exact credits), valued at $0.01 per credit (estimate, as in #77)"
+    },
+    {
+      "id": "tree-base-tripo-1794273395463",
+      "step": "text to model (Tripo)",
+      "provider": "Tripo",
+      "model": "Tripo text-to-model v3.1-20260211",
+      "endpoint": "POST https://openapi.tripo3d.ai/v3/generation/text-to-model",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "prompt": "the base of a large old tree trunk with thick spreading roots and mossy bark, cut off at the top, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "texture": true,
+        "pbr": true,
+        "face_limit": 12000
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:16:35.463Z",
+      "status": "done",
+      "taskIds": {
+        "model": "8ea2f8da-6abc-4508-9778-481b45f7c91d"
+      },
+      "minutes": 2.21,
+      "output": "model_url",
+      "credits": 20,
+      "costUsd": 0.2,
+      "costBasis": "Tripo credit balance before and after this call (exact credits), valued at $0.01 per credit (estimate, as in #77)"
+    },
+    {
+      "id": "bird-feeder-tripo-1794273527928",
+      "step": "text to model (Tripo)",
+      "provider": "Tripo",
+      "model": "Tripo text-to-model v3.1-20260211",
+      "endpoint": "POST https://openapi.tripo3d.ai/v3/generation/text-to-model",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "prompt": "a hanging cylindrical glass bird feeder full of seeds with a dark metal cap and a hook, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "texture": true,
+        "pbr": true,
+        "face_limit": 5000
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:18:47.928Z",
+      "status": "done",
+      "taskIds": {
+        "model": "f2542955-43cb-4cc7-8c11-dc7750c3f8ce"
+      },
+      "minutes": 1.57,
+      "output": "model_url",
+      "credits": 20,
+      "costUsd": 0.2,
+      "costBasis": "Tripo credit balance before and after this call (exact credits), valued at $0.01 per credit (estimate, as in #77)"
+    },
+    {
+      "id": "watering-can-tripo-1794273622317",
+      "step": "text to model (Tripo)",
+      "provider": "Tripo",
+      "model": "Tripo text-to-model v3.1-20260211",
+      "endpoint": "POST https://openapi.tripo3d.ai/v3/generation/text-to-model",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "prompt": "an old galvanised metal watering can, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "texture": true,
+        "pbr": true,
+        "face_limit": 5000
+      },
+      "reservedUsd": 0.8,
+      "startedAt": "2026-11-10T01:20:22.317Z",
+      "status": "done",
+      "taskIds": {
+        "model": "1b18506f-d117-43d8-8460-25a091daf5d9"
+      },
+      "minutes": 1.85,
+      "output": "model_url",
+      "credits": 20,
+      "costUsd": 0.2,
+      "costBasis": "Tripo credit balance before and after this call (exact credits), valued at $0.01 per credit (estimate, as in #77)"
+    }
+  ],
+  "batches": [
+    {
+      "startedAt": "2026-11-10T01:05:40.881Z",
+      "props": [
+        "trash-can",
+        "mailbox",
+        "lamp-post",
+        "mushrooms",
+        "tree-base",
+        "bird-feeder",
+        "watering-can",
+        "garden-bed"
+      ],
+      "balanceBefore": 80,
+      "balanceAfter": 30,
+      "credits": 50,
+      "costUsd": 1,
+      "costBasis": "Meshy credit balance before and after the whole concurrent batch (exact credits), valued at $0.02 per credit (estimate)"
+    },
+    {
+      "startedAt": "2026-11-10T01:07:40.906Z",
+      "props": [
+        "trash-can",
+        "mailbox",
+        "lamp-post",
+        "mushrooms",
+        "tree-base",
+        "bird-feeder",
+        "watering-can"
+      ],
+      "balanceBefore": 30,
+      "balanceAfter": 0,
+      "credits": 30,
+      "costUsd": 0.6,
+      "costBasis": "Meshy credit balance before and after the whole concurrent batch (exact credits), valued at $0.02 per credit (estimate)"
+    }
+  ],
+  "files": {
+    "props/garden-bed.glb": {
+      "call": "garden-bed-1794272740883",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "parameters": {
+        "prompt": "a rectangular raised garden bed made of weathered wooden planks filled with dark soil and small leafy vegetable plants, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 12000,
+        "enable_pbr": false
+      },
+      "costUsd": 0.6,
+      "sha256": "ac918ca271332f7f7682fd7c8fc488d15d6b9644ae788784c4381fb6e669d963",
+      "bytes": 3977132,
+      "outputGrant": {
+        "license": "CC-BY-4.0",
+        "plan": "Meshy Free",
+        "commercial": true,
+        "relabel": false,
+        "attribution": "3D model generated with Meshy (meshy.ai)",
+        "source": "https://www.meshy.ai/terms"
+      }
+    },
+    "props/trash-can.glb": {
+      "call": "trash-can-1794272860908-retry1",
+      "provider": "Meshy",
+      "model": "Meshy text-to-3D (latest)",
+      "parameters": {
+        "prompt": "a dented galvanised steel garbage can with ribbed sides, lying on its side, lid off, weathered and wet, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "art_style": "realistic",
+        "should_remesh": true,
+        "topology": "triangle",
+        "target_polycount": 8000,
+        "enable_pbr": false
+      },
+      "costUsd": 0.6,
+      "sha256": "ab423ea6dd0f5536e38aab62b7027e8a0f662f8af8160d5d66df12fabeee8ba9",
+      "bytes": 3626644,
+      "outputGrant": {
+        "license": "CC-BY-4.0",
+        "plan": "Meshy Free",
+        "commercial": true,
+        "relabel": false,
+        "attribution": "3D model generated with Meshy (meshy.ai)",
+        "source": "https://www.meshy.ai/terms"
+      }
+    },
+    "props/mushrooms.glb": {
+      "call": "mushrooms-tripo-1794273065375",
+      "provider": "Tripo",
+      "model": "Tripo text-to-model v3.1-20260211",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "prompt": "a small cluster of brown-capped wild mushrooms with pale stems, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "texture": true,
+        "pbr": true,
+        "face_limit": 4000
+      },
+      "costUsd": 0.2,
+      "sha256": "09d1ed2ea8d3dc56c83d654d9a9e4bf0ebbd5e06ea4db9e9382a1a07f2109480",
+      "bytes": 2600088,
+      "outputGrant": {
+        "license": "CC-BY-4.0",
+        "plan": "Tripo (plan not exposed by the API; Free-plan terms assumed)",
+        "commercial": true,
+        "relabel": false,
+        "attribution": "3D model generated with Tripo (tripo3d.ai)",
+        "source": "https://www.tripo3d.ai/terms"
+      }
+    },
+    "props/mailbox.glb": {
+      "call": "mailbox-tripo-1794273193315",
+      "provider": "Tripo",
+      "model": "Tripo text-to-model v3.1-20260211",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "prompt": "a weathered dark grey metal rural mailbox on a short wooden post, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "texture": true,
+        "pbr": true,
+        "face_limit": 6000
+      },
+      "costUsd": 0.2,
+      "sha256": "7c8e44eaec67ce8b516cb1ea466656560e889ddcef8c2786433ffa483cb1525b",
+      "bytes": 3198420,
+      "outputGrant": {
+        "license": "CC-BY-4.0",
+        "plan": "Tripo (plan not exposed by the API; Free-plan terms assumed)",
+        "commercial": true,
+        "relabel": false,
+        "attribution": "3D model generated with Tripo (tripo3d.ai)",
+        "source": "https://www.tripo3d.ai/terms"
+      }
+    },
+    "props/lamp-post.glb": {
+      "call": "lamp-post-tripo-1794273315533",
+      "provider": "Tripo",
+      "model": "Tripo text-to-model v3.1-20260211",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "prompt": "a short black iron garden lamp post with a glass lantern head, about 1.2 m, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "texture": true,
+        "pbr": true,
+        "face_limit": 6000
+      },
+      "costUsd": 0.2,
+      "sha256": "180a7969299235e53461dc108360ca215d19762ad46e4a28ed5d094c23409402",
+      "bytes": 2715756,
+      "outputGrant": {
+        "license": "CC-BY-4.0",
+        "plan": "Tripo (plan not exposed by the API; Free-plan terms assumed)",
+        "commercial": true,
+        "relabel": false,
+        "attribution": "3D model generated with Tripo (tripo3d.ai)",
+        "source": "https://www.tripo3d.ai/terms"
+      }
+    },
+    "props/tree-base.glb": {
+      "call": "tree-base-tripo-1794273395463",
+      "provider": "Tripo",
+      "model": "Tripo text-to-model v3.1-20260211",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "prompt": "the base of a large old tree trunk with thick spreading roots and mossy bark, cut off at the top, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "texture": true,
+        "pbr": true,
+        "face_limit": 12000
+      },
+      "costUsd": 0.2,
+      "sha256": "19fa80b4f6f52796364fd4379ff4b356363b1e61714054f6b9eae0ac49743583",
+      "bytes": 4712612,
+      "outputGrant": {
+        "license": "CC-BY-4.0",
+        "plan": "Tripo (plan not exposed by the API; Free-plan terms assumed)",
+        "commercial": true,
+        "relabel": false,
+        "attribution": "3D model generated with Tripo (tripo3d.ai)",
+        "source": "https://www.tripo3d.ai/terms"
+      }
+    },
+    "props/bird-feeder.glb": {
+      "call": "bird-feeder-tripo-1794273527928",
+      "provider": "Tripo",
+      "model": "Tripo text-to-model v3.1-20260211",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "prompt": "a hanging cylindrical glass bird feeder full of seeds with a dark metal cap and a hook, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "texture": true,
+        "pbr": true,
+        "face_limit": 5000
+      },
+      "costUsd": 0.2,
+      "sha256": "c6bddb0b2e83969a6a7ba753b1f6be0e2ce46b6fee3e94b2dca813df63a5a752",
+      "bytes": 1128664,
+      "outputGrant": {
+        "license": "CC-BY-4.0",
+        "plan": "Tripo (plan not exposed by the API; Free-plan terms assumed)",
+        "commercial": true,
+        "relabel": false,
+        "attribution": "3D model generated with Tripo (tripo3d.ai)",
+        "source": "https://www.tripo3d.ai/terms"
+      }
+    },
+    "props/watering-can.glb": {
+      "call": "watering-can-tripo-1794273622317",
+      "provider": "Tripo",
+      "model": "Tripo text-to-model v3.1-20260211",
+      "parameters": {
+        "model": "v3.1-20260211",
+        "prompt": "an old galvanised metal watering can, stylised-realistic slightly painterly game prop, hand-painted textures, warm dusk light not baked in, isolated object, no ground plane",
+        "texture": true,
+        "pbr": true,
+        "face_limit": 5000
+      },
+      "costUsd": 0.2,
+      "sha256": "d74d58ee1423b570d3f0dd828408fb101f81907621bbf966deea321bd27cf60c",
+      "bytes": 2987624,
+      "outputGrant": {
+        "license": "CC-BY-4.0",
+        "plan": "Tripo (plan not exposed by the API; Free-plan terms assumed)",
+        "commercial": true,
+        "relabel": false,
+        "attribution": "3D model generated with Tripo (tripo3d.ai)",
+        "source": "https://www.tripo3d.ai/terms"
+      }
+    }
+  }
+}

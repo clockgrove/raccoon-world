@@ -21,3 +21,12 @@ path = ["references/look-3d/*.png"]
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Clockgrove; includes a 3D model generated with Meshy (meshy.ai)"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+# The 3D visual ceiling (issue 34): text-to-3D props from Meshy's Free plan and from Tripo (Free-plan terms
+# assumed; the API does not report the plan), both CC BY 4.0 with credit, and every render that shows them or Stevie.
+# Credit: "3D models generated with Meshy (meshy.ai) and Tripo (tripo3d.ai)".
+[[annotations]]
+path = ["references/ceiling-3d/props/*.glb", "references/ceiling-3d/*.png"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Clockgrove; includes 3D models generated with Meshy (meshy.ai) and Tripo (tripo3d.ai)"
+SPDX-License-Identifier = "CC-BY-4.0"
