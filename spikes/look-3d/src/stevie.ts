@@ -13,7 +13,7 @@ type Any = any;
 export type StevieClip = "idle" | "walk";
 
 /** Joints in yard axes (x forward, y left, z up), metres, at rest (model.ts JOINTS). */
-const JOINTS: readonly Joint[] = [
+export const JOINTS: readonly Joint[] = [
   { name: "root", parent: null, at: [0, 0, 0], end: [0, 0, 0.1] },
   { name: "hips", parent: "root", at: [-0.14, 0, 0.3], end: [0, 0, 0.32] },
   { name: "spine", parent: "hips", at: [0, 0, 0.32], end: [0.13, 0, 0.31] },
@@ -57,7 +57,7 @@ function rotationTrack(bone: string, axis: Any, seconds: number, angle: (phase: 
 }
 
 /** Idle: 2.4 s of breathing, a slow look round and a lazy tail. Walk: a 0.8 s diagonal-pair gait (model.ts). */
-function clips(hipsAt: V3) {
+export function clips(hipsAt: V3) {
   const s = Math.sin;
   const idle = new THREE.AnimationClip("idle", IDLE_SECONDS, [
     rotationTrack("chest", axisY, IDLE_SECONDS, (p) => deg(2.5) * s(p * TAU)),
@@ -93,7 +93,7 @@ function clips(hipsAt: V3) {
   return { idle, walk };
 }
 
-function buildBones(joints: readonly Joint[]) {
+export function buildBones(joints: readonly Joint[]) {
   const bones: Any[] = [];
   const index = new Map(joints.map((joint, i) => [joint.name, i]));
   for (const joint of joints) {
@@ -115,7 +115,7 @@ function buildBones(joints: readonly Joint[]) {
 const GLTF_TO_YARD = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(Math.PI / 2, 0, Math.PI / 2, "ZYX"));
 
 /** A float, de-quantised, yard-axis copy of the loaded mesh (KHR_mesh_quantization stores normalised ints). */
-function yardGeometry(mesh: Any) {
+export function yardGeometry(mesh: Any) {
   mesh.updateWorldMatrix(true, false);
   const transform = new THREE.Matrix4().multiplyMatrices(GLTF_TO_YARD, mesh.matrixWorld);
   const normalMatrix = new THREE.Matrix3().getNormalMatrix(transform);
