@@ -4,7 +4,7 @@
 //       CI check on SwiftShader, WebGPU and WebGL2: the frame draws, the renderer is the software GPU, hiding
 //       Stevie or any set group changes the picture, and the walk animates. Small canvas, so it stays quick.
 //   node spikes/ceiling-3d/scripts/ceiling.mjs capture --label "<host>" [--out <dir>] [--browser <exe>]
-//       [--browser-arg=<flag>]... [--backend webgpu|webgl2|both] [--only <shot-name>]
+//       [--browser-arg=<flag>]... [--backend webgpu|webgl2|both] [--dprs 1,2] [--only <shot-name>]
 //       The report's shots: the hero frame, dusk in rain, night, the close-up, Stevie's idle and walk, at 1× and 2×
 //       DPR, plus side-by-sides with the mockup, results.json and the measurements table in docs/design/3d-ceiling.md.
 //   node spikes/ceiling-3d/scripts/ceiling.mjs shot <file> [--view hero|close] [--state hero|dusk|night]
@@ -220,7 +220,9 @@ async function capture(args) {
     console.log(`ceiling capture: ${file}`);
   };
   for (const backend of backends) {
-    for (const dpr of [1, 2]) {
+    // The report shows WebGPU at 1x and 2x and WebGL2 at 1x (parity), unless --dprs says otherwise.
+    const dprs = args.dprs ? args.dprs.split(",").map(Number) : backend === "webgpu" ? [1, 2] : [1];
+    for (const dpr of dprs) {
       const served = await serve();
       const browser = await chromium.launch(launch);
       try {
@@ -233,7 +235,7 @@ async function capture(args) {
           await page.evaluate((s) => globalThis.ceiling.set({ view: s.view, state: s.state, clip: "idle", heading: "three-quarter", seconds: 0.4, rain: true, hidden: [] }), shot);
           const png = await shoot(page);
           const file = `${shot.name}-${dpr}x-${backend}.png`;
-          const metrics = await page.evaluate(() => globalThis.ceiling.measure(60));
+          const metrics = await page.evaluate((n) => globalThis.ceiling.measure(n), software ? 12 : 120);
           await page.evaluate((s) => globalThis.ceiling.set({ seconds: 0.4 }), shot);
           await write(file, png, { ...common, shot: shot.name, view: shot.view, state: shot.state, metrics: software ? { ...metrics, frameMsP50: "software, not performance", frameMsP95: "software, not performance", softwareFrameMs: [metrics.frameMsP50, metrics.frameMsP95] } : metrics });
           if (dpr === 1 && shot.view === "hero") {

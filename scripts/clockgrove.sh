@@ -85,13 +85,16 @@ check() {
   CLOUDFLARE_CF_FETCH_ENABLED=false node "$dir/scripts/check-world-pack.mjs" --pack worlds/raccoons --assets assets/manifests
 }
 
-# The 3D look proof's journey (#26): draws Stevie and every yard prop on both backends under a software GPU.
+# The 3D look proof's journey (#26) and the 3D visual ceiling's journey (#34): each draws its scene on both backends
+# under a software GPU.
 # Its own CI step, not part of check, so Factory's validation and local checks never download a browser.
 slice() {
   ready || fetch
   node_gate
   cd "$root"
   CLOCKGROVE_DIR="$dir" node "$root/spikes/look-3d/scripts/look.mjs" journey
+  # The 3D visual ceiling (#34): the mockup's main frame, on both backends under the same software GPU.
+  CLOCKGROVE_DIR="$dir" node "$root/spikes/ceiling-3d/scripts/ceiling.mjs" journey
 }
 
 case "${1:-}" in
