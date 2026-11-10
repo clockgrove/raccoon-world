@@ -15,7 +15,7 @@ This folder holds the page, content and scripts behind [the report](../../docs/d
   - `build` is a compile check.
   - `serve [--webgl2]` serves the page on 127.0.0.1.
 - `scripts/look.mjs`:
-  - `journey`: CI's SwiftShader check on both backends, run by `bash scripts/clockgrove.sh check`.
+  - `journey`: the SwiftShader check on both backends, for CI once a maintainer wires it in (report, Maintainer steps).
   - `capture`: the maintainer's report capture on a real GPU.
 
 The page and scripts use the pinned checkout's Three, Vite and Playwright, so nothing is installed here. `CLOCKGROVE_DIR` names the checkout, as in `scripts/clockgrove.sh`. The type check uses `tsconfig.json`, which assumes the default `.clockgrove`:

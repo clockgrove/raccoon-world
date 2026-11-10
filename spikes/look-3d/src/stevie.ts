@@ -1,6 +1,6 @@
 // Stevie for the 3D look proof (issue 26): the #77 Meshy multi-image mesh in ship form (ship-meshy-fit.glb,
 // CC BY 4.0, "3D model generated with Meshy (meshy.ai)"), with the #77 spike's quadruped skeleton fitted at
-// load (fit.ts) and its procedural idle and walk clips, re-shaded in the slice's one material and outline.
+// load (fit.ts) and its procedural idle and walk clips, restyled to the slice's look: a flat, four-tone storybook albedo (look.ts flatAlbedo) and a smoothed-hull outline.
 // Meshy's own rig is a humanoid skeleton whose walk rears the raccoon up and tears the mesh (#77), so it is
 // not used. Joints and clips are those of spikes/stevie-3d/src/stevie/model.ts.
 import type { RendererContentContext } from "@pin/apps/web/src/renderer-content.ts";
@@ -152,6 +152,65 @@ function yardGeometry(mesh: Any) {
   return geometry;
 }
 
+/**
+ * The outline's simplified hull: a copy of the geometry whose normals are pushed-out directions smoothed over
+ * the surface (welded across UV seams, then `passes` rounds of neighbour averaging), so the 1.25 px edge
+ * follows his silhouette like the props' hull directions instead of speckling across every fur-scale normal.
+ */
+function hullGeometry(geometry: Any, passes = 8) {
+  const hull = geometry.clone();
+  const position = hull.getAttribute("position");
+  const normal = hull.getAttribute("normal");
+  const count = position.count;
+  const weld: Any = new Int32Array(count);
+  const keys = new Map<string, number>();
+  for (let i = 0; i < count; i++) {
+    const key = [position.getX(i), position.getY(i), position.getZ(i)].map((c: number) => Math.round(c * 1e4)).join(",");
+    const at = keys.get(key);
+    weld[i] = at ?? i;
+    if (at === undefined) keys.set(key, i);
+  }
+  let dir: Any = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const w = weld[i] * 3;
+    dir[w] += normal.getX(i);
+    dir[w + 1] += normal.getY(i);
+    dir[w + 2] += normal.getZ(i);
+  }
+  const neighbours: Any = Array.from({ length: count }, () => new Set<number>());
+  const index = hull.getIndex();
+  const tri = (k: number) => weld[index ? index.getX(k) : k];
+  for (let k = 0; k + 2 < (index ? index.count : count); k += 3) {
+    const [a, b, c] = [tri(k), tri(k + 1), tri(k + 2)];
+    neighbours[a].add(b).add(c);
+    neighbours[b].add(a).add(c);
+    neighbours[c].add(a).add(b);
+  }
+  for (let pass = 0; pass < passes; pass++) {
+    const next = new Float32Array(dir);
+    for (let i = 0; i < count; i++) {
+      if (weld[i] !== i) continue;
+      for (const j of neighbours[i]) {
+        next[i * 3] += dir[j * 3];
+        next[i * 3 + 1] += dir[j * 3 + 1];
+        next[i * 3 + 2] += dir[j * 3 + 2];
+      }
+    }
+    dir = next;
+  }
+  const out = new Float32Array(count * 3);
+  const v = new THREE.Vector3();
+  for (let i = 0; i < count; i++) {
+    const w = weld[i] * 3;
+    v.set(dir[w], dir[w + 1], dir[w + 2]);
+    if (v.lengthSq() < 1e-12) v.set(normal.getX(i), normal.getY(i), normal.getZ(i));
+    v.normalize();
+    out.set([v.x, v.y, v.z], i * 3);
+  }
+  hull.setAttribute("normal", new THREE.Float32BufferAttribute(out, 3));
+  return hull;
+}
+
 export interface Stevie {
   /** The heading group: place it at Stevie's spot in yard metres; it turns about z. */
   readonly root: Any;
@@ -191,7 +250,8 @@ export async function loadStevie(context: RendererContentContext, url: string): 
   body.add(bones[0]);
   body.updateMatrixWorld(true);
   body.bind(skeleton);
-  const hull = new THREE.SkinnedMesh(geometry, outline("normal"));
+  const hullShape = hullGeometry(geometry);
+  const hull = new THREE.SkinnedMesh(hullShape, outline("normal"));
   hull.name = "stevie-outline";
   hull.bind(skeleton, body.bindMatrix);
   body.add(hull);
@@ -231,6 +291,7 @@ export async function loadStevie(context: RendererContentContext, url: string): 
       mixer.stopAllAction();
       mixer.uncacheRoot(body);
       loaded.scene.traverse((node: Any) => node.material?.dispose?.());
+      hullShape.dispose();
     },
   };
 }

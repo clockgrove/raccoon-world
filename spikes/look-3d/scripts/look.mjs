@@ -141,7 +141,7 @@ async function journey(args) {
           l.setReducedMotion(true);
           l.setEnvironment(63_000_000, 9000);
           l.setStevie({ clip: "idle", heading: "three-quarter", seconds: 0 });
-          l.setQuality(tier);
+          l.holdQuality(tier);
         }, tier);
       const empty = await openPage(browser, served.url, "?view=whole&content=none");
       const tiers = [];
@@ -172,6 +172,7 @@ async function journey(args) {
           }
         }
         await page.evaluate(() => globalThis.look3d.setHidden([]));
+        check(ran.size === 1 && ran.has(tier), `${backend}/${tier}: the held tier slipped to ${[...ran].join("/")}`);
         check(weak.length === 0, `${backend}/${tier}: hiding these objects does not change the picture: ${weak.join(", ")}`);
         if (outDir) {
           await mkdir(outDir, { recursive: true });
@@ -268,7 +269,9 @@ async function captureReport(args) {
       browser = await chromium.launch(launch);
       for (const dpr of [1, 2]) {
         const page = await openPage(browser, served.url, "?view=yard", { deviceScaleFactor: dpr });
-        const info = async () => {
+        // Every shot and strip frame is taken at the high tier, held against the renderer's step-down.
+        const holdHigh = () => page.evaluate(() => globalThis.look3d.holdQuality("high"));
+        const info = async (tier) => {
           const [status, rendererString, userAgent] = await page.evaluate(() => [
             globalThis.look3d.status(),
             globalThis.look3d.rendererString(),
@@ -276,24 +279,26 @@ async function captureReport(args) {
           ]);
           check(status.backend === backend, `${backend}: renderer ran on ${status.backend}`);
           check(status.contentStatus === "ready", `${backend}: content status is ${status.contentStatus} (${status.contentFailure ?? "no failure"})`);
+          if (tier) check(status.qualityTier === tier, `${backend}: shot taken at ${status.qualityTier}, not the requested ${tier}`);
           return { backend, rendererString, qualityTier: status.qualityTier, dpr, userAgent, label, performance: !SOFTWARE.test(rendererString) };
         };
         const views = await page.evaluate(() => Object.keys(globalThis.look3d.views));
         await page.evaluate(() => {
           const l = globalThis.look3d;
           l.setReducedMotion(true);
-          l.setQuality("high");
+          l.holdQuality("high");
           l.setStevie({ clip: "idle", heading: "three-quarter", seconds: 0 });
         });
         for (const state of states) {
           await page.evaluate(({ t, r }) => globalThis.look3d.setEnvironment(t, r), { t: state.timeMs, r: state.rain });
           for (const view of views) {
             await page.evaluate((v) => globalThis.look3d.setView(v), view);
+            await holdHigh();
             await page.waitForTimeout(500);
             const buffer = await page.locator("canvas").screenshot();
             const file = `zoom-${state.name}-${view}-${dpr}x-${backend}.png`;
             await writeFile(path.join(outDir, file), buffer);
-            shots.push({ file, sha256: sha256(buffer), bytes: buffer.length, ...pngSize(buffer), state: state.name, view, zoomMethod: ZOOM_METHOD, ...(await info()) });
+            shots.push({ file, sha256: sha256(buffer), bytes: buffer.length, ...pngSize(buffer), state: state.name, view, zoomMethod: ZOOM_METHOD, ...(await info("high")) });
           }
         }
         if (dpr !== 1) {
@@ -315,18 +320,25 @@ async function captureReport(args) {
             const frames = [];
             let center = [320, 200];
             for (const s of seconds) {
+              await holdHigh();
               await page.evaluate(({ clip, heading, s }) => globalThis.look3d.setStevie({ clip, heading, seconds: s }), { clip, heading, s });
               frames.push(await page.evaluate(() => globalThis.look3d.capture()));
+              const at = await page.evaluate(() => globalThis.look3d.status().qualityTier);
+              check(at === "high", `${backend}: ${heading}/${clip} frame at ${s} s taken at ${at}, not high`);
               center = (await page.evaluate(() => globalThis.look3d.screenPoints().stevie)) ?? center;
             }
             const buffer = await strip(page, frames, center);
             const file = `motion-${heading}-${clip}-${backend}.png`;
             await writeFile(path.join(outDir, file), buffer);
-            motion.push({ file, sha256: sha256(buffer), bytes: buffer.length, ...pngSize(buffer), state: "dusk-rain", view: "close", zoomMethod: ZOOM_METHOD, heading, clip, seconds, ...(await info()) });
+            motion.push({ file, sha256: sha256(buffer), bytes: buffer.length, ...pngSize(buffer), state: "dusk-rain", view: "close", zoomMethod: ZOOM_METHOD, heading, clip, seconds, ...(await info("high")) });
           }
         }
 
-        await page.evaluate(() => globalThis.look3d.setStevie({ clip: "idle", heading: "three-quarter", seconds: null }));
+        // Measurements run under the renderer's own tier policy, released from the hold; each row records its tier.
+        await page.evaluate(() => {
+          globalThis.look3d.holdQuality(null);
+          globalThis.look3d.setStevie({ clip: "idle", heading: "three-quarter", seconds: null });
+        });
         for (const state of states) {
           await page.evaluate(({ t, r }) => globalThis.look3d.setEnvironment(t, r), { t: state.timeMs, r: state.rain });
           for (const view of views) {

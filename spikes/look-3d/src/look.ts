@@ -102,6 +102,32 @@ export function storybook(albedo: any) {
   return TSL.mix(TSL.vec3(luma), albedo, 1.15).mul(TSL.vec3(1.04, 1.0, 0.93)).clamp(0, 1);
 }
 
+/**
+ * Stevie's storybook albedo: the Meshy texture blurred past its fur strands (a 3×3 tap average over ±`radius`
+ * in UV), then posterised by luminance into four flat tones of the mockup's raccoon (mask, dark coat, coat,
+ * cream). The markings (mask, ear rims, tail rings) survive as flat regions with soft borders (±15% of each band edge; the edges are linear luminance), so his
+ * detail density matches the vertex-coloured props instead of a photographic fur texture.
+ */
+export const STEVIE_TONES = [0x2e2621, 0x5f5249, 0x87776a, 0xdfd0b7] as const;
+export const STEVIE_BANDS = [0.03, 0.07, 0.3] as const;
+// biome-ignore lint/suspicious/noExplicitAny: TSL node types are structural and too deep to spell here.
+export function flatAlbedo(map: InstanceType<typeof THREE.Texture>, radius = 0.005): any {
+  const uv = TSL.uv();
+  // biome-ignore lint/suspicious/noExplicitAny: TSL node chains.
+  let sum: any = TSL.vec3(0);
+  for (const dx of [-1, 0, 1]) {
+    for (const dy of [-1, 0, 1]) sum = sum.add(TSL.texture(map, uv.add(TSL.vec2(dx * radius, dy * radius))).rgb);
+  }
+  const luma = TSL.dot(sum.div(9), TSL.vec3(0.2126, 0.7152, 0.0722));
+  const tone = (hex: number) => TSL.color(new THREE.Color(hex));
+  // biome-ignore lint/suspicious/noExplicitAny: TSL node chains.
+  let out: any = tone(STEVIE_TONES[0]);
+  STEVIE_BANDS.forEach((edge, i) => {
+    out = TSL.mix(out, tone(STEVIE_TONES[i + 1] as number), TSL.smoothstep(edge * 0.85, edge * 1.15, luma));
+  });
+  return out;
+}
+
 export interface SurfaceOptions {
   /** `map`: a texture's colour; `vertex`: the geometry's colour attribute; else a flat colour. */
   readonly map?: InstanceType<typeof THREE.Texture>;
@@ -128,7 +154,7 @@ export function surface(options: SurfaceOptions = {}): InstanceType<typeof THREE
     opacity: options.opacity ?? 1,
   });
   const albedo = options.map
-    ? TSL.texture(options.map).rgb
+    ? flatAlbedo(options.map)
     : options.vertex
       ? TSL.attribute("color", "vec3")
       : TSL.color(new THREE.Color(options.color ?? 0xffffff));

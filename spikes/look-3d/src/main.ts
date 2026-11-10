@@ -89,6 +89,19 @@ const api = {
   setQuality(tier: QualityTier) {
     adapter.setQuality(tier);
   },
+  /**
+   * Capture only: sets `tier` and holds it. The renderer steps the tier down whenever p95 over 120 frames
+   * exceeds its budget with content present, which a software GPU always triggers; pushing its frame counter
+   * far back keeps that check from running, so a shot is taken at the tier it records. `null` releases it.
+   */
+  holdQuality(tier: QualityTier | null) {
+    if (tier === null) {
+      internal.framesSinceReport = 0;
+      return;
+    }
+    if (internal.tier !== tier) adapter.setQuality(tier);
+    internal.framesSinceReport = -1e9;
+  },
   setReducedMotion(enabled: boolean) {
     adapter.setReducedMotion(enabled);
   },
