@@ -1,0 +1,53 @@
+{
+  "what": "Screenshots of the quality lab page (spikes/quality-lab) for docs/design/quality-lab.md, drawn by `node spikes/quality-lab/scripts/lab.mjs shots` on SwiftShader (software GPU). Not performance.",
+  "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+  "generationSpendUsd": 0,
+  "inputs": {
+    "stevie": "references/stevie/3d-wave0-candidates/c3-rigged/c3-rigged.glb (#54; see its provenance.json)",
+    "props": "references/ceiling-3d/props (#34; CC BY 4.0, see references/ceiling-3d/provenance.json)"
+  },
+  "records": [
+    {
+      "file": "yard-dusk.png",
+      "sha256": "1236b49daa6d858e8bc2c640105c81b00700242ac780d377652c800dd575d429",
+      "view": "yard",
+      "state": "dusk",
+      "preset": "high",
+      "backend": "webgpu",
+      "adapter": "google / swiftshader (fallback adapter)",
+      "canvas": [
+        2560,
+        1440
+      ],
+      "performance": false
+    },
+    {
+      "file": "yard-night.png",
+      "sha256": "4d1a73507da4f500763431d0378b085f49f0eb9eb87b55c7d3e206b19d3ad166",
+      "view": "yard",
+      "state": "night",
+      "preset": "high",
+      "backend": "webgpu",
+      "adapter": "google / swiftshader (fallback adapter)",
+      "canvas": [
+        2560,
+        1440
+      ],
+      "performance": false
+    },
+    {
+      "file": "close-dusk.png",
+      "sha256": "f8218f6bf1a488145c728e62af049a49bdb70cba5578369a743c60a8ca1fdfe5",
+      "view": "close",
+      "state": "dusk",
+      "preset": "high",
+      "backend": "webgpu",
+      "adapter": "google / swiftshader (fallback adapter)",
+      "canvas": [
+        2560,
+        1440
+      ],
+      "performance": false
+    }
+  ]
+}
