@@ -15,8 +15,13 @@
   ],
   "references": [
     {
+      "path": "../references/stevie/turnaround.png",
+      "role": "character look anchor (owner, 2026-11-11)",
+      "subject": "stevie"
+    },
+    {
       "path": "../references/jimothy/jimothy-peanut-painted.png",
-      "role": "painted style anchor",
+      "role": "painted brushwork anchor for the environment; characters follow the turnaround's look",
       "subject": "jimothy"
     },
     {
@@ -58,9 +63,9 @@
     "rainy"
   ],
   "notes": [
-    "rendering: painterly; rendered storybook realism; believable animal anatomy and fur, gently softened, never photographic and never cartoon-flat",
+    "rendering: painterly; characters in naturalistic illustrated realism like Stevie's approved turnaround (soft, believable fur and anatomy, high quality, never photographic and never heavily painterly); the environment a touch more painterly than the characters, never photo-accurate; never cartoon-flat",
     "shading: soft; outline: none",
-    "texture: soft visible brushwork, fine fur strands at every silhouette edge, wet sheen on stone and wood",
+    "texture: characters with fine, soft, naturalistic fur and fur strands at every silhouette edge, no visible brushwork; environment with soft visible brushwork and a wet sheen on stone and wood",
     "detail: high on the characters' faces, masks and banded tails; medium on fur bodies; lower on background foliage",
     "lighting: warm amber lantern and window light against cool blue-grey dusk and rain; soft rim light separating fur from the background",
     "colour: full colour, soft alpha; never pixel art",
