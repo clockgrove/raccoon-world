@@ -1,5 +1,7 @@
 # Stevie in 3D: wave 0 candidates
 
+**Kirk picked c3** (2026-11-10). It is the quality lab's Stevie (raccoon-world#45) until `assetforge pick` writes it through the 3D target profile (#39). Kirk's note on the pick: the walk needs work around the ankles and feet; see clockgrove/assetforge's follow-up.
+
 Four real-time 3D candidates of Stevie for Kirk to pick from: Assetforge wave 0 ([clockgrove/assetforge#72](https://github.com/clockgrove/assetforge/issues/72), [PLAN](https://github.com/clockgrove/assetforge/blob/main/docs/PLAN.md)). This is review material, not approved art, and nothing is in `assets/`. The pick is written into the game once this repository's 3D target profile lands (raccoon-world#39).
 
 - **Run:** 2026-11-10, `assetforge stage` with a `character-3d` spec: quadruped, the walk clip, 0.45 m tall. The inputs were Stevie's approved turnaround from `art/style-bible.json` (three-quarter, front and side) and a throwaway profile with desktop budgets: 60,000 triangles, 2048 px textures, 4 materials, 80 bones.
