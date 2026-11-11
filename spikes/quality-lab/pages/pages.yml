@@ -1,8 +1,9 @@
 # The quality lab's public page (issue 45) on GitHub Pages, at https://clockgrove.github.io/raccoon-world/quality-lab/.
 #
-# Not active here: Factory may not write .github/. To publish, a maintainer copies this file to
-# .github/workflows/pages.yml, pins the two Pages actions to commit SHAs like the rest of ci.yml, and sets
-# Settings → Pages → Source to "GitHub Actions". It uses only the workflow's own token: no secrets.
+# Not active here: Factory may not write .github/. Kirk approved publishing the lab publicly (2026-11-11, issue 45's
+# Decisions): after the PR merges, the owner session copies this file to .github/workflows/pages.yml, pins the two
+# Pages actions to commit SHAs like the rest of ci.yml, and sets Settings → Pages → Source to "GitHub Actions".
+# It uses only the workflow's own token: no secrets.
 name: Pages
 
 on:

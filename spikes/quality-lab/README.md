@@ -10,6 +10,6 @@ The page and scripts behind [the report](../../docs/design/quality-lab.md). The 
 - `scripts/serve.mjs`: `serve` (a dev server) and `build` (the static site with its media; relative URLs, so it works under GitHub Pages' sub-path).
 - `scripts/lab.mjs`: `journey` (the CI check, run by `bash scripts/clockgrove.sh slice`), `shot`, and `shots` (the report's images).
 - `scripts/report.mjs`: writes the report's tables from the results JSON saved under `results/`.
-- `pages/pages.yml`: the GitHub Pages workflow, which a maintainer installs as `.github/workflows/pages.yml`.
+- `pages/pages.yml`: the GitHub Pages workflow, which the owner session installs as `.github/workflows/pages.yml` after this lands (publishing approved by Kirk, 2026-11-11).
 
 Nothing is installed here. `CLOCKGROVE_DIR` names the pinned checkout, as in `scripts/clockgrove.sh`.

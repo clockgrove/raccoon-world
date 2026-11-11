@@ -94,7 +94,7 @@ The product renderer at the pinned Clockgrove commit (clockgrove/clockgrove#184 
 
 ## How to run it
 
-- **The public page:** `https://clockgrove.github.io/raccoon-world/quality-lab/`, once the Pages workflow is installed. This change can't write `.github/`, so the workflow is delivered as [`spikes/quality-lab/pages/pages.yml`](../../spikes/quality-lab/pages/pages.yml) for a maintainer to copy to `.github/workflows/pages.yml`, with Pages set to deploy from GitHub Actions. It uses only the workflow's own token.
+- **The public page:** `https://clockgrove.github.io/raccoon-world/quality-lab/`, once the Pages workflow is installed. This change can't write `.github/`, so the workflow is delivered as [`spikes/quality-lab/pages/pages.yml`](../../spikes/quality-lab/pages/pages.yml) for the owner session to copy to `.github/workflows/pages.yml` after merge (its Pages actions pinned to commit SHAs), with Pages set to deploy from GitHub Actions. Kirk approved publishing the lab publicly on 2026-11-11. It uses only the workflow's own token.
 - **Locally:** `bash scripts/clockgrove.sh fetch`, then `node spikes/quality-lab/scripts/serve.mjs serve` (a dev server on 127.0.0.1) or `node spikes/quality-lab/scripts/serve.mjs build` (the static site, in `$TMPDIR/quality-lab-site`).
 - **URL options:** `?backend=webgl2`, `?preset=ultra|high|medium|low` (the starting preset; Medium by default), `?view=close`, `?state=night`, `?platform=phone|desktop` (overrides the detected platform), `?ui=0`.
 - **After a run:** save the JSON from the results issue as `spikes/quality-lab/results/<device>.json`, then run `node spikes/quality-lab/scripts/report.mjs` to fill in the tables above.
