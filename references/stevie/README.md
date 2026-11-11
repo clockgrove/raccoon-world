@@ -1,6 +1,6 @@
 # Stevie references
 
-**Approved reference (owner, 2026-11-07):** the four-view turnaround `turnaround-front.png`, `turnaround-three-quarter.png`, `turnaround-side.png` and `turnaround-back.png` (and `turnaround.png`, all four on one sheet). Stevie is the lean, upright, long-bodied raccoon. The 57-frame contact sheet in `docs/design/reference/jimothy-sprite-sheet.png` is Jimothy, not Stevie.
+**Approved reference (owner, 2026-11-07):** the four-view turnaround `turnaround-front.png`, `turnaround-three-quarter.png`, `turnaround-side.png` and `turnaround-back.png` (and `turnaround.png`, all four on one sheet). Stevie is the stocky, rounded, short-legged raccoon with a grey-brown streaked back and a warm tan underside. The 57-frame contact sheet in `docs/design/reference/jimothy-sprite-sheet.png` is Jimothy, not Stevie.
 
 **Real-life photo (Kirk, 2026-11-10):** `stevie-window-front.png` shows Stevie face-on, up against Kirk's porch window. It's the only real front view of his face: the mask, pale brows and muzzle, the rounded pale-rimmed ears, the whiskers, and a creamy grey ruff. It's a reference for his identity and look-dev, not part of the approved turnaround.
 

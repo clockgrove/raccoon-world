@@ -117,16 +117,17 @@ adjustable:
   saturation: { min: 0.2, max: 0.65 }
 identities:
   stevie:
-    version: "1"
+    version: "2"
     approved: true
     turnaround: ../references/stevie/turnaround-three-quarter.png
     signatureFeatures:
-      - lean, upright, long-bodied adult raccoon
+      - stocky, rounded adult raccoon on short legs, back carried level (not hunched)
+      - grey-brown coat with a darker, streaked back and a warm tan underside
       - dark brown-black eye mask with cream brows and a cream muzzle
       - rounded ears with pale rims
       - full tail with five dark rings on tan, dark tip
       - dark brown lower legs and hand-like paws
-    proportions: long body and legs for a raccoon, upright chest, head carried high; lean rather than round
+    proportions: compact, rounded body on short legs, head held level; stocky rather than lean; sleeker and less hunched than Jimothy
     palette: ["#6b6662", "#282323", "#e2d7c2", "#ae9675", "#3a3330"]
   jimothy:
     version: "1"
@@ -144,7 +145,7 @@ perspective: ../docs/design/reference/raccoon-world-reference.png
 perspectiveDescription: high three-quarter isometric view from above, the camera looking down on the yard at roughly 30 to 35 degrees, ground plane receding to the upper right
 subjects:
   stevie:
-    description: Stevie, a lean, upright, long-bodied adult raccoon with a dark eye mask, cream muzzle and brows, rounded pale-rimmed ears and a full tail with five dark rings
+    description: Stevie, a stocky, rounded adult raccoon on short legs, grey-brown with a darker streaked back and a warm tan underside, dark legs and paws, a dark eye mask, cream muzzle and brows, rounded pale-rimmed ears and a full tail with five dark rings
   jimothy:
     description: Jimothy, a short-spined, round, hunched and chubby raccoon with a very fluffy coat and a big fluffy banded tail
 ---
@@ -177,7 +178,7 @@ The identity locks are exactly the set the owner's 0.68 threshold was measured o
 
 Identity scoring runs in shadow mode at 0.68 (`art/target-profile.json`): it records a score beside QA and filters nothing. Bump a lock's `version` when it changes.
 
-Stevie's subject references for generation are the three-quarter view (the lock) plus the approved front and side views. The front and side fix his mask, ears and lean long body from the angles a sheet draws him in. They are subject references only, not identity locks: the 0.68 threshold was not measured on them. The back view is left out: a high three-quarter camera never shows it, and it was one of the false rejects in the threshold measurement.
+Stevie's subject references for generation are the three-quarter view (the lock) plus the approved front and side views. The front and side fix his mask, ears and stocky, short-legged build from the angles a sheet draws him in. They are subject references only, not identity locks: the 0.68 threshold was not measured on them. The back view is left out: a high three-quarter camera never shows it, and it was one of the false rejects in the threshold measurement.
 
 ## Anchors
 
@@ -192,7 +193,7 @@ The palette tokens are the colours the mockup is built from: night ink, raccoon 
 - Do paint soft fur edges with fine strands and soft 8-bit alpha.
 - Do keep the high three-quarter isometric camera of the mockup.
 - Do light characters warm from the nearest lamp and cool from the rainy sky, with a pale rim.
-- Do keep each character's identity lock: Stevie lean and upright, Jimothy short-spined and round.
+- Do keep each character's identity lock: Stevie stocky and level-backed with a sleek grey-brown coat, Jimothy short-spined, hunched and very fluffy.
 - Do keep full, natural colour.
 - Don't make pixel art, hard binary transparency or a palette-quantised image.
 - Don't draw outlines, cel shading or flat cartoon fills.

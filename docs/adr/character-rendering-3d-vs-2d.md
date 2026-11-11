@@ -25,7 +25,7 @@ The owner chose the services on the issue (2026-11-07): a GPT-image **turnaround
 - **Meshy** image-to-3D with Meshy's own auto-rig;
 - **Tripo** multi-view image-to-model with its low-poly option and its quadruped auto-rig.
 
-The owner approved the first turnaround as Stevie's likeness: lean, upright, a long body and a ringed tail. Every route starts from it, and 3D likeness is judged against it. `scripts/generate.mjs` makes every call. It reserves each call's cost against the cap before the call and records provider, model, endpoint, parameters, cost, minutes and sha256 in the git-ignored `media/provenance.json`.
+The owner approved the first turnaround as Stevie's likeness: a stocky, rounded, short-legged raccoon with a grey-brown coat, a tan underside and a ringed tail. Every route starts from it, and 3D likeness is judged against it. `scripts/generate.mjs` makes every call. It reserves each call's cost against the cap before the call and records provider, model, endpoint, parameters, cost, minutes and sha256 in the git-ignored `media/provenance.json`.
 
 **Services the keys reach.**
 
@@ -55,7 +55,7 @@ fal's prices are its listed per-call prices, because fal's billing API and web p
 
 **Likeness.** The judge is the approved turnaround. The owner asked for likeness at the reduced triangle count. The bullets below were judged at the **raw** count, each noted, from previews made before the ship step existed; the report page renders the shipped 10K files beside the turnaround, and judging those is the maintainer step under "What the sandbox could not do".
 
-- **The image step held Stevie's identity:** the owner confirmed the first turnaround as Stevie, with the mask, the ringed tail, the grey-brown coat and the lean, upright build.
+- **The image step held Stevie's identity:** the owner confirmed the first turnaround as Stevie, with the mask, the ringed tail, the grey-brown coat and the stocky, short-legged build.
 - **Meshy** (judged at its raw 31,171 triangles): faithful to the turnaround. It has the mask and white brows, the ringed tail with clear dark and tan bands, the grey-brown back over a tan underside and dark legs. Its albedo is evenly lit, because the turnaround asked for flat light.
 - **Tripo** (judged at its raw 15,156 triangles, from Tripo's own render): Tripo's own preview render (front three-quarter, `preview-tripo-provider-render.png`) shows the closest face of the three routes: the mask, the white brows, glossy dark eyes, a grey-brown coat with a tan chest, dark paws, and added whiskers. Its finish is crisper and more naturalistic than the turnaround's soft illustration. The preview doesn't show the tail, so the tail's likeness waits on the maintainer's report render.
 - **fal, three-quarter at 1536 (kept; raw 46,681 triangles):** the shape and the mask are right. The fur drifts darker and blotchy, and the tail banding is faint.
