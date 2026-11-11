@@ -30,3 +30,10 @@ path = ["references/ceiling-3d/props/*.glb", "references/ceiling-3d/*.png"]
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Clockgrove; includes 3D models generated with Meshy (meshy.ai) and Tripo (tripo3d.ai)"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+# The quality lab (issue 45): its screenshots show the ceiling's CC BY 4.0 props, so they are CC BY 4.0 too.
+[[annotations]]
+path = ["references/quality-lab/*.png"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Clockgrove; includes 3D models generated with Meshy (meshy.ai) and Tripo (tripo3d.ai)"
+SPDX-License-Identifier = "CC-BY-4.0"

@@ -1,0 +1,61 @@
+# The quality lab's public page (issue 45) on GitHub Pages, at https://clockgrove.github.io/raccoon-world/quality-lab/.
+#
+# Not active here: Factory may not write .github/. Kirk approved publishing the lab publicly (2026-11-11, issue 45's
+# Decisions): after the PR merges, the owner session copies this file to .github/workflows/pages.yml, pins the two
+# Pages actions to commit SHAs like the rest of ci.yml, and sets Settings → Pages → Source to "GitHub Actions".
+# It uses only the workflow's own token: no secrets.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out with Git LFS objects (Stevie and the props are LFS media)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          lfs: true
+
+      - name: Set up Clockgrove's Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.21.0
+          package-manager-cache: false
+
+      - name: Fetch and install the pinned Clockgrove (its Three.js and Vite build the page)
+        run: bash scripts/clockgrove.sh fetch
+
+      - name: Build the quality lab as a static site
+        run: node spikes/quality-lab/scripts/serve.mjs build --out _site/quality-lab
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v4 # pin to a commit SHA when installing
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-26.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}quality-lab/
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # pin to a commit SHA when installing

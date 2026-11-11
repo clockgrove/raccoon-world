@@ -14,13 +14,13 @@ export interface PropReport {
   readonly triangles: number;
 }
 
-export async function loadProps(slots: Record<string, Slot>, parent: THREE.Object3D): Promise<PropReport[]> {
+export async function loadProps(slots: Record<string, Slot>, parent: THREE.Object3D, base = "/media/props/"): Promise<PropReport[]> {
   const loader = new GLTFLoader();
   const reports = await Promise.all(
     Object.entries(slots).map(async ([name, slot]): Promise<PropReport> => {
       let gltf: Any;
       try {
-        gltf = await loader.loadAsync(`/media/props/${name}.glb`);
+        gltf = await loader.loadAsync(`${base}${name}.glb`);
       } catch {
         return { name, source: "stand-in", triangles: 0 };
       }

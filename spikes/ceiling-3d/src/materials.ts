@@ -31,6 +31,8 @@ type Node = any;
 export const wetness = uniform(1);
 /** The sky colour the puddles pick up at grazing angles (set per state). */
 export const puddleSky = uniform(new THREE.Color(0x9fb2b0));
+/** Puddle ripple strength, 0 to 1 (the quality lab's switch; the ceiling keeps 1). */
+export const rippleStrength = uniform(1);
 
 const tone = (hex: number) => color(new THREE.Color(hex));
 
@@ -123,7 +125,7 @@ export function glow(hex: number, strength: Node) {
  * The yard ground: mud, moss and grass from a painted layout mask (R puddle, G mud, B grass) plus world noise,
  * and mirror-like puddles that sample the planar reflection.
  */
-export function ground(mask: THREE.Texture, reflection: Node) {
+export function ground(mask: THREE.Texture, reflection: Node | null) {
   const m = texture(mask, uv());
   const n1 = mx_fractal_noise_float(positionWorld.mul(1.3), 4, 2, 0.5).mul(0.5).add(0.5);
   const n2 = mx_fractal_noise_float(positionWorld.mul(9), 3, 2, 0.5).mul(0.5).add(0.5);
@@ -138,9 +140,15 @@ export function ground(mask: THREE.Texture, reflection: Node) {
   const damp = smoothstep(0.15, 0.5, m.r.add(n3.sub(0.5).mul(0.6)).add(m.g.mul(0.3)));
   const material = new THREE.MeshStandardNodeMaterial();
   // Ripples: the reflection is pushed a little by fine noise so the puddles read as rain-struck water.
-  const ripple = vec2(mx_noise_float(positionWorld.mul(vec3(18, 18, 1))), mx_noise_float(positionWorld.mul(vec3(17, 19, 1)).add(4))).mul(0.006);
-  reflection.uvNode = reflection.uvNode.add(ripple);
-  const water = reflection.rgb.mul(1.1).add(puddleSky.mul(0.05));
+  const ripple = vec2(mx_noise_float(positionWorld.mul(vec3(18, 18, 1))), mx_noise_float(positionWorld.mul(vec3(17, 19, 1)).add(4))).mul(0.006).mul(rippleStrength);
+  let water: Node;
+  if (reflection) {
+    reflection.uvNode = reflection.uvNode.add(ripple);
+    water = reflection.rgb.mul(1.1).add(puddleSky.mul(0.05));
+  } else {
+    // No planar reflection (the quality lab's reflections switch): the puddles pick up the sky colour, rippled.
+    water = puddleSky.mul(ripple.x.mul(40).add(0.3));
+  }
   const wetAlbedo = albedo.mul(mix(float(1), float(0.55), damp.mul(wetness)));
   material.colorNode = mix(wetAlbedo, tone(0x050403), puddle.mul(0.9));
   material.emissiveNode = water.mul(puddle).mul(wetness);

@@ -152,7 +152,10 @@ export function buildSet(reflection: Any): Set {
 
   // ---- Ground ----
   const centre = anchor(836, 470);
-  const groundMesh = new THREE.Mesh(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE), ground(layoutMask(centre), reflection));
+  const mask = layoutMask(centre);
+  const groundMesh = new THREE.Mesh(new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE), ground(mask, reflection));
+  // The layout mask, for a ground material without the planar reflection (the quality lab's reflections switch).
+  groundMesh.userData.mask = mask;
   groundMesh.position.set(centre.x, centre.y, 0);
   groundMesh.receiveShadow = true;
   groundMesh.add(reflection.target);
