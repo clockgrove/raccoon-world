@@ -4,6 +4,8 @@ Frames from Kirk's own porch footage of raccoon kits, 2026-11-10. This is the mo
 
 - `side-crossing.png`: a kit crossing in side view, t = 0.00–0.20 s at about 25 fps.
 - `walk-away.png`: a kit walking away, t = 6.20–7.95 s at about 9 fps.
+- `roof-ridge-walk.png`: a kit walking about 2 s along a garage-roof ridge, in side view, at 10 fps (from a 720×428 shared copy of Kirk's clip). This is the clearest stretch of continuous walking: the back arched with the rump high, the legs tucked under with short steps, and the head and tail low.
+- `roof-ridge-group.png`: three kits on the same ridge, 1.6 s at 10 fps, passing each other.
 - `adult-fence-walk.png`: an adult mid-stride along a fence top, in side view. This is the sharpest view of the feet and ankles (Kirk's still, 2026-11-10).
 
 ## What the kits do
