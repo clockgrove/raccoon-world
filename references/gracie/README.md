@@ -4,6 +4,7 @@ Kirk's photos of Gracie, one of the raccoons who visit his porch. This is the so
 
 - `gracie-sleeping.png` (Kirk, 2026-11-10): Gracie asleep on the porch rug, on her side, in a three-quarter view from above, behind the screen door.
 - `gracie-lounging.png` (Kirk, 2026-11-10): Gracie sprawled on a patio cushion, looking back over her shoulder, behind the screen. It shows her long, pale grey lower-body and leg fur clearly.
+- `gracie-and-stevie.png` (Kirk, 2026-11-10; IDs as Kirk thinks they are): Gracie at the back, in three-quarter view looking at the camera, and Stevie at the front by the food bowl. Side by side, Gracie's lower body is visibly paler and greyer (pale belly, light legs), while Stevie is an even brown-grey with a darker, streaked back.
 - `gracie-ice-cube.png` (Kirk, 2026-11-10): Gracie curled on the rug, holding an ice cube in one front paw. It shows her hand-like paws, the pale grey fur over her legs and feet with dark palms and soles, and her ringed tail.
 
 ## How to tell Gracie
