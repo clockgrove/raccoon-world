@@ -2,6 +2,7 @@
   "kind": "sprite-sheet",
   "assetId": "stevie",
   "subject": "stevie",
+  "look": "character",
   "animationFamily": "eat",
   "gait": "quadruped",
   "frames": {

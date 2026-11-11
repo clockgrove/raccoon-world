@@ -27,20 +27,32 @@ export async function deriveBible(assetforgeDir) {
     palette: biblePalette(data),
     references: data.anchors.positive
       .filter((anchor) => anchor.path !== data.perspective)
-      .map(({ path, role, subject }) => ({ path, role, ...(subject && { subject }) })),
+      .map(({ path, role, subject, look }) => ({ path, role, ...(subject && { subject }), ...(look && { look }) })),
     perspective: data.perspective,
     perspectiveDescription: data.perspectiveDescription,
     subjects: data.subjects,
     mood: data.tone.moodRange,
     notes: [
-      `rendering: ${data.axes.rendering}; ${data.axes.realism}`,
+      // The world-level rendering word stays out of the shared notes when looks set it per domain.
+      data.looks ? `realism: ${data.axes.realism}` : `rendering: ${data.axes.rendering}; ${data.axes.realism}`,
       `shading: ${data.axes.shading}; outline: ${data.axes.outline.weight}`,
-      `texture: ${data.axes.texture}`,
-      `detail: ${data.axes.detailDensity}`,
       `lighting: ${data.axes.lightingKey}`,
       `colour: ${data.colorRule} colour, soft alpha; never pixel art`,
       ...data.tone.contentLimits,
     ],
+    // A spec whose `look` names one of these gets its notes too; the axes a look overrides are listed there.
+    looks: Object.fromEntries(
+      Object.entries(data.looks ?? {}).map(([name, look]) => [
+        name,
+        {
+          notes: [
+            ...(look.rendering ? [`rendering: ${look.rendering}; ${look.realism ?? data.axes.realism}`] : look.realism ? [`realism: ${look.realism}`] : []),
+            `texture: ${look.texture ?? data.axes.texture}`,
+            `detail: ${look.detailDensity ?? data.axes.detailDensity}`,
+          ],
+        },
+      ]),
+    ),
   };
   return `${JSON.stringify(derived, null, 2)}\n`;
 }

@@ -17,32 +17,38 @@
     {
       "path": "../references/stevie/turnaround.png",
       "role": "character look anchor (owner, 2026-11-11)",
-      "subject": "stevie"
+      "subject": "stevie",
+      "look": "character"
     },
     {
       "path": "../references/jimothy/jimothy-peanut-painted.png",
-      "role": "painted brushwork anchor for the environment; characters follow the turnaround's look",
-      "subject": "jimothy"
+      "role": "painted brushwork anchor for the environment",
+      "subject": "jimothy",
+      "look": "environment"
     },
     {
       "path": "../references/stevie/turnaround-three-quarter.png",
       "role": "approved turnaround, three-quarter view (identity lock)",
-      "subject": "stevie"
+      "subject": "stevie",
+      "look": "character"
     },
     {
       "path": "../references/stevie/turnaround-front.png",
       "role": "approved turnaround, front view",
-      "subject": "stevie"
+      "subject": "stevie",
+      "look": "character"
     },
     {
       "path": "../references/stevie/turnaround-side.png",
       "role": "approved turnaround, side view",
-      "subject": "stevie"
+      "subject": "stevie",
+      "look": "character"
     },
     {
       "path": "../references/jimothy/sheet-cell-03.png",
       "role": "contact sheet cell 3 (identity lock)",
-      "subject": "jimothy"
+      "subject": "jimothy",
+      "look": "character"
     }
   ],
   "perspective": "../docs/design/reference/raccoon-world-reference.png",
@@ -63,15 +69,29 @@
     "rainy"
   ],
   "notes": [
-    "rendering: painterly; characters in naturalistic illustrated realism like Stevie's approved turnaround (soft, believable fur and anatomy, high quality, never photographic and never heavily painterly); the environment a touch more painterly than the characters, never photo-accurate; never cartoon-flat",
+    "realism: high-quality illustrated realism, never photographic and never cartoon-flat; characters are naturalistic and the environment a touch painterly (see looks)",
     "shading: soft; outline: none",
-    "texture: characters with fine, soft, naturalistic fur and fur strands at every silhouette edge, no visible brushwork; environment with soft visible brushwork and a wet sheen on stone and wood",
-    "detail: high on the characters' faces, masks and banded tails; medium on fur bodies; lower on background foliage",
     "lighting: warm amber lantern and window light against cool blue-grey dusk and rain; soft rim light separating fur from the background",
     "colour: full colour, soft alpha; never pixel art",
     "no graphic violence or injury",
     "no sexual content",
     "no hateful imagery",
     "no text, logos or watermarks in the art"
-  ]
+  ],
+  "looks": {
+    "character": {
+      "notes": [
+        "realism: naturalistic illustrated realism like Stevie's approved turnaround; soft, believable fur and anatomy; high quality; never photographic and never heavily painterly",
+        "texture: fine, soft, naturalistic fur with fur strands at every silhouette edge; no visible brushwork",
+        "detail: high on faces, masks and banded tails; medium on fur bodies"
+      ]
+    },
+    "environment": {
+      "notes": [
+        "rendering: painterly; a touch more painterly than the characters; believable materials, never photo-accurate",
+        "texture: soft visible brushwork; a wet sheen on stone and wood",
+        "detail: medium on the house, porch, path and props; lower on background foliage"
+      ]
+    }
+  }
 }
