@@ -7,6 +7,7 @@ These are the owner's decisions about how Raccoon World looks and is drawn. Art 
 | Decision | Choice | Decided |
 | --- | --- | --- |
 | Look | The painterly isometric storybook of the owner's mockup (`reference/raccoon-world-reference.png`). Cohesion first: one lighting model, one grade and post pass, matched detail density, consistent edges, one camera and scale. | Kirk, 2026-11-07 |
+| Character and environment look | Characters look like Stevie's approved turnaround (`references/stevie/turnaround.png`): high-quality, naturalistic illustrated fur, soft and believable, not photographic and not heavily painterly. The backyard is a touch more painterly, never photo-accurate. Keep quality high without over-indexing on painterly. | Kirk, 2026-11-11 |
 | Camera | Fixed isometric angle, the mockup's high three-quarter view. No rotation. Deep zoom, from a whole-yard overview down to a close-up where one raccoon fills a good part of the screen. | Kirk, 2026-11-09 |
 | Devices | Full look on desktop browsers with a mid-range GPU. Recent phones (about 2023 or newer) get the same scene at a lower quality tier, and older phones get the text path. | Kirk, 2026-11-09 |
 | Characters | Real-time 3D: each character is a rigged model drawn by Clockgrove's live renderer, with an animation clip set per character family. Not 3D rendered to sprites, and not 2D sprites. | Kirk, 2026-11-10 |

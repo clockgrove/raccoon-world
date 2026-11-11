@@ -4,14 +4,14 @@ world: Raccoon World
 preset: cozy-storybook
 axes:
   rendering: painterly
-  realism: rendered storybook realism; believable animal anatomy and fur, gently softened, never photographic and never cartoon-flat
+  realism: characters in naturalistic illustrated realism like Stevie's approved turnaround (soft, believable fur and anatomy, high quality, never photographic and never heavily painterly); the environment a touch more painterly than the characters, never photo-accurate; never cartoon-flat
   proportions: true-to-life raccoon proportions; each character keeps the build of their identity lock
   outline:
     weight: none
     colour: "{outline}"
   shading: soft
   detailDensity: high on the characters' faces, masks and banded tails; medium on fur bodies; lower on background foliage
-  texture: soft visible brushwork, fine fur strands at every silhouette edge, wet sheen on stone and wood
+  texture: characters with fine, soft, naturalistic fur and fur strands at every silhouette edge, no visible brushwork; environment with soft visible brushwork and a wet sheen on stone and wood
   lightingKey: warm amber lantern and window light against cool blue-grey dusk and rain; soft rim light separating fur from the background
 tone:
   audience: all-ages
@@ -25,8 +25,11 @@ anchors:
   positive:
     - path: ../docs/design/reference/raccoon-world-reference.png
       role: world mockup and perspective sample (owner's reference)
+    - path: ../references/stevie/turnaround.png
+      role: character look anchor (owner, 2026-11-11)
+      subject: stevie
     - path: ../references/jimothy/jimothy-peanut-painted.png
-      role: painted style anchor
+      role: painted brushwork anchor for the environment; characters follow the turnaround's look
       subject: jimothy
     - path: ../references/stevie/turnaround-three-quarter.png
       role: approved turnaround, three-quarter view (identity lock)
@@ -155,7 +158,11 @@ Raccoon World is a quiet Pacific Northwest garden at dusk in the rain. The owner
 
 Light carries the mood. Warm amber light from lanterns, windows and the porch falls on wet stone, cedar and moss, against the cool blue-grey of dusk and rain. Characters sit in that light: a warm key on the side facing the nearest lamp, a cool fill and a pale rim separating the fur from the dark ground.
 
-It is not pixel art, not flat cartoon and not a 3D render. Jimothy's painted portrait (`references/jimothy/jimothy-peanut-painted.png`) shows the brushwork and fur handling wanted at character scale.
+It is not pixel art, not flat cartoon and not photographic. Characters and environment differ a little (owner, 2026-11-11):
+
+- **Characters** look like Stevie's approved turnaround (`references/stevie/turnaround.png`): high-quality, naturalistic illustrated fur, soft and believable. They are not photographic and not heavily painterly. The 3D characters are textured and lit to match it.
+- **The environment** (the backyard) is a touch more painterly than the characters, so it never tries to be photo-accurate. Jimothy's painted portrait (`references/jimothy/jimothy-peanut-painted.png`) shows the kind of brushwork wanted there.
+- **Quality stays high throughout,** without over-indexing on painterly.
 
 ## Perspective
 
@@ -174,7 +181,7 @@ Stevie's subject references for generation are the three-quarter view (the lock)
 
 ## Anchors
 
-Positive anchors are approved material only: the mockup, Jimothy's painted portrait, Stevie's approved turnaround views and Jimothy's sheet cell 3. Unapproved material is listed as negative anchors and is never a positive one: the 3D spike outputs (`references/stevie/77-3d`), the Assetforge #38 proof outputs (`references/jimothy/assetforge-38-proof`) and the Stevie idle and walk strips made for the 3D comparison (`references/stevie/comparison-candidates`).
+Positive anchors are approved material only: the mockup, Stevie's approved turnaround (the character look anchor) and its views, Jimothy's painted portrait (environment brushwork) and Jimothy's sheet cell 3. Unapproved material is listed as negative anchors and is never a positive one: the 3D spike outputs (`references/stevie/77-3d`), the Assetforge #38 proof outputs (`references/jimothy/assetforge-38-proof`) and the Stevie idle and walk strips made for the 3D comparison (`references/stevie/comparison-candidates`).
 
 ## Palette and lighting tokens
 
