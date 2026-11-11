@@ -14,10 +14,11 @@ These are the owner's decisions about how Raccoon World looks and is drawn. Art 
 | Zoom range | From the whole yard down to a close-up where Stevie fills about a third of the screen height (the range #11's zoom test used). Character detail must hold at that close-up. | Kirk, 2026-11-10 |
 | Animation | Auto-rig plus the provider's clip library, retargeted per character family. Custom clips only where the library has nothing close (for example the shelter's tremble). | Kirk, 2026-11-10 |
 | Character provider | Tripo, on a paid plan: its outputs are owned and ship as MIT. Meshy is a free route whose outputs need CC BY credit, and it has no API credits today. | Kirk, 2026-11-10 |
+| Quality policy | Push for maximum quality on every platform, phones included, and test the upper limits on each. A phone runs a lower tier only where the device measurably can't hold the top one ("I can live with lower quality on mobile if that's all it can handle"). | Kirk, 2026-11-10 |
 
 ## Open, in order
 
-1. **Detail budgets:** polygons, texture size and levels of detail per quality tier. Raccoon World's 3D target profile declares them, tuned against Clockgrove's renderer (clockgrove/clockgrove#184) at the close-up zoom. The art pipeline reads them from the profile and refuses or flags assets over budget.
+1. **Detail budgets:** polygons, texture size and levels of detail per quality tier, set from each device's measured ceiling (the quality policy above). Raccoon World's 3D target profile declares them, tuned against Clockgrove's renderer (clockgrove/clockgrove#184) at the close-up zoom. The art pipeline reads them from the profile and refuses or flags assets over budget.
 
 ## Consequences
 
