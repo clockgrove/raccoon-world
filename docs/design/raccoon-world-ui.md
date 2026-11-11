@@ -17,7 +17,7 @@ What it shows, for agents that cannot view images:
 
 [reference/jimothy-sprite-sheet.png](reference/jimothy-sprite-sheet.png) (1536×1840) is the reference sheet for Jimothy, the short-spine raccoon: an owner-generated contact sheet of 57 numbered frames of Jimothy in 8 columns of 192 px cells on a pale background. It fixes Jimothy's look in the same painterly style as the mockup, with a consistent mask, ringed tail and fur in every frame. The rough pose groups are standing or idle facing right (frames 0–5, 22–25, 45–56), walk right (6–13), walk left (14–21), crouch and hop (26–31), head turn and look down (32–38), and sit and groom (39–44). It is a raw sheet, not a game asset: the baked background, the frame numbers and the per-cell alignment still need processing before any frame is used at runtime.
 
-This sheet is not Stevie. Stevie's approved reference is the lean, upright GPT-image turnaround from the first pass of [#77](https://github.com/clockgrove/clockgrove/issues/77); it is not in this repository yet and will be committed with the world's references.
+This sheet is not Stevie. Stevie's approved reference is the stocky, short-legged GPT-image turnaround from the first pass of [#77](https://github.com/clockgrove/clockgrove/issues/77); it is not in this repository yet and will be committed with the world's references.
 
 ## Tokens
 
