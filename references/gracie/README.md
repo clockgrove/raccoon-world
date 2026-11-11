@@ -19,3 +19,28 @@ In Kirk's words: "You can tell Gracie with the grey longer fur on lower body."
 - **Rest pose:** lying on her side, slightly curled, head tucked down onto her front paws, eyes closed, tail lying along her body.
 - **Front paws:** long-fingered and hand-like, with dark palms and pale fur over the tops. She holds and turns small things in one paw, like the ice cube; that's the reference for an `eat` clip.
 - **Hind feet:** plantigrade. The whole sole shows, dark underneath, with pale toes and pale fur over the top of the foot. This matches the gait reference (`references/stevie/gait-reference/adult-fence-walk.png`).
+
+## Style-bible entry and turnaround
+
+Gracie is in the style bible (`art/style-bible.md`, "Gracie") as the subject `gracie`. Her description leads with her signature, and these three photos are her likeness references. She uses the shared raccoon rig and the generated gait. Her 3D inputs are in `art/gracie/character-3d/`: `kind: "character-3d"`, `subject: "gracie"`, `gait: "quadruped"`.
+
+**Turnaround: waiting on candidates and Kirk's pick.** Her four-view turnaround (front, three-quarter, side and back) is generated from these photos by an image edit through Vercel AI Gateway (`openai/gpt-image-2`), as Stevie's was:
+
+```sh
+node art/tools/turnaround.mjs gracie --dry-run   # forecast: no key, no spend
+node art/tools/turnaround.mjs gracie             # needs AI_GATEWAY_API_KEY in the environment
+```
+
+- **Inputs:** the prompt, the photos, the candidate count (3) and the $5 cap are in `art/gracie/turnaround.json`.
+- **Budget:** each call reserves $0.50 against the cap before it runs. A call that would pass the cap is refused.
+- **Outputs:** the candidates go to `turnaround-candidates/cN/`: the 2×2 sheet `turnaround.png` and its four cropped views.
+- **Provenance:** `turnaround-candidates/provenance.json` records each call's provider, model, route, endpoint, prompt, input hashes, reservation, measured cost, provider terms and output grant (`outputGrant`: OpenAI API terms, commercial and relabellable, so the images are MIT here under `REUSE.toml`'s `**` annotation). It also records each file's hash, and every image is tagged IPTC `trainedAlgorithmicMedia`.
+
+The candidates are review material, not approved art. **The pick is Kirk's.** Once he has picked:
+
+1. Copy the picked candidate's views to `references/gracie/turnaround-{front,three-quarter,side,back}.png`, with its provenance.
+2. Add Gracie's identity lock (`identities.gracie`, approved, with the three-quarter view as the turnaround and these photos as references). Assetforge accepts a lock only on an approved turnaround, which is why she has none yet.
+3. Add the approved front and side views as her subject references.
+4. Add Gracie to the lock set that `art/tools/check.mjs` expects.
+
+His further photos of her refine the turnaround.

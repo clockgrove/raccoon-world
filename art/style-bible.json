@@ -49,6 +49,21 @@
       "role": "contact sheet cell 3 (identity lock)",
       "subject": "jimothy",
       "look": "character"
+    },
+    {
+      "path": "../references/gracie/gracie-lounging.png",
+      "role": "owner's photo, likeness reference only (not the look); her long pale grey lower-body fur",
+      "subject": "gracie"
+    },
+    {
+      "path": "../references/gracie/gracie-ice-cube.png",
+      "role": "owner's photo, likeness reference only (not the look); hand-like paws with dark palms and soles, ringed tail",
+      "subject": "gracie"
+    },
+    {
+      "path": "../references/gracie/gracie-sleeping.png",
+      "role": "owner's photo, likeness reference only (not the look); rest pose, side-lying with her head tucked onto her front paws",
+      "subject": "gracie"
     }
   ],
   "perspective": "../docs/design/reference/raccoon-world-reference.png",
@@ -59,6 +74,9 @@
     },
     "jimothy": {
       "description": "Jimothy, a short-spined, round, hunched and chubby raccoon with a very fluffy coat and a big fluffy banded tail"
+    },
+    "gracie": {
+      "description": "Gracie, an adult raccoon whose lower body (belly, flanks and hindquarters, down over her legs) has lighter, greyer, noticeably longer and shaggier fur than her back; a full dark eye mask with pale brows and a pale muzzle, rounded pale-rimmed ears and a ringed tail"
     }
   },
   "mood": [

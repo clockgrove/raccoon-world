@@ -1,0 +1,13 @@
+{
+  "kind": "character-3d",
+  "assetId": "gracie",
+  "subject": "gracie",
+  "gait": "quadruped",
+  "heightM": 0.45,
+  "clips": [
+    {
+      "family": "walk",
+      "loop": true
+    }
+  ]
+}
