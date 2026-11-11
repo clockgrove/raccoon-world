@@ -163,14 +163,14 @@ Every asset is drawn for the mockup's camera: a high three-quarter isometric vie
 
 ## Characters and identity locks
 
-The identity locks are exactly the set the owner's 0.68 threshold was measured on (Assetforge decision "Identity lock v1"):
+The identity locks are exactly the set the 0.74 threshold was measured on. That's Assetforge's identity route on `google/gemini-decision-1`, with no false accepts on the 44-case 2D set or on Stevie's 3D wave 0 renders against Gracie's turnaround:
 
 - **Stevie:** the approved three-quarter turnaround view, `references/stevie/turnaround-three-quarter.png` (clockgrove/clockgrove#77 pass 1).
 - **Jimothy:** cell 3 of the 57-frame contact sheet (`references/jimothy/sheet-cell-03.png`, cut from `docs/design/reference/jimothy-sprite-sheet.png` by Assetforge's slicer) plus his painted portrait.
 
-Identity scoring runs in shadow mode at 0.68 (`art/target-profile.json`): it records a score beside QA and filters nothing. Bump a lock's `version` when it changes.
+Identity scoring runs in shadow mode at 0.74 (`art/target-profile.json`): it records a score beside QA and filters nothing. Bump a lock's `version` when it changes.
 
-Stevie's subject references for generation are the three-quarter view (the lock) plus the approved front and side views. The front and side fix his mask, ears and lean long body from the angles a sheet draws him in. They are subject references only, not identity locks: the 0.68 threshold was not measured on them. The back view is left out: a high three-quarter camera never shows it, and it was one of the false rejects in the threshold measurement.
+Stevie's subject references for generation are the three-quarter view (the lock) plus the approved front and side views. The front and side fix his mask, ears and lean long body from the angles a sheet draws him in. They are subject references only, not identity locks: the 0.74 threshold was not measured on them. The back view is left out: a high three-quarter camera never shows it, and it was one of the false rejects in the threshold measurement.
 
 ## Anchors
 

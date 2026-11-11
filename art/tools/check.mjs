@@ -139,8 +139,8 @@ async function checkStyle() {
   const bible = await json("art/style-bible.json");
   if (JSON.stringify(profile.values?.palette) !== JSON.stringify([...bible.palette].sort()))
     fail("style", "art/target-profile.json values.palette must be the bible's palette, sorted");
-  if (profile.identity?.mode !== "shadow" || profile.identity?.threshold !== 0.68)
-    fail("style", "identity scoring must stay in shadow mode at the owner's 0.68 threshold");
+  if (profile.identity?.mode !== "shadow" || profile.identity?.threshold !== 0.74)
+    fail("style", "identity scoring must stay in shadow mode at the owner's 0.74 threshold");
 }
 
 /** One run's forecast per family: candidates × one sheet's dry-run forecast, plus its QA calls. */
@@ -290,7 +290,7 @@ async function proof() {
       ["commercial grant that allows relabelling", p.outputGrant?.commercial === true && p.outputGrant?.relabel === true],
       ["IPTC trainedAlgorithmicMedia in provenance", provenance.digitalSourceType === IPTC_GENERATED],
       ["IPTC trainedAlgorithmicMedia in the PNG", png.includes(Buffer.from("trainedAlgorithmicMedia"))],
-      ["identity scored in shadow mode at 0.68, nothing filtered", provenance.identity?.mode === "shadow" && provenance.identity?.threshold === 0.68 && provenance.identity?.filtered === false],
+      ["identity scored in shadow mode at 0.74, nothing filtered", provenance.identity?.mode === "shadow" && provenance.identity?.threshold === 0.74 && provenance.identity?.filtered === false],
       ["only scripted calls, nothing spent", provenance.calls.every((c) => c.route.startsWith("scripted:")) && provenance.costUsd === 0],
       ["the spec's atlas slot", same(manifest.atlas, spec.fields.atlas)],
       ["the spec's accessibility label", manifest.accessibilityLabel === spec.fields.accessibilityLabel],

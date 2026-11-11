@@ -90,7 +90,7 @@
   },
   "identity": {
     "mode": "shadow",
-    "threshold": 0.68,
+    "threshold": 0.74,
     "question": "score"
   },
   "animation": {

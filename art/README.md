@@ -9,7 +9,7 @@ Raccoon World's art direction and Assetforge inputs. The author guide, [docs/art
 - The mockup is both a positive anchor and the perspective sample that Assetforge's vision QA judges perspective against (owner decision 2026-11-08).
 
 **Identity locks**
-- These are exactly the set the 0.68 threshold was measured on:
+- These are exactly the set the 0.74 threshold was measured on (Assetforge's identity route, `google/gemini-decision-1`):
   - Stevie's approved three-quarter turnaround view;
   - Jimothy's sheet cell 3, plus his painted portrait.
 - Jimothy's `references/jimothy/sheet-cell-03.png` was cut from `docs/design/reference/jimothy-sprite-sheet.png` by Assetforge's own slicer at the pinned commit, with no model call:
@@ -47,7 +47,7 @@ Raccoon World's art direction and Assetforge inputs. The author guide, [docs/art
   - The full record goes beside the strip as `<strip>.provenance.json`.
   - IPTC `trainedAlgorithmicMedia` is in the provenance and the PNG's XMP.
 - **Validator:** `bash scripts/validate-asset.sh {{manifest}}`, Clockgrove's `clockgrove-assets validate --world` at the pinned commit.
-- **Identity:** shadow mode at the owner's 0.68 threshold. It scores and filters nothing.
+- **Identity:** shadow mode at the 0.74 threshold. It scores and filters nothing.
 - **QA thresholds:** only `edgeHaloShare` is changed, to 0.3 from 0.22. Soft painterly fur keeps many partly transparent strands whose colour legitimately differs from the nearest opaque fur by more than 64, which is a fringe at the default share. `holeMinPx` (3) and `holeCutoff` (0.7) keep Assetforge's defaults: nothing about soft alpha calls for other values before real shelter output has been seen.
 - **Short sheets:** a sheet that slices into too few figures is refused loudly (exit 5) and never padded. `check` proves it.
 
