@@ -140,13 +140,14 @@ function differing(page, a, b) {
 
 /**
  * One browser on one backend: opens the lab (with its panel when `runner` is set), applies each config and checks it
- * draws, then runs the optional extra checks. Shards run concurrently, so the software GPU's shader compiles overlap.
+ * draws, then runs the optional extra checks. The page opens on the `start` preset (its first step's) so it compiles
+ * that config once at load. Shards run concurrently, so the software GPU's shader compiles overlap.
  */
-async function shard(siteUrl, { name, backend, steps, walk = false, runner = false }) {
+async function shard(siteUrl, { name, backend, start, steps, walk = false, runner = false }) {
   const browser = await chromium.launch({ headless: true, args: SWIFTSHADER_FLAGS });
   const log = (message) => console.log(`lab journey ${name} (${backend}): ${message}`);
   try {
-    const { page, status, errors } = await open(browser, siteUrl, { backend, width: 320, height: 180, ui: runner, extra: { t: "1", preset: "low" } });
+    const { page, status, errors } = await open(browser, siteUrl, { backend, width: 320, height: 180, ui: runner, extra: { t: "1", preset: start, idle: "1" } });
     check(status.backend === backend, `${name}: the lab ran on ${status.backend}`);
     check(/swiftshader/iu.test(status.adapter), `${name}: adapter "${status.adapter}" is not SwiftShader`);
     check(status.software === true, `${name}: the lab does not flag SwiftShader as software`);
@@ -215,13 +216,14 @@ async function journey(args) {
   const all = sweepSteps();
   const byId = (...ids) => ids.map((id) => all.find((s) => s.id === id));
   const effects = all.filter((s) => !s.id.startsWith("preset:"));
+  // Every config on WebGPU (the backend the sweep's GPU times come from) and Ultra and Low on the WebGL2 fallback, in
+  // three browsers: CI's runner has about two cores, and each extra browser compiles the same base shaders again on the
+  // software GPU. Within a page the configs run cheapest first, so each compiles only the shaders it adds.
   const half = Math.ceil(effects.length / 2);
-  // Every config on WebGPU (the backend the sweep's GPU times come from); Ultra and Low on the WebGL2 fallback.
   const shards = [
-    { name: "presets", backend: "webgpu", steps: byId("preset:ultra", "preset:high", "preset:low"), runner: true },
-    { name: "effects-1", backend: "webgpu", steps: [...byId("preset:medium"), ...effects.slice(0, half)], walk: true },
-    { name: "effects-2", backend: "webgpu", steps: effects.slice(half) },
-    { name: "fallback", backend: "webgl2", steps: byId("preset:ultra", "preset:low"), walk: true },
+    { name: "effects", backend: "webgpu", start: "medium", steps: [...byId("preset:medium"), ...effects.slice(0, half)], walk: true },
+    { name: "presets", backend: "webgpu", start: "medium", steps: [...byId("preset:medium"), ...effects.slice(half), ...byId("preset:high", "preset:ultra", "preset:low")], runner: true },
+    { name: "fallback", backend: "webgl2", start: "ultra", steps: byId("preset:ultra", "preset:low"), walk: true },
   ].filter((s) => !args.backend || args.backend === "both" || s.backend === args.backend);
   try {
     const results = await Promise.allSettled(shards.map((s) => shard(site.url, s)));

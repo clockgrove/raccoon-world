@@ -118,11 +118,24 @@ haze.layers.enable(HAZE_LAYER);
 scene.add(haze);
 
 // ---- Light probes: a 4 × 4 × 2 grid baked once over the yard the first time they are switched on ----
+// The bake captures the static yard: Stevie, the rain, the splashes and the haze are hidden, the ground is drawn without
+// its planar reflection, and shadow maps already drawn are held rather than redrawn for each of the bake's 192 cube
+// faces. Hiding meshes leaves the materials' lighting alone, so the scene does not recompile around the bake.
 let probes: Any = null;
 let probeError: string | null = null;
 function ensureProbes() {
   if (probes || probeError) return;
+  const hidden = [stevie?.root, shower.mesh, splashes, haze].filter((o): o is THREE.Object3D => Boolean(o?.visible));
+  const shadows: Any[] = [];
+  scene.traverse((o: Any) => {
+    if (o.isLight && o.castShadow && o.shadow?.autoUpdate && o.shadow.map) shadows.push(o.shadow);
+  });
+  const groundMaterial = set.ground.material;
   try {
+    for (const o of hidden) o.visible = false;
+    for (const shadow of shadows) shadow.autoUpdate = false;
+    plainGround ??= ground(set.ground.userData.mask, null);
+    set.ground.material = plainGround;
     const grid: Any = new LightProbeGrid(16, 16, 3.5, 4, 4, 2);
     grid.position.copy(anchor(836, 470)).setZ(1.75);
     grid.updateMatrixWorld(true);
@@ -131,6 +144,10 @@ function ensureProbes() {
   } catch (error) {
     probeError = String((error as Error)?.message ?? error);
     console.error(error);
+  } finally {
+    for (const o of hidden) o.visible = true;
+    for (const shadow of shadows) shadow.autoUpdate = true;
+    set.ground.material = groundMaterial;
   }
 }
 
@@ -149,6 +166,10 @@ let busy = true;
 let adapter = "unknown";
 const started = performance.now();
 let frozenAt: number | null = query.has("t") ? Number(query.get("t")) : null;
+// `?idle=1` (the CI journey): the animation loop draws only while a measurement runs, so frames come from explicit
+// calls and four software-GPU browsers sharing a few CPU cores spend them on the configs, not on idle frames.
+const idle = query.get("idle") === "1";
+let measuring = false;
 
 /** The close-up's zoom: Stevie (0.45 m standing) at about a third of the frame height. */
 const CLOSE_ZOOM = 3.4;
@@ -265,8 +286,7 @@ async function applyConfig(next: LabConfig) {
     applyState();
     placeView();
     await renderer.compileAsync(scene, camera);
-    render();
-    await nextFrame();
+    // One frame finishes what compileAsync leaves for the first draw (the post graph); measure() warms up after it.
     render();
     await nextFrame();
   } finally {
@@ -287,7 +307,7 @@ const percentile = (values: number[], p: number) => {
 };
 
 function loop(now: number) {
-  if (busy || !ready) {
+  if (busy || !ready || (idle && !measuring)) {
     last = 0;
     return;
   }
@@ -351,15 +371,20 @@ const lab: LabHandle & Record<string, unknown> = {
     const warmupMs = options.warmupMs ?? 1500;
     const holdMs = options.holdMs ?? 4000;
     const until = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
-    await until(warmupMs);
-    intervals = [];
-    gpuTimes = [];
-    last = 0;
-    await until(holdMs);
-    const frames = intervals;
-    const gpu = gpuTimes;
-    intervals = null;
-    gpuTimes = null;
+    measuring = true;
+    const frames: number[] = [];
+    const gpu: number[] = [];
+    try {
+      await until(warmupMs);
+      intervals = frames;
+      gpuTimes = gpu;
+      last = 0;
+      await until(holdMs);
+    } finally {
+      intervals = null;
+      gpuTimes = null;
+      measuring = false;
+    }
     return {
       frames: frames.length,
       frameMsP50: percentile(frames, 50),
