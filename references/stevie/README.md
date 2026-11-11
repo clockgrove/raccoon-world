@@ -4,6 +4,8 @@
 
 **Real-life photo (Kirk, 2026-11-10):** `stevie-window-front.png` shows Stevie face-on, up against Kirk's porch window. It's the only real front view of his face: the mask, pale brows and muzzle, the rounded pale-rimmed ears, the whiskers, and a creamy grey ruff. It's a reference for his identity and look-dev, not part of the approved turnaround.
 
+**With Gracie (Kirk, 2026-11-10):** `../gracie/gracie-and-stevie.png` shows Stevie at the front by the food bowl and Gracie behind (IDs as Kirk thinks they are). Next to her paler, greyer lower body, Stevie is an even brown-grey with a darker, streaked back and bold tail rings. His flat hind foot shows at the bowl.
+
 The turnaround was made with `openai/gpt-image-2` through Vercel AI Gateway in clockgrove/clockgrove#77's first pass. `provenance-77-pass1.json` records the prompt, inputs and cost.
 
 ## 77-3d
