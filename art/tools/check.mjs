@@ -16,6 +16,9 @@
 //                 review pending and complete provenance; a short sheet is refused, never padded.
 // 6. licences:    every committed manifest's licence is the licence REUSE.toml gives its source file,
 //                 so a CC-BY-4.0 pick can't land under the `**` MIT annotation.
+// 7. gracie:      Gracie's bible subject leads with her signature fur, her photos are her subject's
+//                 references, her character-3d spec names her subject and gait, and her turnaround run
+//                 forecasts within its $5 cap with every call's output grant recorded (issue 50).
 //
 // ASSETFORGE_DIR and CLOCKGROVE_DIR name the pinned checkouts (defaults .assetforge-src, .clockgrove).
 import { execFile } from "node:child_process";
@@ -25,6 +28,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { deriveBible, DERIVED } from "./derive-bible.mjs";
+import { forecast, loadRun, pending, ROUTE, VIEWS } from "./turnaround.mjs";
 
 const run = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -124,6 +128,32 @@ async function checkBible() {
     )
       fail("bible", `identity lock ${name} must be the measured set: ${lock.turnaround} ${lock.references}`);
   }
+}
+
+async function checkGracie() {
+  const bible = await json("art/style-bible.json");
+  const description = bible.subjects?.gracie?.description ?? "";
+  // Her signature leads: the first clause after her name is her lower-body fur.
+  if (!/^Gracie, [^;]*lower body[^;]*lighter, greyer, noticeably longer and shaggier fur than her back;/.test(description))
+    fail("gracie", `her subject description must lead with her signature lower-body fur: ${description}`);
+  for (const trait of ["full dark eye mask", "pale brows", "pale muzzle", "pale-rimmed ears", "ringed tail"])
+    if (!description.includes(trait)) fail("gracie", `her subject description lacks: ${trait}`);
+  const photos = bible.references.filter((r) => r.subject === "gracie").map((r) => r.path).sort();
+  const expected = ["gracie-ice-cube.png", "gracie-lounging.png", "gracie-sleeping.png"].map((f) => `../references/gracie/${f}`);
+  if (JSON.stringify(photos) !== JSON.stringify(expected)) fail("gracie", `her references must be her photos: ${photos}`);
+  const spec = await json("art/gracie/character-3d/spec.json");
+  if (spec.kind !== "character-3d" || spec.subject !== "gracie" || spec.gait !== "quadruped")
+    fail("gracie", "art/gracie/character-3d/spec.json must be kind character-3d, subject gracie, gait quadruped");
+  const turnaround = await loadRun("gracie");
+  if (turnaround.capUsd !== MAX_RUN_USD) fail("gracie", `the turnaround run's cap must be $${MAX_RUN_USD}`);
+  try {
+    forecast({ calls: [] }, turnaround, pending({ calls: [] }, turnaround.candidates));
+  } catch (error) {
+    fail("gracie", error.message);
+  }
+  if (ROUTE.outputGrant?.license !== "LicenseRef-openai-api" || ROUTE.outputGrant.relabel !== true || ROUTE.digitalSourceType !== IPTC_GENERATED)
+    fail("gracie", "the turnaround route must record OpenAI's relabellable output grant and IPTC trainedAlgorithmicMedia");
+  if (VIEWS.join() !== "front,three-quarter,side,back") fail("gracie", `the turnaround views must be the four views: ${VIEWS}`);
 }
 
 async function checkStyle() {
@@ -329,6 +359,7 @@ try {
   await pinned(clockgroveDir, "CLOCKGROVE_COMMIT", "bash scripts/clockgrove.sh fetch");
   await checkBible();
   await checkStyle();
+  await checkGracie();
   const proved = await proof();
   const forecasts = await checkInputs(proved?.qaPerCandidateUsd ?? 0);
   const placeholders = await checkPlaceholders();
