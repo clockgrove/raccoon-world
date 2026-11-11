@@ -48,7 +48,25 @@ jobs:
       - name: Check the world pack against Clockgrove
         run: bash scripts/clockgrove.sh check
 
+      # The slice takes about 7 of the job's 12 minutes on the software GPU. A change made only of
+      # reference images and Markdown can't change what it draws, so it skips; anything else, any
+      # model under references/stevie/77-3d or references/ceiling-3d, and every push to main runs it.
+      - name: Decide whether the change can affect the 3D slice
+        id: slice
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+        run: |
+          if [ "$EVENT" = push ] || [ -z "$BASE" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          git fetch -q --depth=1 --no-tags origin "$BASE"
+          changed=$(git diff --name-only "$BASE" HEAD)
+          printf '%s\n' "$changed"
+          other=$(printf '%s\n' "$changed" | grep -vE '^(references|docs)/.*\.(png|jpe?g|webp|md)$' || true)
+          models=$(printf '%s\n' "$changed" | grep -E '^references/(stevie/77-3d|ceiling-3d)/' || true)
+          if [ -z "$changed" ] || [ -n "$other$models" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; else echo "run=false" >> "$GITHUB_OUTPUT"; echo "Only reference images and Markdown changed: the slice is skipped."; fi
+
       - name: Draw the 3D look proof's slice on both backends (software GPU)
+        if: steps.slice.outputs.run == 'true'
         run: bash scripts/clockgrove.sh slice
 
       # Raccoon World's art inputs against Assetforge at the commit pinned in ASSETFORGE_COMMIT: the
