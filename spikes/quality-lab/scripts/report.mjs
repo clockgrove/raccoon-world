@@ -14,7 +14,7 @@ const lab = fileURLToPath(new URL("..", import.meta.url));
 const repo = path.resolve(lab, "../..");
 const DOC = path.join(repo, "docs/design/quality-lab.md");
 const RESULTS = path.join(lab, "results");
-const { KNOB_LABELS, KNOBS, LEVELS, budgetMs } = await import(pathToFileURL(path.join(lab, "src/config.ts")).href);
+const { KNOB_LABELS, KNOBS, LEVELS, budgetMs, targetMs } = await import(pathToFileURL(path.join(lab, "src/config.ts")).href);
 
 const ms = (v) => (v == null ? "n/a" : `${Math.round(v * 100) / 100}`);
 const PLATFORMS = [
@@ -60,7 +60,7 @@ function platformSection(platform, title, reports) {
   if (ceiling) {
     const removed = ceiling.steps.filter((s) => s.removed);
     out.push(
-      `Ceiling (budget p95 ≤ ${ms(ceiling.budgetMs ?? budgetMs(platform))} ms): ${ceiling.held ? "held" : "**not held** even at the cheapest config"} at ${trimmed(ceiling.ceiling).length ? `Ultra trimmed to: ${trimmed(ceiling.ceiling).join(", ")}` : "full Ultra (nothing removed)"}.`,
+      `Ceiling (budget p95 ≤ ${ms(ceiling.budgetMs ?? budgetMs(platform))} ms, the strict ${ms(ceiling.targetMs ?? targetMs(platform))} ms target plus 10% for display jitter): ${ceiling.held ? `held, p95 ${ms(ceiling.ceilingP95Ms)} ms, ${ceiling.heldStrict ? "within" : "**over**"} the strict target,` : "**not held** even at the cheapest config"} at ${trimmed(ceiling.ceiling).length ? `Ultra trimmed to: ${trimmed(ceiling.ceiling).join(", ")}` : "full Ultra (nothing removed)"}.`,
       "",
     );
     if (removed.length) {

@@ -168,7 +168,7 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
       log(`${step.id} renders (${distinct} colours, ${Math.round((Date.now() - t0) / 1000)} s)`);
     }
     const probeError = await page.evaluate(() => globalThis.lab.probeError());
-    if (probeError) log(`light probes could not bake: ${probeError}`);
+    check(!probeError || !steps.some((step) => step.config.probes), `${name}: light probes could not bake, so the probe configs drew without them: ${probeError}`);
     if (frames["preset:ultra"] && frames["preset:low"]) {
       const differ = await differing(page, frames["preset:ultra"], frames["preset:low"]);
       check(differ > 200, `${name}: Ultra and Low differ by only ${differ} px`);
@@ -197,8 +197,10 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
       check(ceiling.software === true && ceiling.held === false && ceiling.steps.every((s) => s.measurement === null), `${name}: the ceiling search reported times on a software GPU`);
       const link = await page.evaluate(() => document.querySelector("a[href^='https://github.com/clockgrove/raccoon-world/issues/new']")?.getAttribute("href") ?? null);
       check(link, `${name}: no "send results" link to a new issue`);
-      const times = /"frameMsP(50|95)":\s*[0-9]/u;
+      // No frame time of any kind, under any key, in the send link or in the reports the copy and download buttons serialise.
+      const times = /"(frameMs\w*|gpuMs\w*|softwareMs|softwareFrameMs|p50|p95)":\s*[-0-9{]/u;
       check(!times.test(decodeURIComponent(link)), `${name}: the send link carries software frame times`);
+      check(!times.test(JSON.stringify([sweep, ceiling])), `${name}: the runner's reports carry software frame times`);
       check(errors.length === 0, `${name}: the runner raised ${errors.join("; ")}`);
       log(`runner: sweep ${sweep.steps.length} step and ceiling ${ceiling.steps.length} steps, software, no times; send link ${link.length} chars`);
     }

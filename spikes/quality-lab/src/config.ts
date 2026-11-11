@@ -255,7 +255,8 @@ export const TARGET_FPS: Readonly<Record<Platform, number>> = { desktop: 60, pho
  * above 16.7 ms. The budget allows this much over the target interval.
  */
 export const BUDGET_SLACK = 1.1;
-export const budgetMs = (platform: Platform) => (1000 / TARGET_FPS[platform]) * BUDGET_SLACK;
+export const targetMs = (platform: Platform) => 1000 / TARGET_FPS[platform];
+export const budgetMs = (platform: Platform) => targetMs(platform) * BUDGET_SLACK;
 
 export type ViewName = "yard" | "close";
 export type StateName = "dusk" | "night";
@@ -299,4 +300,6 @@ export interface LabHandle {
   measure(options?: { warmupMs?: number; holdMs?: number }): Promise<Measurement>;
   /** The current frame as a JPEG data URL, at most maxWidth pixels wide. */
   screenshot(maxWidth?: number): Promise<string>;
+  /** Why the light probes failed to bake, or null; a config with probes on is then not measured. */
+  probeError?(): string | null;
 }

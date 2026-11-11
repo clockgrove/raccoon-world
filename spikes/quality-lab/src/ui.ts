@@ -183,7 +183,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   const render = () => {
     results.replaceChildren();
     for (const rep of reports) {
-      const title = rep.kind === "sweep" ? "Sweep" : `Ceiling (budget ${rep.budgetMs.toFixed(1)} ms p95)`;
+      const title = rep.kind === "sweep" ? "Sweep" : `Ceiling (budget ${rep.budgetMs.toFixed(1)} ms p95, strict target ${rep.targetMs.toFixed(1)} ms${rep.held ? `; p95 ${rep.ceilingP95Ms?.toFixed(1)} ms, ${rep.heldStrict ? "within" : "over"} the strict target` : ""})`;
       results.append(el("h3", { textContent: `${title}: ${rep.platform}, ${rep.backend}, ${rep.adapter}` }));
       if (rep.software) results.append(el("p", { class: "sw", textContent: "software, not performance" }));
       const table = el("table");

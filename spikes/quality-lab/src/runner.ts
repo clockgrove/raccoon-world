@@ -1,7 +1,7 @@
 // The quality lab's runner (issue 45): the sweep and the ceiling search, as pure logic over a LabHandle. No DOM and
 // no three.js, so the page UI, the CI journey and a node test can all drive it.
 
-import { DEFAULT_COST_ORDER, KNOBS, KNOB_LABELS, LEVELS, PRESETS, budgetMs, stepDown, sweepSteps } from "./config.ts";
+import { DEFAULT_COST_ORDER, KNOBS, KNOB_LABELS, LEVELS, PRESETS, budgetMs, stepDown, targetMs, sweepSteps } from "./config.ts";
 import type { Knob, LabConfig, LabHandle, LabStatus, Measurement, Platform, StateName, ViewName } from "./config.ts";
 
 export interface StepResult {
@@ -12,7 +12,6 @@ export interface StepResult {
   sign?: 1 | -1;
   /** Null on a software GPU: those times are never performance. */
   measurement: Measurement | null;
-  softwareMs?: { p50: number | null; p95: number | null };
   backend: LabStatus["backend"];
   adapter: string;
   dpr: number;
@@ -58,7 +57,14 @@ export interface CeilingReport {
   kind: "ceiling";
   startedAt: string;
   platform: Platform;
+  /** The p95 the search holds: the strict target interval plus BUDGET_SLACK for display jitter. */
   budgetMs: number;
+  /** The strict target interval, 1000 / fps (16.7 ms desktop, 33.3 ms phone). */
+  targetMs: number;
+  /** The ceiling's measured p95, null when it was not measured. */
+  ceilingP95Ms: number | null;
+  /** Whether the ceiling's p95 is within the strict target, without the slack. */
+  heldStrict: boolean;
   backend: LabStatus["backend"];
   adapter: string;
   software: boolean;
@@ -107,14 +113,17 @@ async function measureStep(
   };
   try {
     await lab.apply(base.config);
+    // A config that asks for light probes but got none would report a cost for an effect that was not applied.
+    const probeError = base.config.probes ? lab.probeError?.() : null;
+    if (probeError) throw new Error(`light probes did not bake: ${probeError}`);
     const m = await lab.measure({ warmupMs: opts.warmupMs ?? DEFAULT_WARMUP_MS, holdMs: opts.holdMs ?? DEFAULT_HOLD_MS });
     const status = lab.status();
     result.backend = status.backend;
     result.adapter = status.adapter;
     result.dpr = status.dpr;
     result.canvas = status.canvas;
-    if (status.software) result.softwareMs = { p50: m.frameMsP50, p95: m.frameMsP95 };
-    else result.measurement = m;
+    // Software GPUs never count as performance: their frame times are dropped, not kept.
+    if (!status.software) result.measurement = m;
     result.screenshot = await lab.screenshot(320);
   } catch (e) {
     result.error = e instanceof Error ? e.message : String(e);
@@ -192,6 +201,9 @@ export async function findCeiling(lab: LabHandle, opts: CeilingOptions = {}): Pr
     startedAt: new Date().toISOString(),
     platform: start.platform,
     budgetMs: budget,
+    targetMs: targetMs(start.platform),
+    ceilingP95Ms: null,
+    heldStrict: false,
     backend: start.backend,
     adapter: start.adapter,
     software: start.software,
@@ -221,6 +233,8 @@ export async function findCeiling(lab: LabHandle, opts: CeilingOptions = {}): Pr
         // A failed step cannot be judged; keep stepping down so the search still ends.
       } else if (!start.software && r.measurement?.frameMsP95 != null && r.measurement.frameMsP95 <= budget) {
         report.held = true;
+        report.ceilingP95Ms = r.measurement.frameMsP95;
+        report.heldStrict = r.measurement.frameMsP95 <= report.targetMs;
         break;
       }
       let next: { knob: Knob; config: LabConfig } | null = null;
