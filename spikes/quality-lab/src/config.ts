@@ -1,0 +1,302 @@
+// The quality lab's configuration model (issue 45): every effect as one knob, the four presets, the sweep and the
+// step-down order of the ceiling search, and the page's `globalThis.lab` handle that the runner and the CI journey
+// drive. Pure data and types: no three.js here, so the runner and the scripts can share it.
+
+/** Fur shells drawn over Stevie's body (0 = none). */
+export type FurShells = 0 | 4 | 8 | 16;
+export type Antialias = "none" | "msaa" | "traa";
+/** Upscaling: the scene is drawn at RENDER_SCALE of the canvas and brought back up by TAAU or FSR 1. */
+export type Upscale = "none" | "taau" | "fsr";
+
+export interface LabConfig {
+  /** Fur: shell count. */
+  furShells: FurShells;
+  /** Fur: silhouette fins. */
+  furFins: boolean;
+  /** Volumetric haze: a ray-marched fog volume lit by the lamps. */
+  haze: boolean;
+  /** Light shafts (god rays) from the porch lamp. */
+  shafts: boolean;
+  /** Ambient occlusion (GTAO). */
+  ao: boolean;
+  /** A baked light probe grid over the yard. */
+  probes: boolean;
+  /** Key light: cascaded shadow maps (off = one plain shadow map). */
+  cascades: boolean;
+  /** Shadow maps on the lamp point lights. */
+  pointShadows: boolean;
+  /** Rain streaks. */
+  rainCount: number;
+  /** Rain splashes on the ground. */
+  splashes: boolean;
+  /** Ripples on the puddles. */
+  ripples: boolean;
+  /** Planar reflections in the puddles. */
+  reflections: boolean;
+  bloom: boolean;
+  /** The colour grade and vignette after tone mapping. */
+  grade: boolean;
+  antialias: Antialias;
+  dpr: 1 | 2;
+  upscale: Upscale;
+}
+
+export type Knob = keyof LabConfig;
+
+/** The scale the scene pass draws at when an upscaler is on. */
+export const RENDER_SCALE = 0.67;
+
+/** Each knob's levels, best first, cheapest last. The ceiling search steps one knob one level at a time. */
+export const LEVELS: { readonly [K in Knob]: readonly LabConfig[K][] } = {
+  furShells: [16, 8, 4, 0],
+  furFins: [true, false],
+  haze: [true, false],
+  shafts: [true, false],
+  ao: [true, false],
+  probes: [true, false],
+  cascades: [true, false],
+  pointShadows: [true, false],
+  rainCount: [5000, 2600, 1600, 800],
+  splashes: [true, false],
+  ripples: [true, false],
+  reflections: [true, false],
+  bloom: [true, false],
+  grade: [true, false],
+  antialias: ["traa", "msaa", "none"],
+  dpr: [2, 1],
+  upscale: ["none", "taau", "fsr"],
+};
+
+/** Human labels for the results table and the report. */
+export const KNOB_LABELS: { readonly [K in Knob]: string } = {
+  furShells: "Fur shells",
+  furFins: "Fur fins",
+  haze: "Volumetric haze",
+  shafts: "Light shafts",
+  ao: "Ambient occlusion (GTAO)",
+  probes: "Light probes",
+  cascades: "Key-light cascades",
+  pointShadows: "Point-light shadows",
+  rainCount: "Rain particles",
+  splashes: "Rain splashes",
+  ripples: "Puddle ripples",
+  reflections: "Puddle reflections",
+  bloom: "Bloom",
+  grade: "Grade",
+  antialias: "Antialiasing",
+  dpr: "Device pixel ratio",
+  upscale: "Upscaling",
+};
+
+export const KNOBS = Object.keys(LEVELS) as Knob[];
+
+export type PresetName = "ultra" | "high" | "medium" | "low";
+
+/** Ultra is every effect at its top level. No preset is reserved for phones. */
+export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
+  ultra: {
+    furShells: 16,
+    furFins: true,
+    haze: true,
+    shafts: true,
+    ao: true,
+    probes: true,
+    cascades: true,
+    pointShadows: true,
+    rainCount: 5000,
+    splashes: true,
+    ripples: true,
+    reflections: true,
+    bloom: true,
+    grade: true,
+    antialias: "traa",
+    dpr: 2,
+    upscale: "none",
+  },
+  high: {
+    furShells: 8,
+    furFins: true,
+    haze: false,
+    shafts: false,
+    ao: true,
+    probes: true,
+    cascades: true,
+    pointShadows: true,
+    rainCount: 2600,
+    splashes: true,
+    ripples: true,
+    reflections: true,
+    bloom: true,
+    grade: true,
+    antialias: "msaa",
+    dpr: 2,
+    upscale: "none",
+  },
+  medium: {
+    furShells: 4,
+    furFins: false,
+    haze: false,
+    shafts: false,
+    ao: false,
+    probes: false,
+    cascades: false,
+    pointShadows: false,
+    rainCount: 1600,
+    splashes: false,
+    ripples: true,
+    reflections: false,
+    bloom: true,
+    grade: true,
+    antialias: "msaa",
+    dpr: 1,
+    upscale: "none",
+  },
+  low: {
+    furShells: 0,
+    furFins: false,
+    haze: false,
+    shafts: false,
+    ao: false,
+    probes: false,
+    cascades: false,
+    pointShadows: false,
+    rainCount: 800,
+    splashes: false,
+    ripples: false,
+    reflections: false,
+    bloom: false,
+    grade: true,
+    antialias: "none",
+    dpr: 1,
+    upscale: "none",
+  },
+};
+
+export const PRESET_ORDER: readonly PresetName[] = ["ultra", "high", "medium", "low"];
+
+export interface SweepStep {
+  /** Stable id, for example "preset:ultra" or "medium+ao" or "medium-bloom". */
+  readonly id: string;
+  readonly label: string;
+  readonly config: LabConfig;
+  /** The knob this step isolates, for the "each effect on top of Medium" part. */
+  readonly knob?: Knob;
+  /** +1: the knob is raised above Medium (cost = this − Medium); −1: Medium already has it, so it is removed (cost = Medium − this). */
+  readonly sign?: 1 | -1;
+}
+
+/**
+ * The sweep: every preset, then each knob on top of Medium. A knob that Medium holds below its top level is raised
+ * to each higher level (fur shells 8 and 16, rain 2600 and 5000, TRAA, DPR 2). Upscalers, which lower cost, are
+ * added on top of Medium too. A knob that Medium already holds at its top (bloom, grade, ripples) is measured by
+ * removing it from Medium.
+ */
+export function sweepSteps(): SweepStep[] {
+  const steps: SweepStep[] = PRESET_ORDER.map((name) => ({ id: `preset:${name}`, label: `${name.charAt(0).toUpperCase()}${name.slice(1)}`, config: { ...PRESETS[name] } }));
+  const medium = PRESETS.medium;
+  for (const knob of KNOBS) {
+    const levels = LEVELS[knob] as readonly unknown[];
+    const at = levels.indexOf(medium[knob]);
+    if (knob === "upscale") {
+      for (const level of levels.slice(1)) steps.push({ id: `medium+upscale=${level}`, label: `Medium + ${String(level).toUpperCase()}`, config: { ...medium, upscale: level as Upscale }, knob, sign: 1 });
+      continue;
+    }
+    if (at > 0) {
+      for (const level of levels.slice(0, at).reverse()) {
+        const id = typeof level === "boolean" ? `medium+${knob}` : `medium+${knob}=${level}`;
+        const label = typeof level === "boolean" ? `Medium + ${KNOB_LABELS[knob]}` : `Medium + ${KNOB_LABELS[knob]} ${level}`;
+        steps.push({ id, label, config: { ...medium, [knob]: level }, knob, sign: 1 });
+      }
+    } else {
+      const off = levels[levels.length - 1];
+      steps.push({ id: `medium-${knob}`, label: `Medium − ${KNOB_LABELS[knob]}`, config: { ...medium, [knob]: off }, knob, sign: -1 });
+    }
+  }
+  return steps;
+}
+
+/** One knob stepped one level down, or null when it is already at its cheapest. Upscale steps "down" to taau, then fsr. */
+export function stepDown(config: LabConfig, knob: Knob): LabConfig | null {
+  const levels = LEVELS[knob] as readonly unknown[];
+  const at = levels.indexOf(config[knob]);
+  if (at < 0 || at >= levels.length - 1) return null;
+  return { ...config, [knob]: levels[at + 1] } as LabConfig;
+}
+
+/**
+ * The order the ceiling search drops effects in when it has no measured costs from a sweep on this device: an
+ * estimate of the most expensive first (resolution, then full-screen passes, then shadows, then per-object costs).
+ */
+export const DEFAULT_COST_ORDER: readonly Knob[] = [
+  "dpr",
+  "haze",
+  "ao",
+  "shafts",
+  "reflections",
+  "pointShadows",
+  "antialias",
+  "furShells",
+  "cascades",
+  "furFins",
+  "rainCount",
+  "probes",
+  "splashes",
+  "bloom",
+  "ripples",
+  "grade",
+  "upscale",
+];
+
+export type Platform = "desktop" | "phone";
+/** The frame budget the ceiling search holds: p95 frame time within 60 fps on desktop, 30 fps on phones. */
+export const TARGET_FPS: Readonly<Record<Platform, number>> = { desktop: 60, phone: 30 };
+/**
+ * A display's frame interval jitters around its refresh period, so a page that holds 60 fps reports a p95 a little
+ * above 16.7 ms. The budget allows this much over the target interval.
+ */
+export const BUDGET_SLACK = 1.1;
+export const budgetMs = (platform: Platform) => (1000 / TARGET_FPS[platform]) * BUDGET_SLACK;
+
+export type ViewName = "yard" | "close";
+export type StateName = "dusk" | "night";
+
+export interface Measurement {
+  frames: number;
+  frameMsP50: number | null;
+  frameMsP95: number | null;
+  /** GPU time per frame from WebGPU timestamp queries; null where the backend has none. */
+  gpuMsP50: number | null;
+  gpuMsP95: number | null;
+}
+
+export interface LabStatus {
+  ready: boolean;
+  failure: string | null;
+  backend: "webgpu" | "webgl2";
+  /** Adapter or renderer string (WebGPU adapter info, or WebGL's unmasked renderer). */
+  adapter: string;
+  /** True for software rasterisers (SwiftShader, llvmpipe and the like): their times are never performance. */
+  software: boolean;
+  /** Whether GPU timestamps are available on this backend and adapter. */
+  timestamps: boolean;
+  platform: Platform;
+  dpr: number;
+  canvas: [number, number];
+  config: LabConfig;
+  view: ViewName;
+  state: StateName;
+  userAgent: string;
+}
+
+/** The page's handle, `globalThis.lab`: the runner UI and the CI journey drive the page through it. */
+export interface LabHandle {
+  status(): LabStatus;
+  /** Rebuilds the scene and post for the config, compiles it and draws it; resolves once a frame is on screen. */
+  apply(config: LabConfig): Promise<void>;
+  setView(view: ViewName): Promise<void>;
+  setState(state: StateName): Promise<void>;
+  /** Lets the animation run for warmupMs, then records frame intervals (and GPU time) for holdMs. */
+  measure(options?: { warmupMs?: number; holdMs?: number }): Promise<Measurement>;
+  /** The current frame as a JPEG data URL, at most maxWidth pixels wide. */
+  screenshot(maxWidth?: number): Promise<string>;
+}
