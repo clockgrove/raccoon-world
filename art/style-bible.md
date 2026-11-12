@@ -15,12 +15,13 @@ axes:
   lightingKey: warm amber lantern and window light against cool blue-grey dusk and rain; soft rim light separating fur from the background
 looks:
   character:
-    realism: naturalistic illustrated realism like Stevie's approved turnaround; soft, believable fur and anatomy; high quality; never photographic and never heavily painterly
+    rendering: naturalistic
+    realism: very high-quality naturalistic rendering like Stevie's approved turnaround; soft, believable fur and anatomy; never photographic and never painterly
     detailDensity: high on faces, masks and banded tails; medium on fur bodies
     texture: fine, soft, naturalistic fur with fur strands at every silhouette edge; no visible brushwork
   environment:
     rendering: painterly
-    realism: a touch more painterly than the characters; believable materials, never photo-accurate
+    realism: painterly and deliberately less photorealistic than the cast, so the backyard never competes with the characters; believable materials
     detailDensity: medium on the house, porch, path and props; lower on background foliage
     texture: soft visible brushwork; a wet sheen on stone and wood
 tone:
