@@ -422,16 +422,125 @@ const lab: LabHandle & Record<string, unknown> = {
 };
 Object.assign(globalThis, { lab });
 
+// ---- Loading: a checklist of the steps, each with a running timer, so slow never looks like broken ----
+type StepKey = "graphics" | "models" | "shaders";
+const loadingEl = document.getElementById("loading");
+const noteEl = document.getElementById("note");
+const loadBar = document.getElementById("load-bar");
+document.getElementById("reload")?.addEventListener("click", () => location.reload());
+const MB = (bytes: number) => (bytes / 1e6).toFixed(1);
+const stepEl = (key: StepKey) => document.getElementById(`step-${key}`);
+const stepVal = (key: StepKey, text: string) => {
+  const val = stepEl(key)?.querySelector(".val");
+  if (val) val.textContent = text;
+};
+const elapsed = (since: number) => `${((performance.now() - since) / 1000).toFixed(1)} s`;
+let activeStep: StepKey | null = null;
+let stepStarted = 0;
+let lastProgress = 0;
+function beginStep(key: StepKey, text: string) {
+  activeStep = key;
+  stepStarted = lastProgress = performance.now();
+  stepEl(key)?.classList.add("active");
+  statusEl.textContent = text;
+}
+function finishStep(key: StepKey, value = elapsed(stepStarted)) {
+  const li = stepEl(key);
+  li?.classList.remove("active");
+  li?.classList.add("done");
+  stepVal(key, value);
+  activeStep = null;
+  if (noteEl) noteEl.textContent = "";
+  loadingEl?.classList.remove("stalled");
+}
+// What a long silence means on each step, and whether trying again could help.
+const STALL: Record<StepKey, { afterMs: number; note: string; retry: boolean }> = {
+  graphics: { afterMs: 15_000, note: "The graphics driver has not answered for 15 s.", retry: true },
+  models: { afterMs: 20_000, note: "No data for 20 s: the connection may have dropped.", retry: true },
+  shaders: { afterMs: 20_000, note: "Still preparing shaders. A phone can take a minute; the timer shows it is still working.", retry: false },
+};
+const watchdog = setInterval(() => {
+  if (!activeStep) return;
+  if (activeStep !== "models") stepVal(activeStep, elapsed(stepStarted));
+  const stall = STALL[activeStep];
+  const stalled = performance.now() - lastProgress > stall.afterMs;
+  if (noteEl) noteEl.textContent = stalled ? stall.note : "";
+  loadingEl?.classList.toggle("stalled", stalled && stall.retry);
+}, 250);
+
+// Download progress against the build's manifest of model sizes (the server gzips, so its lengths are compressed).
+const downloads = new Map<string, { loaded: number; total: number; done: boolean }>();
+function paintDownloads() {
+  let loaded = 0;
+  let total = 0;
+  let done = 0;
+  for (const d of downloads.values()) {
+    const size = d.total || d.loaded;
+    total += size;
+    loaded += d.done ? size : Math.min(d.loaded, size);
+    if (d.done) done++;
+  }
+  const sized = [...downloads.values()].every((d) => d.total > 0 || d.done);
+  const fraction = sized && total > 0 ? loaded / total : 0;
+  stepVal("models", sized ? `${MB(loaded)} of ${MB(total)} MB` : `${MB(loaded)} MB`);
+  statusEl.textContent = `Downloading the models (${done} of ${downloads.size} done)`;
+  const bar = loadBar?.firstElementChild as HTMLElement | null;
+  if (bar) bar.style.width = `${Math.round(fraction * 100)}%`;
+  loadBar?.setAttribute("aria-valuenow", String(Math.round(fraction * 100)));
+}
+function tracked(key: string, size: number | undefined) {
+  const entry = { loaded: 0, total: size ?? 0, done: false };
+  downloads.set(key, entry);
+  return {
+    onProgress: (event: ProgressEvent) => {
+      lastProgress = performance.now();
+      entry.loaded = event.loaded;
+      if (!size && event.lengthComputable) entry.total = event.total;
+      paintDownloads();
+    },
+    finish: () => {
+      lastProgress = performance.now();
+      entry.done = true;
+      paintDownloads();
+    },
+  };
+}
+
 async function init() {
+  const manifest: Record<string, number> = await fetch(media("manifest.json"))
+    .then((r) => (r.ok ? r.json() : {}))
+    .catch(() => ({}));
+  beginStep("graphics", "Starting the renderer");
   await renderer.init();
   adapter = await adapterString();
-  stevie = await loadStevie(media("stevie.glb"), LOOP);
+  const backendName = (renderer.backend as Any).isWebGPUBackend ? "WebGPU" : "WebGL2";
+  finishStep("graphics", backendName);
+
+  beginStep("models", "Downloading");
+  const stevieDownload = tracked("stevie.glb", manifest["stevie.glb"]);
+  const propDownloads = Object.fromEntries(Object.keys(set.slots).map((name) => [name, tracked(`props/${name}.glb`, manifest[`props/${name}.glb`])]));
+  paintDownloads();
+  const [loaded] = await Promise.all([
+    loadStevie(media("stevie.glb"), LOOP, stevieDownload.onProgress).finally(stevieDownload.finish),
+    loadProps(set.slots, set.groups.props as THREE.Object3D, media("props/"), {
+      onProgress: (name, event) => propDownloads[name]?.onProgress(event),
+      onDone: (name) => propDownloads[name]?.finish(),
+    }),
+  ]);
+  const total = [...downloads.values()].reduce((sum, d) => sum + (d.total || d.loaded), 0);
+  finishStep("models", `${MB(total)} MB in ${elapsed(stepStarted)}`);
+  stevie = loaded;
   scene.add(stevie.root);
-  await loadProps(set.slots, set.groups.props as THREE.Object3D, media("props/"));
+
+  beginStep("shaders", "Preparing the shaders and drawing the first frame");
   await applyConfig(config);
+  finishStep("shaders");
+  clearInterval(watchdog);
   ready = true;
   statusEl.textContent = "The yard is ready";
   renderer.setAnimationLoop(loop);
+  loadingEl?.classList.add("done");
+  setTimeout(() => loadingEl?.remove(), 600);
   const ui = document.getElementById("ui");
   if (ui && query.get("ui") !== "0") mountUi(lab, ui);
 }
@@ -443,6 +552,13 @@ window.addEventListener("resize", () => {
 init().catch((error) => {
   failure = String(error?.stack ?? error);
   busy = false;
-  statusEl.textContent = `Failed: ${failure}`;
+  clearInterval(watchdog);
+  if (activeStep) {
+    stepEl(activeStep)?.classList.replace("active", "failed");
+    activeStep = null;
+  }
+  if (noteEl) noteEl.textContent = "";
+  statusEl.textContent = `The yard failed to load.\n${failure}`;
+  loadingEl?.classList.add("failed");
   console.error(error);
 });

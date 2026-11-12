@@ -14,16 +14,24 @@ export interface PropReport {
   readonly triangles: number;
 }
 
-export async function loadProps(slots: Record<string, Slot>, parent: THREE.Object3D, base = "/media/props/"): Promise<PropReport[]> {
+/** Download progress per prop, for a loading screen; onDone fires once each prop is in or has fallen back to its stand-in. */
+export interface PropLoadEvents {
+  onProgress?(name: string, event: ProgressEvent): void;
+  onDone?(name: string): void;
+}
+
+export async function loadProps(slots: Record<string, Slot>, parent: THREE.Object3D, base = "/media/props/", events: PropLoadEvents = {}): Promise<PropReport[]> {
   const loader = new GLTFLoader();
   const reports = await Promise.all(
     Object.entries(slots).map(async ([name, slot]): Promise<PropReport> => {
       let gltf: Any;
       try {
-        gltf = await loader.loadAsync(`${base}${name}.glb`);
+        gltf = await loader.loadAsync(`${base}${name}.glb`, (event) => events.onProgress?.(name, event));
       } catch {
+        events.onDone?.(name);
         return { name, source: "stand-in", triangles: 0 };
       }
+      events.onDone?.(name);
       const model: THREE.Object3D = gltf.scene;
       // glTF is y-up; the yard is z-up.
       model.rotation.x = Math.PI / 2;

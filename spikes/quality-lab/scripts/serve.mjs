@@ -8,7 +8,7 @@
 // URL parameters: ?backend=webgl2 forces Three's WebGL2 backend, ?preset=ultra|high|medium|low the starting preset,
 // ?view=close, ?state=night, ?platform=phone|desktop overrides the detected platform, ?ui=0 hides the panel.
 // CLOCKGROVE_DIR names the checkout, as in scripts/clockgrove.sh (default: .clockgrove in this repository).
-import { copyFile, mkdir, readFile, readdir } from "node:fs/promises";
+import { copyFile, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { realpathSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -66,6 +66,11 @@ export function labConfig(outDir = SITE) {
         configureServer(vite) {
           vite.middlewares.use(async (request, response, next) => {
             const url = request.url?.split("?")[0] ?? "";
+            if (url === "/media/manifest.json") {
+              response.setHeader("content-type", "application/json");
+              response.end(JSON.stringify(await mediaManifest()));
+              return;
+            }
             const key = url.match(/^\/media\/((?:props\/)?[a-z0-9-]+\.glb)$/u)?.[1];
             if (!key) return next();
             const file = (await mediaFiles())[key];
@@ -85,6 +90,16 @@ export function labConfig(outDir = SITE) {
   };
 }
 
+/** The media the page will download, file → bytes, for its loading checklist (only real glTF binaries count). */
+export async function mediaManifest() {
+  const manifest = {};
+  for (const [key, file] of Object.entries(await mediaFiles())) {
+    const bytes = await readFile(file).catch(() => null);
+    if (isGlb(bytes)) manifest[key] = bytes.length;
+  }
+  return manifest;
+}
+
 /** Builds the static site into outDir and copies the media beside it. Refuses an LFS pointer for Stevie. */
 export async function buildSite(outDir = SITE) {
   const { build } = await pinnedVite();
@@ -101,6 +116,7 @@ export async function buildSite(outDir = SITE) {
     await copyFile(file, target);
     copied.push(key);
   }
+  await writeFile(path.join(outDir, "media", "manifest.json"), JSON.stringify(await mediaManifest()));
   return { outDir, media: copied };
 }
 
