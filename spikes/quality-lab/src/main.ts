@@ -38,11 +38,20 @@ function detectPlatform(): Platform {
 const platform = detectPlatform();
 
 const renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL, trackTimestamp: true } as Any);
-renderer.setSize(window.innerWidth, window.innerHeight);
+const sceneEl = document.getElementById("scene");
+/** The page's own size. iOS fires `resize` before innerWidth/innerHeight follow a rotation; the element's box is right. */
+function viewSize(): [number, number] {
+  const box = sceneEl?.getBoundingClientRect();
+  const width = Math.round(box?.width || document.documentElement.clientWidth || window.innerWidth);
+  const height = Math.round(box?.height || document.documentElement.clientHeight || window.innerHeight);
+  return [Math.max(1, width), Math.max(1, height)];
+}
+// CSS keeps the canvas filling the page (updateStyle false); setSize only sizes its drawing buffer.
+renderer.setSize(...viewSize(), false);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-document.getElementById("scene")?.appendChild(renderer.domElement);
+sceneEl?.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera();
@@ -179,7 +188,8 @@ let measuring = false;
 const CLOSE_ZOOM = 3.4;
 
 function placeView() {
-  const aspect = window.innerWidth / window.innerHeight;
+  const [width, height] = viewSize();
+  const aspect = width / height;
   if (view === "close" && stevie) {
     const focus = stevie.position.clone().setZ(0.2);
     placeCamera(camera, { label: "close-up", zoom: CLOSE_ZOOM, focus: () => focus }, aspect);
@@ -270,7 +280,7 @@ async function applyConfig(next: LabConfig) {
     // Resizing the canvas clears it; only a pixel-ratio change needs it, so the last frame stays up during a rebuild.
     if (renderer.getPixelRatio() !== config.dpr) {
       renderer.setPixelRatio(config.dpr);
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(...viewSize(), false);
     }
     stevie?.setFur(config.furShells, config.furFins);
     detail?.set(config.detail);
@@ -572,9 +582,23 @@ async function init() {
   if (ui && query.get("ui") !== "0") mountUi(lab, ui);
 }
 
-window.addEventListener("resize", () => {
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
+/** Rotation and window changes: resize the drawing buffer and re-frame the camera for the new aspect. */
+let fitQueued = false;
+function fit() {
+  if (fitQueued) return;
+  fitQueued = true;
+  requestAnimationFrame(() => {
+    fitQueued = false;
+    const [width, height] = viewSize();
+    const size = renderer.getSize(new THREE.Vector2());
+    if (size.x !== width || size.y !== height) renderer.setSize(width, height, false);
+    placeView();
+  });
+}
+window.addEventListener("resize", fit);
+window.addEventListener("orientationchange", fit);
+window.visualViewport?.addEventListener("resize", fit);
+if (sceneEl) new ResizeObserver(fit).observe(sceneEl);
 
 init().catch((error) => {
   failure = String(error?.stack ?? error);
