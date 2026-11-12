@@ -101,7 +101,14 @@ async function checkBible() {
     fail("bible", "the perspective reference must be the owner's mockup");
   const locks = bible.identities;
   const expected = {
-    stevie: { turnaround: "../references/stevie/turnaround-three-quarter.png", references: [] },
+    stevie: {
+      turnaround: "../references/stevie/turnaround-three-quarter.png",
+      references: [
+        "../references/stevie/turnaround-front.png",
+        "../references/stevie/turnaround-side.png",
+        "../references/stevie/turnaround-back.png",
+      ],
+    },
     jimothy: {
       turnaround: "../references/jimothy/sheet-cell-03.png",
       references: ["../references/jimothy/jimothy-peanut-painted.png"],
