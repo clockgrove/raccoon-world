@@ -42,6 +42,7 @@ for (const name of names) {
           maxHunger: 0,
           maxThirst: 0,
           minHealth: 10000,
+          needDiscomforts: 0,
           plantYield: 0,
           collected: 0,
           evaporated: 0,
@@ -84,6 +85,11 @@ for (const name of names) {
                   stat.maxThirst = Math.max(stat.maxThirst, p.thirst);
                   stat.minHealth = Math.min(stat.minHealth, p.health);
                 }
+                if (
+                  event.type === "comfort.changed" &&
+                  p.causes.some((cause) => cause === "hungry" || cause === "thirsty")
+                )
+                  stat.needDiscomforts += 1;
                 if (event.type === "growth.stage-changed" && p.yield)
                   stat.plantYield += p.yield.quantity;
                 if (event.type === "resource.weather-integrated") {
@@ -111,7 +117,8 @@ for (const name of names) {
     if (name === "long-run-one-year") {
       assert.ok(stat.maxHunger < 7000, `${run}: urgent hunger ${stat.maxHunger}`);
       assert.ok(stat.maxThirst < 7000, `${run}: urgent thirst ${stat.maxThirst}`);
-      assert.equal(stat.minHealth, 10000, `${run}: health loss`);
+      // The platform charges need-related health loss only during hungry/thirsty discomfort; wetness is separate.
+      assert.equal(stat.needDiscomforts, 0, `${run}: hunger/thirst health-loss causes`);
       assert.equal(stat.plantYield, 64, `${run}: finite fruit yield`);
       assert.ok(stat.collected > 0 && stat.evaporated > 0, `${run}: weather pressures`);
       assert.ok(stat.transfers > 0, `${run}: household provisioning`);
