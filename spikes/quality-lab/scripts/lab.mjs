@@ -201,16 +201,37 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
         `${name}: the triangle budget run did not run cleanly on a software GPU: ${JSON.stringify(triangles).slice(0, 300)}`,
       );
       // Geometry detail must really add triangles: the scene count at 4× is above the art as made.
+      // ...and draw the same yard: midpoint splits keep every shape, so a frozen frame barely changes.
       const counts = await page.evaluate(async () => {
-        const base = globalThis.lab.status().config;
-        await globalThis.lab.apply({ ...base, detail: 1 });
-        const plain = globalThis.lab.status().triangles;
-        await globalThis.lab.apply({ ...base, detail: 4 });
-        const four = globalThis.lab.status().triangles;
-        await globalThis.lab.apply(base);
-        return { plain, four };
+        const lab = globalThis.lab;
+        const base = lab.status().config;
+        const frame = async (detail) => {
+          await lab.apply({ ...base, detail });
+          return { triangles: lab.status().triangles, shot: await lab.screenshot(320) };
+        };
+        lab.freeze(4);
+        const plain = await frame(1);
+        const four = await frame(4);
+        lab.freeze(null);
+        await lab.apply(base);
+        const pixels = async (url) => {
+          const img = new Image();
+          img.src = url;
+          await img.decode();
+          const c = document.createElement("canvas");
+          c.width = img.width;
+          c.height = img.height;
+          const g = c.getContext("2d");
+          g.drawImage(img, 0, 0);
+          return g.getImageData(0, 0, c.width, c.height).data;
+        };
+        const [a, b] = await Promise.all([pixels(plain.shot), pixels(four.shot)]);
+        let sum = 0;
+        for (let i = 0; i < a.length; i += 4) sum += (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2])) / 3;
+        return { plain: plain.triangles, four: four.triangles, meanDiff: sum / (a.length / 4) };
       });
       check(counts.four > counts.plain, `${name}: Geometry detail 4× did not add triangles (${JSON.stringify(counts)})`);
+      check(counts.meanDiff < 3, `${name}: Geometry detail 4× changed the picture (mean difference ${counts.meanDiff.toFixed(2)} of 255)`);
       const link = await page.evaluate(() => document.querySelector("a[href^='https://github.com/clockgrove/raccoon-world/issues/new']")?.getAttribute("href") ?? null);
       check(link, `${name}: no "send results" link to a new issue`);
       // No frame time of any kind, under any key, in the send link or in the reports the copy and download buttons serialise.
@@ -218,7 +239,7 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
       check(!times.test(decodeURIComponent(link)), `${name}: the send link carries software frame times`);
       check(!times.test(JSON.stringify([sweep, ceiling, triangles])), `${name}: the runner's reports carry software frame times`);
       check(errors.length === 0, `${name}: the runner raised ${errors.join("; ")}`);
-      log(`runner: sweep ${sweep.steps.length} step, ceiling ${ceiling.steps.length} steps, triangle budget ${triangles.steps.length} steps, software, no times; detail 4× ${counts.plain} → ${counts.four} triangles; send link ${link.length} chars`);
+      log(`runner: sweep ${sweep.steps.length} step, ceiling ${ceiling.steps.length} steps, triangle budget ${triangles.steps.length} steps, software, no times; detail 4× ${counts.plain} → ${counts.four} triangles, same picture (mean difference ${counts.meanDiff.toFixed(2)}); send link ${link.length} chars`);
     }
   } finally {
     await browser.close();
