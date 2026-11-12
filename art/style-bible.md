@@ -134,17 +134,21 @@ adjustable:
   saturation: { min: 0.2, max: 0.65 }
 identities:
   stevie:
-    version: "2"
+    version: "3"
     approved: true
     turnaround: ../references/stevie/turnaround-three-quarter.png
+    references:
+      - ../references/stevie/turnaround-front.png
+      - ../references/stevie/turnaround-side.png
+      - ../references/stevie/turnaround-back.png
     signatureFeatures:
-      - stocky, rounded adult raccoon on short legs, back carried level (not hunched)
+      - stocky, rounded adult raccoon on short legs, with a rounded, gently arched back
       - grey-brown coat with a darker, streaked back and a warm tan underside
       - dark brown-black eye mask with cream brows and a cream muzzle
       - rounded ears with pale rims
-      - full tail with five dark rings on tan, dark tip
+      - full tail ringed with dark bands on tan, dark tip
       - dark brown lower legs and hand-like paws
-    proportions: compact, rounded body on short legs, head held level; stocky rather than lean; sleeker and less hunched than Jimothy
+    proportions: compact, rounded body on short legs with a gently arched back; stocky rather than lean; a sleeker, less fluffy coat than Jimothy
     palette: ["#6b6662", "#282323", "#e2d7c2", "#ae9675", "#3a3330"]
   jimothy:
     version: "1"
@@ -162,7 +166,7 @@ perspective: ../docs/design/reference/raccoon-world-reference.png
 perspectiveDescription: high three-quarter isometric view from above, the camera looking down on the yard at roughly 30 to 35 degrees, ground plane receding to the upper right
 subjects:
   stevie:
-    description: Stevie, a stocky, rounded adult raccoon on short legs, grey-brown with a darker streaked back and a warm tan underside, dark legs and paws, a dark eye mask, cream muzzle and brows, rounded pale-rimmed ears and a full tail with five dark rings
+    description: Stevie, a stocky, rounded adult raccoon on short legs, grey-brown with a darker streaked back and a warm tan underside, dark legs and paws, a dark eye mask, cream muzzle and brows, rounded pale-rimmed ears and a full ringed tail with a dark tip
   jimothy:
     description: Jimothy, a short-spined, round, hunched and chubby raccoon with a very fluffy coat and a big fluffy banded tail
 ---
@@ -190,14 +194,14 @@ Every asset is drawn for the mockup's camera: a high three-quarter isometric vie
 
 ## Characters and identity locks
 
-The identity locks are exactly the set the owner's 0.68 threshold was measured on (Assetforge decision "Identity lock v1"):
+Each identity lock's written text must agree with its own approved references: Assetforge's `identity-check` verifies it, and a record that disagrees is never used to filter.
 
-- **Stevie:** the approved three-quarter turnaround view, `references/stevie/turnaround-three-quarter.png` (clockgrove/clockgrove#77 pass 1).
+- **Stevie:** the approved three-quarter turnaround view, `references/stevie/turnaround-three-quarter.png` (clockgrove/clockgrove#77 pass 1), plus the approved front, side and back views as references. One view alone rejects his other angles (Assetforge's identity lock bar, assetforge#92).
 - **Jimothy:** cell 3 of the 57-frame contact sheet (`references/jimothy/sheet-cell-03.png`, cut from `docs/design/reference/jimothy-sprite-sheet.png` by Assetforge's slicer) plus his painted portrait.
 
 Identity scoring runs in shadow mode at 0.68 (`art/target-profile.json`): it records a score beside QA and filters nothing. Bump a lock's `version` when it changes.
 
-Stevie's subject references for generation are the three-quarter view (the lock) plus the approved front and side views. The front and side fix his mask, ears and stocky, short-legged build from the angles a sheet draws him in. They are subject references only, not identity locks: the 0.68 threshold was not measured on them. The back view is left out: a high three-quarter camera never shows it, and it was one of the false rejects in the threshold measurement.
+Stevie's subject references for generation are the three-quarter view (the lock) plus the approved front, side and back views. They fix his mask, ears, rounded back and stocky, short-legged build from every angle a sheet or a 3D turntable draws him in.
 
 ## Anchors
 
@@ -212,7 +216,7 @@ The palette tokens are the colours the mockup is built from: night ink, raccoon 
 - Do paint soft fur edges with fine strands and soft 8-bit alpha.
 - Do keep the high three-quarter isometric camera of the mockup.
 - Do light characters warm from the nearest lamp and cool from the rainy sky, with a pale rim.
-- Do keep each character's identity lock: Stevie stocky and level-backed with a sleek grey-brown coat, Jimothy short-spined, hunched and very fluffy.
+- Do keep each character's identity lock: Stevie stocky and round-backed with a sleek grey-brown coat, Jimothy short-spined, hunched and very fluffy.
 - Do keep full, natural colour.
 - Do give the set more detail where the cast touches it (deck boards, bark, the bowl rim, the den mouth) than in the far background, so there is no jump in detail where a character stands.
 - Do compose the yard so the places where things happen (den mouth, bowl, bin, beds) face the camera, with tall occluders (the cedar, the fence, the house) toward the back.
