@@ -8,6 +8,7 @@
 // URL parameters: ?backend=webgl2 forces Three's WebGL2 backend, ?preset=ultra|high|medium|low the starting preset,
 // ?view=close, ?state=night, ?platform=phone|desktop overrides the detected platform, ?ui=0 hides the panel.
 // CLOCKGROVE_DIR names the checkout, as in scripts/clockgrove.sh (default: .clockgrove in this repository).
+import { createHash } from "node:crypto";
 import { copyFile, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { realpathSync } from "node:fs";
 import os from "node:os";
@@ -35,12 +36,40 @@ export async function pinnedVite() {
 
 const isGlb = (bytes) => bytes && bytes.subarray(0, 4).toString() === "glTF";
 
-/** Every media file the page loads: URL path under media/ → file. A missing or un-smudged prop is left out. */
+/** The web media (spikes/stevie-3d/scripts/web-media.mjs): KTX2 textures and meshopt geometry, same triangles. */
+export const WEB_MEDIA = path.join(repo, "references/web-media");
+
+/** The web-media file for a source, or null when there is none or its recorded source sha256 no longer matches. */
+async function webMedia(name, source) {
+  const manifest = JSON.parse(await readFile(path.join(WEB_MEDIA, "web-media.json"), "utf8").catch(() => '{"files":{}}'));
+  const entry = manifest.files[`${name}.glb`];
+  const bytes = await readFile(source).catch(() => null);
+  if (!entry || !isGlb(bytes)) return null;
+  if (createHash("sha256").update(bytes).digest("hex") !== entry.sourceSha256) {
+    console.warn(`quality-lab: references/web-media/${name}.glb is stale (its source changed); serving the source. Rerun web-media.mjs lab.`);
+    return null;
+  }
+  return path.join(WEB_MEDIA, `${name}.glb`);
+}
+
+/**
+ * Every media file the page loads: URL path under media/ → file. The page loads the web media; `source/…` keeps the
+ * uncompressed sources beside them for `?media=source`. A missing or un-smudged prop is left out.
+ */
 export async function mediaFiles() {
-  const files = { "stevie.glb": STEVIE_GLB };
-  for (const name of await readdir(PROPS_DIR).catch(() => [])) if (name.endsWith(".glb")) files[`props/${name}`] = path.join(PROPS_DIR, name);
+  const sources = { "stevie.glb": ["stevie", STEVIE_GLB] };
+  for (const name of await readdir(PROPS_DIR).catch(() => []))
+    if (name.endsWith(".glb")) sources[`props/${name}`] = [`prop-${name.slice(0, -4)}`, path.join(PROPS_DIR, name)];
+  const files = {};
+  for (const [key, [name, source]] of Object.entries(sources)) {
+    files[key] = (await webMedia(name, source)) ?? source;
+    files[`source/${key}`] = source;
+  }
   return files;
 }
+
+/** three's Basis Universal transcoder, which the page's KTX2 loader fetches from basis/. */
+const basisFiles = () => ["basis_transcoder.js", "basis_transcoder.wasm"].map((f) => path.join(pinnedThree(), "examples/jsm/libs/basis", f));
 
 export function labConfig(outDir = SITE) {
   const three = pinnedThree();
@@ -71,7 +100,13 @@ export function labConfig(outDir = SITE) {
               response.end(JSON.stringify(await mediaManifest()));
               return;
             }
-            const key = url.match(/^\/media\/((?:props\/)?[a-z0-9-]+\.glb)$/u)?.[1];
+            const basis = url.match(/^\/basis\/(basis_transcoder\.(?:js|wasm))$/u)?.[1];
+            if (basis) {
+              response.setHeader("content-type", basis.endsWith(".wasm") ? "application/wasm" : "text/javascript");
+              response.end(await readFile(path.join(pinnedThree(), "examples/jsm/libs/basis", basis)));
+              return;
+            }
+            const key = url.match(/^\/media\/((?:source\/)?(?:props\/)?[a-z0-9-]+\.glb)$/u)?.[1];
             if (!key) return next();
             const file = (await mediaFiles())[key];
             const bytes = file ? await readFile(file).catch(() => null) : null;
@@ -108,7 +143,7 @@ export async function buildSite(outDir = SITE) {
   for (const [key, file] of Object.entries(await mediaFiles())) {
     const bytes = await readFile(file).catch(() => null);
     if (!isGlb(bytes)) {
-      if (key === "stevie.glb") throw new Error(`${file} is not a glTF binary (is Git LFS fetched?)`);
+      if (key === "stevie.glb" || key === "source/stevie.glb") throw new Error(`${file} is not a glTF binary (is Git LFS fetched?)`);
       continue;
     }
     const target = path.join(outDir, "media", key);
@@ -117,6 +152,8 @@ export async function buildSite(outDir = SITE) {
     copied.push(key);
   }
   await writeFile(path.join(outDir, "media", "manifest.json"), JSON.stringify(await mediaManifest()));
+  await mkdir(path.join(outDir, "basis"), { recursive: true });
+  for (const file of basisFiles()) await copyFile(file, path.join(outDir, "basis", path.basename(file)));
   return { outDir, media: copied };
 }
 

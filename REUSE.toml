@@ -31,6 +31,14 @@ precedence = "override"
 SPDX-FileCopyrightText = "2026 Clockgrove; includes 3D models generated with Meshy (meshy.ai) and Tripo (tripo3d.ai)"
 SPDX-License-Identifier = "CC-BY-4.0"
 
+# Web media (spikes/stevie-3d/scripts/web-media.mjs): the same props re-encoded (KTX2 textures, meshopt geometry), so the
+# same licence and credit. Stevie's web copy follows his source (the default above).
+[[annotations]]
+path = ["references/web-media/prop-*.glb"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Clockgrove; includes 3D models generated with Meshy (meshy.ai) and Tripo (tripo3d.ai)"
+SPDX-License-Identifier = "CC-BY-4.0"
+
 # The quality lab (issue 45): its screenshots show the ceiling's CC BY 4.0 props, so they are CC BY 4.0 too.
 [[annotations]]
 path = ["references/quality-lab/*.png"]

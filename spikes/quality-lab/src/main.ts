@@ -12,6 +12,7 @@ import { loadProps } from "../../ceiling-3d/src/props.ts";
 import { buildSet, lampStrength, rain } from "../../ceiling-3d/src/set.ts";
 import { type LabConfig, type LabHandle, type LabStatus, type Measurement, type Platform, PRESETS, type PresetName, type StateName, type ViewName } from "./config.ts";
 import { buildPipeline, grade, type Pipeline } from "./pipeline.ts";
+import { webMediaLoader } from "./loader.ts";
 import { type LabStevie, loadStevie } from "./stevie.ts";
 import { mountUi } from "./ui.ts";
 
@@ -22,7 +23,9 @@ const query = new URLSearchParams(location.search);
 const forceWebGL = query.get("backend") === "webgl2";
 const statusEl = document.getElementById("status") as HTMLElement;
 const SOFTWARE = /swiftshader|llvmpipe|lavapipe|softpipe|software|microsoft basic render/i;
+// `?media=source` loads the uncompressed source models instead of the web media, to compare the two.
 const media = (file: string) => new URL(`media/${file}`, document.baseURI).href;
+const model = (key: string) => (query.get("media") === "source" ? `source/${key}` : key);
 
 function detectPlatform(): Platform {
   const forced = query.get("platform");
@@ -518,16 +521,18 @@ async function init() {
   adapter = await adapterString();
   const backendName = (renderer.backend as Any).isWebGPUBackend ? "WebGPU" : "WebGL2";
   finishStep("graphics", backendName);
+  const gltf = webMediaLoader(renderer);
 
   beginStep("models", "Downloading");
-  const stevieDownload = tracked("stevie.glb", manifest["stevie.glb"]);
-  const propDownloads = Object.fromEntries(Object.keys(set.slots).map((name) => [name, tracked(`props/${name}.glb`, manifest[`props/${name}.glb`])]));
+  const stevieDownload = tracked("stevie.glb", manifest[model("stevie.glb")]);
+  const propDownloads = Object.fromEntries(Object.keys(set.slots).map((name) => [name, tracked(`props/${name}.glb`, manifest[model(`props/${name}.glb`)])]));
   paintDownloads();
   const [loaded] = await Promise.all([
-    loadStevie(media("stevie.glb"), LOOP, stevieDownload.onProgress).finally(stevieDownload.finish),
-    loadProps(set.slots, set.groups.props as THREE.Object3D, media("props/"), {
+    loadStevie(media(model("stevie.glb")), LOOP, stevieDownload.onProgress, gltf).finally(stevieDownload.finish),
+    loadProps(set.slots, set.groups.props as THREE.Object3D, media(model("props/")), {
       onProgress: (name, event) => propDownloads[name]?.onProgress(event),
       onDone: (name) => propDownloads[name]?.finish(),
+      loader: gltf,
     }),
   ]);
   const total = [...downloads.values()].reduce((sum, d) => sum + (d.total || d.loaded), 0);
