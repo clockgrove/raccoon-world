@@ -2,6 +2,7 @@
 // with fur shells (0, 4, 8 or 16) and silhouette fins as two independent knobs.
 import * as THREE from "three/webgpu";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 import { attribute, color, float, fract, mix, mx_noise_float, smoothstep, texture, uv, vec2 } from "three/tsl";
 import { furShell } from "../../ceiling-3d/src/materials.ts";
 import type { FurShells } from "./config.ts";
@@ -116,18 +117,39 @@ function finMaterial(map: THREE.Texture | null) {
   return material;
 }
 
-export async function loadStevie(url: string, loop: WalkLoop, onProgress?: (event: ProgressEvent) => void, loader = new GLTFLoader()): Promise<LabStevie> {
+/** The loaded file, shared by every raccoon made from it: geometry, materials and the walk clip. */
+export interface StevieAsset {
+  gltf: Any;
+  clip: THREE.AnimationClip;
+  speedMps: number;
+  loadMs: number;
+  /** Shared across raccoons: the fur shell materials by "count-layer", the fins' geometry and material. */
+  shellMaterials: Map<string, THREE.Material>;
+  fins?: { geometry: THREE.BufferGeometry; material: THREE.Material };
+}
+
+export async function loadStevieAsset(url: string, onProgress?: (event: ProgressEvent) => void, loader = new GLTFLoader()): Promise<StevieAsset> {
   const started = performance.now();
   const gltf: Any = await loader.loadAsync(url, onProgress);
+  const clip: THREE.AnimationClip = gltf.animations.find((c: THREE.AnimationClip) => c.name === "walk") ?? gltf.animations[0];
+  if (!clip) throw new Error("Stevie's glTF holds no walk clip");
+  return { gltf, clip, speedMps: recordedSpeed(gltf), loadMs: Math.round(performance.now() - started), shellMaterials: new Map() };
+}
+
+/**
+ * One raccoon walking a loop: Stevie himself (the file's own scene), or a clone of his rig with its own skeleton and
+ * animation, `phase` seconds along the loop. Clones share the geometry and materials.
+ */
+export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clone?: boolean; phase?: number } = {}): LabStevie {
+  const scene: THREE.Object3D = options.clone ? SkeletonUtils.clone(asset.gltf.scene) : asset.gltf.scene;
+  const phase = options.phase ?? 0;
+  const { clip, speedMps } = asset;
   let body: THREE.SkinnedMesh | undefined;
-  gltf.scene.traverse((node: Any) => {
+  scene.traverse((node: Any) => {
     if (!body && node.isSkinnedMesh) body = node;
   });
   if (!body) throw new Error("Stevie's glTF holds no skinned mesh");
   const skinned: THREE.SkinnedMesh = body;
-  const clip: THREE.AnimationClip = gltf.animations.find((c: THREE.AnimationClip) => c.name === "walk") ?? gltf.animations[0];
-  if (!clip) throw new Error("Stevie's glTF holds no walk clip");
-  const speedMps = recordedSpeed(gltf);
 
   skinned.castShadow = true;
   skinned.receiveShadow = true;
@@ -135,7 +157,7 @@ export async function loadStevie(url: string, loop: WalkLoop, onProgress?: (even
   const material = skinned.material as Any;
   const map: THREE.Texture | null = material.map ?? null;
   const geometry = skinned.geometry;
-  const parent = skinned.parent ?? gltf.scene;
+  const parent = skinned.parent ?? scene;
 
   const attach = (mesh: THREE.SkinnedMesh) => {
     mesh.position.copy(skinned.position);
@@ -157,7 +179,13 @@ export async function loadStevie(url: string, loop: WalkLoop, onProgress?: (even
     if (!set) {
       set = [];
       for (let layer = 1; layer <= count; layer++) {
-        const shell = new THREE.SkinnedMesh(geometry, furShell(map ?? new THREE.Texture(), layer, count, FUR_LENGTH));
+        const key = `${count}-${layer}`;
+        let shellMaterial = asset.shellMaterials.get(key);
+        if (!shellMaterial) {
+          shellMaterial = furShell(map ?? new THREE.Texture(), layer, count, FUR_LENGTH);
+          asset.shellMaterials.set(key, shellMaterial);
+        }
+        const shell = new THREE.SkinnedMesh(geometry, shellMaterial);
         shell.name = `stevie-fur-${count}-${layer}`;
         set.push(attach(shell));
       }
@@ -169,7 +197,8 @@ export async function loadStevie(url: string, loop: WalkLoop, onProgress?: (even
   // Fins approximate classic view-dependent silhouette fins: quads on mesh edges standing out along the normals.
   let fins: THREE.SkinnedMesh | undefined;
   const makeFins = () => {
-    fins ??= attach(new THREE.SkinnedMesh(finGeometry(geometry, FUR_LENGTH * 1.5), finMaterial(map)));
+    asset.fins ??= { geometry: finGeometry(geometry, FUR_LENGTH * 1.5), material: finMaterial(map) };
+    fins ??= attach(new THREE.SkinnedMesh(asset.fins.geometry, asset.fins.material));
     fins.name = "stevie-fins";
     return fins;
   };
@@ -178,17 +207,17 @@ export async function loadStevie(url: string, loop: WalkLoop, onProgress?: (even
   // measured from east. Walking counter-clockwise, the heading at angle a on the loop is a + pi/2, hence yaw a + pi.
   const turn = new THREE.Group();
   turn.rotation.x = Math.PI / 2;
-  turn.add(gltf.scene);
+  turn.add(scene);
   const root = new THREE.Group();
-  root.name = "stevie";
+  root.name = options.clone ? "raccoon" : "stevie";
   root.add(turn);
   const position = new THREE.Vector3(loop.centre.x + loop.radius, loop.centre.y, 0);
 
-  const mixer = new THREE.AnimationMixer(gltf.scene);
+  const mixer = new THREE.AnimationMixer(scene);
   mixer.clipAction(clip).play();
 
   let triangles = 0;
-  gltf.scene.traverse((node: Any) => {
+  scene.traverse((node: Any) => {
     if (node.isMesh) triangles += (node.geometry.getIndex()?.count ?? node.geometry.getAttribute("position").count) / 3;
   });
   const metrics: Record<string, unknown> = {
@@ -200,7 +229,7 @@ export async function loadStevie(url: string, loop: WalkLoop, onProgress?: (even
     speedMps,
     furShells: 0,
     fins: false,
-    loadMs: Math.round(performance.now() - started),
+    loadMs: asset.loadMs,
   };
 
   let shown: FurShells | -1 = -1;
@@ -225,12 +254,18 @@ export async function loadStevie(url: string, loop: WalkLoop, onProgress?: (even
       }
     },
     update(seconds) {
-      mixer.setTime(seconds % clip.duration);
-      const angle = (speedMps * seconds) / loop.radius;
+      const t = seconds + phase;
+      mixer.setTime(t % clip.duration);
+      const angle = (speedMps * t) / loop.radius;
       position.set(loop.centre.x + loop.radius * Math.cos(angle), loop.centre.y + loop.radius * Math.sin(angle), 0);
       root.position.copy(position);
       root.rotation.z = angle + Math.PI;
       root.updateMatrixWorld(true);
     },
   };
+}
+
+export async function loadStevie(url: string, loop: WalkLoop, onProgress?: (event: ProgressEvent) => void, loader = new GLTFLoader()): Promise<LabStevie & { asset: StevieAsset }> {
+  const asset = await loadStevieAsset(url, onProgress, loader);
+  return Object.assign(createStevie(asset, loop), { asset });
 }

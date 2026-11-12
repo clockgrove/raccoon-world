@@ -200,6 +200,14 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
         triangles.software === true && triangles.steps.length === 2 && triangles.held === null && triangles.estimatedTriangles === null && triangles.noLimitUpTo === null && triangles.steps.every((s) => s.measurement === null && !s.error),
         `${name}: the triangle budget run did not run cleanly on a software GPU: ${JSON.stringify(triangles).slice(0, 300)}`,
       );
+      // The cast budget and the soak: two short steps each, no times on a software GPU, and three raccoons draw more.
+      const cast = await page.evaluate(() => globalThis.labRunner.findCastBudget({ warmupMs: 50, holdMs: 150, maxSteps: 2 }));
+      check(
+        cast.software === true && cast.steps.length === 2 && cast.steps.every((s) => s.measurement === null && !s.error) && cast.steps[1].triangles > cast.steps[0].triangles,
+        `${name}: the cast budget run did not run cleanly on a software GPU: ${JSON.stringify(cast).slice(0, 300)}`,
+      );
+      const soak = await page.evaluate(() => globalThis.labRunner.runSoak({ seconds: 2, windowS: 1, warmupMs: 50, holdMs: 150 }));
+      check(soak.software === true && soak.steps.length === 2 && soak.steps.every((s) => s.measurement === null && !s.error), `${name}: the soak did not run cleanly on a software GPU: ${JSON.stringify(soak).slice(0, 300)}`);
       // Geometry detail must really add triangles: the scene count at 4× is above the art as made.
       // ...and draw the same yard: midpoint splits keep every shape, so a frozen frame barely changes.
       const counts = await page.evaluate(async () => {
@@ -240,11 +248,11 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
       // No frame time of any kind, under any key, in what Copy results copies or in the reports Download JSON saves.
       const times = /"(frameMs\w*|gpuMs\w*|softwareMs|softwareFrameMs|p50|p95)":\s*[-0-9{]/u;
       const slim = JSON.parse(copy.text);
-      const timeColumns = ["frameMsP50", "frameMsP95", "gpuMsP50", "gpuMsP95"].map((c) => slim.columns.indexOf(c));
-      check(slim.reports.length === 3 && slim.reports.every((r) => r.steps.every((row) => timeColumns.every((i) => row[i] == null))), `${name}: Copy results carries software frame times`);
-      check(!times.test(JSON.stringify([sweep, ceiling, triangles])), `${name}: the runner's reports carry software frame times`);
+      const timeColumns = ["frameMsP50", "frameMsP95", "frameMsP99", "missedPct", "gpuMsP50", "gpuMsP95", "cpuMsP50", "cpuMsP95"].map((c) => slim.columns.indexOf(c));
+      check(slim.reports.length === 5 && slim.reports.every((r) => r.steps.every((row) => timeColumns.every((i) => row[i] == null))), `${name}: Copy results carries software frame times`);
+      check(!times.test(JSON.stringify([sweep, ceiling, triangles, cast, soak])), `${name}: the runner's reports carry software frame times`);
       check(errors.length === 0, `${name}: the runner raised ${errors.join("; ")}`);
-      log(`runner: sweep ${sweep.steps.length} step, ceiling ${ceiling.steps.length} steps, triangle budget ${triangles.steps.length} steps, software, no times; detail 4× ${counts.plain} → ${counts.four} triangles, same picture (mean difference ${counts.meanDiff.toFixed(2)}); copied ${copy.text.length} chars`);
+      log(`runner: sweep ${sweep.steps.length} step, ceiling ${ceiling.steps.length} steps, triangle budget ${triangles.steps.length} steps, cast ${cast.steps.length} steps (${cast.steps[0].triangles} → ${cast.steps[1].triangles} triangles), soak ${soak.steps.length} windows, software, no times; detail 4× ${counts.plain} → ${counts.four} triangles, same picture (mean difference ${counts.meanDiff.toFixed(2)}); copied ${copy.text.length} chars`);
     }
   } finally {
     await browser.close();
