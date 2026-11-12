@@ -136,7 +136,9 @@ export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
     bloom: true,
     grade: true,
     antialias: "msaa",
-    dpr: 2,
+    // DPR 1: MSAA at DPR 2 measured dearer than Ultra's TRAA at DPR 2 (raccoon-world#89: 53 vs 42 ms GPU on an
+    // RTX 2060 SUPER), so High kept its MSAA and drops to full-HD resolution, between Medium and Ultra.
+    dpr: 1,
     upscale: "none",
     detail: 1,
   },
