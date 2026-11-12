@@ -288,6 +288,8 @@ export interface Measurement {
   /** Triangles the GPU drew per frame across every pass (shadow maps, reflections and post included). */
   drawnTriangles?: number | null;
   drawCalls?: number | null;
+  /** Milliseconds from the start of the measurement until frames flowed again (shader and pipeline compile stalls). */
+  stallMs?: number | null;
 }
 
 export interface LabStatus {
