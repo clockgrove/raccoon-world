@@ -20,11 +20,17 @@
 //                 are her subject's references, her approved turnaround is Kirk's pick (c1) with its
 //                 hashes and output grant, her character-3d spec names her subject and gait and the
 //                 pinned Assetforge's character-3d reader accepts it, and her turnaround run forecasts within its $5 cap (issue 50).
+// 8. model3d:     the 3D target profile's shape (art/tools/model3d.mjs profile) and the pinned Assetforge
+//                 reads it, its rig and walk; Stevie's and Gracie's character-3d specs; Stevie's 3D run
+//                 forecasts within $5; a scripted stage and pick write a rigged .glb with the generated walk
+//                 into a throwaway copy and the profile's validator accepts it on the first try; the same
+//                 model is refused over a lower triangle budget (over-budget:triangles); a free-plan
+//                 grant is refused with exit 7 (issue 39).
 //
 // ASSETFORGE_DIR and CLOCKGROVE_DIR name the pinned checkouts (defaults .assetforge-src, .clockgrove).
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cp, mkdtemp, readFile, readdir, rm } from "node:fs/promises";
+import { cp, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -388,6 +394,152 @@ async function proof() {
   }
 }
 
+/**
+ * The 3D target profile (issue 39): its shape, Stevie's and Gracie's character-3d specs, Stevie's run
+ * forecast, and the offline hand-off: a scripted `stage` and a `pick` through the profile into a
+ * throwaway copy, accepted by the profile's own validator on the first try; an over-budget model
+ * refused with its stable reason; a free-plan grant refused with exit 7.
+ */
+async function checkModel3d() {
+  const PROFILE = "art/target-profile-3d.json";
+  const SPEC = "art/stevie/character-3d/spec.json";
+  const { checkProfile } = await import(pathToFileURL(join(root, "art/tools/model3d.mjs")).href);
+  const { characterSpec } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/profile.ts")).href);
+  const { model3dSettings } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/profile.ts")).href);
+  const { loadRig } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/rig/template.ts")).href);
+  const profile = await json(PROFILE);
+  for (const problem of checkProfile(profile)) fail("model3d", `${PROFILE}: ${problem.code}: ${problem.detail}`);
+  // The pinned Assetforge reads the profile, its rig template and its gaits.
+  try {
+    model3dSettings(profile);
+    await loadRig(profile, join(root, "art"));
+  } catch (error) {
+    fail("model3d", `Assetforge refuses ${PROFILE}: ${error.message}`);
+  }
+  const m = profile.model3d;
+  const walk = m.gaits?.walk ?? {};
+  const decided = { backArchDeg: 22, hipHeightRatio: 1.1, headPitchDeg: 28, tailPitchDeg: 18, strideBodyLengths: 0.26 };
+  for (const [key, value] of Object.entries(decided))
+    if (walk[key] !== value) fail("model3d", `the walk's ${key} must be #88's ${value}, not ${walk[key]}`);
+  const template = await json(`art/${m.rig?.template}`);
+  for (const ear of ["ear_l", "ear_r"])
+    if (template.joints?.find((j) => j.name === ear)?.parent !== "head") fail("model3d", `the rig needs ${ear} on the head`);
+  if (!template.feet?.every((f) => f.plantigrade === true)) fail("model3d", "every raccoon foot must be plantigrade");
+  if (JSON.stringify(m.groom?.seasons) !== JSON.stringify(["summer", "winter"]))
+    fail("model3d", "model3d.groom.seasons must be summer and winter");
+  if (m.tiers?.phone?.status !== "pending") fail("model3d", "the phone tier stays pending until Kirk's device run");
+  if (profile.license !== "MIT" || (profile.acceptedLicenses ?? []).length !== 0)
+    fail("model3d", "the 3D profile ships MIT only: Tripo paid-plan output, relabelled");
+
+  const required = m.clipSets?.[m.rig?.kind]?.required ?? [];
+  for (const name of ["stevie", "gracie"]) {
+    const path = `art/${name}/character-3d/spec.json`;
+    const spec = await json(path);
+    try {
+      characterSpec(spec);
+    } catch (error) {
+      fail("model3d", `Assetforge's character-3d reader refuses ${path}: ${error.message}`);
+    }
+    for (const clip of spec.clips ?? [])
+      if (!required.includes(clip)) fail("model3d", `${path}: clip ${clip} is not in the raccoon clip set`);
+  }
+  const stevie = await json(SPEC);
+  if (stevie.assetId !== "stevie" || stevie.subject !== "stevie" || stevie.gait !== "quadruped")
+    fail("model3d", `${SPEC} must be Stevie's quadruped character-3d spec`);
+  if (JSON.stringify(stevie.clips) !== JSON.stringify(required))
+    fail("model3d", `${SPEC} must list the raccoon clip set: ${required}`);
+  for (const clip of stevie.clips) {
+    const source = stevie.fields?.clipSources?.[clip];
+    const generated = (m.clipSets?.[m.rig?.kind]?.generated ?? []).includes(clip);
+    if (source !== (generated ? "generated" : "library"))
+      fail("model3d", `${SPEC}: clip ${clip} must come from ${generated ? "the generated gait" : "the provider's library"}`);
+  }
+
+  // Stevie's 3D run (up to 4 candidates) forecasts within its cap, offline, on the real routes.
+  const settings = await json("art/stevie/character-3d/run.json");
+  const runs = await mkdtemp(join(tmpdir(), "raccoon-world-runs3d-"));
+  const target = await throwawayCopy("model3d");
+  const base = ["--spec", SPEC, "--bible", "art/style-bible.json", "--profile", PROFILE, "--runs", runs];
+  try {
+    const dry = await assetforge([
+      "stage", ...base, "--candidates", String(settings.candidates), "--cap", String(settings.capUsd), "--dry-run",
+    ]);
+    if (dry.code !== 0) fail("model3d", `Stevie's 3D run does not fit its $${settings.capUsd} cap: ${dry.doc?.error?.message ?? dry.stderr}`);
+    if (!(settings.candidates <= MAX_CANDIDATES && settings.capUsd <= MAX_RUN_USD))
+      fail("model3d", `art/stevie/character-3d/run.json: at most ${MAX_CANDIDATES} candidates and $${MAX_RUN_USD}`);
+
+    // The hand-off: scripted stage, pick through the profile, the validator accepts on the first try.
+    const scripted = [...base, "--provider-script", "art/proof/model3d-provider.mjs", "--candidates", "1"];
+    const staged = await assetforge(["stage", ...scripted, "--routes", "art/proof/model3d-routes.json"]);
+    if (staged.code !== 0) {
+      const reasons = (staged.doc?.rejections ?? []).flatMap((c) => c.reasons ?? []).filter((r) => !r.passed);
+      fail("model3d", `scripted stage failed (exit ${staged.code}): ${reasons.map((r) => `${r.check}: ${r.reason}`).join("; ") || staged.doc?.error?.message || staged.stderr}`);
+      return;
+    }
+    const picked = await assetforge(["pick", "--run", staged.doc.runDir, "--candidate", "c1", "--target", target]);
+    if (picked.code !== 0 || picked.doc?.validator?.accepted !== true) {
+      fail("model3d", `the profile's validator did not accept the pick on the first try (exit ${picked.code}):\n${picked.doc?.validator?.output ?? picked.doc?.error?.message ?? picked.stderr}`);
+      return;
+    }
+    const manifestPath = "assets/models/stevie/manifest.json";
+    const manifest = JSON.parse(await readFile(join(target, manifestPath), "utf8"));
+    const provenance = JSON.parse(await readFile(join(target, "assets/models/stevie/stevie.glb.provenance.json"), "utf8"));
+    const p = manifest.provenance ?? {};
+    const walkClip = manifest.model?.clips?.find((c) => c.name === "walk");
+    const expectations = [
+      ["review pending", manifest.review?.status === "pending" && manifest.review?.reviewer === null],
+      ["a rigged glb", manifest.source?.mediaType === "model/gltf-binary" && manifest.model?.bones > 0],
+      ["the generated walk", walkClip?.generated === true && walkClip?.loop === true && walkClip?.durationMs > 0],
+      ["the raccoon rig template and its hash", manifest.model?.rig?.template === m.rig.template && /^[0-9a-f]{64}$/.test(manifest.model?.rig?.sha256 ?? "")],
+      ["MIT as Clockgrove work", manifest.license === "MIT" && manifest.source?.creator === "Clockgrove"],
+      ["provider, model, route and output grant", p.provider === "tripo" && ["model", "route", "providerTermsVersion"].every((k) => typeof p[k] === "string" && p[k].length > 0) && p.outputGrant?.relabel === true],
+      ["IPTC trainedAlgorithmicMedia", p.digitalSourceType === IPTC_GENERATED && provenance.digitalSourceType === IPTC_GENERATED],
+      ["only scripted calls", provenance.calls.every((c) => c.route.startsWith("scripted:"))],
+      ["bounds in metres, standing on the ground", Math.abs(manifest.model?.bounds?.min?.[1]) < 1e-3 && Math.abs(manifest.model?.bounds?.max?.[1] - stevie.heightM) < 1e-3],
+    ];
+    for (const [what, ok] of expectations) if (!ok) fail("model3d", `the written model lacks: ${what}`);
+    const validator = picked.doc.validator.output;
+    for (const flag of ["clip-missing:idle", "tier:phone:triangles"])
+      if (!validator.includes(flag)) fail("model3d", `the validator should flag ${flag}:\n${validator}`);
+    const { stdout: attr } = await run("git", ["check-attr", "filter", "--", manifest.source.path], { cwd: root });
+    if (!attr.trim().endsWith(": lfs")) fail("model3d", `${manifest.source.path} is not stored in Git LFS by .gitattributes`);
+
+    // Over budget: the same model under a lower hand-off budget is refused with a stable reason.
+    const lower = structuredClone(profile);
+    lower.model3d.budgets.triangles = 50000;
+    lower.model3d.tiers.desktop.character.triangles = 50000;
+    await writeFile(join(target, "art/over-budget-3d.json"), JSON.stringify(lower));
+    try {
+      await run(process.execPath, ["art/tools/model3d.mjs", "validate", manifestPath, "--profile", "art/over-budget-3d.json"], { cwd: target, env });
+      fail("model3d", "a model over the hand-off triangle budget was accepted");
+    } catch (error) {
+      if (error.code !== 1 || !String(error.stdout).includes("refused over-budget:triangles"))
+        fail("model3d", `an over-budget model must be refused with over-budget:triangles (exit 1), got ${error.code}: ${error.stdout}${error.stderr}`);
+    }
+
+    // A grant the profile can't accept (a free-plan CC BY model) is refused with exit 7, nothing written.
+    const routes = join(runs, "free-plan-routes.json");
+    const freePlan = { license: "CC-BY-4.0", plan: "free", commercial: true, relabel: false, attribution: "3D model generated with Meshy (meshy.ai)" };
+    await writeFile(routes, JSON.stringify({ model3d: { forward: "+z", outputGrant: freePlan } }));
+    const free = await assetforge(["stage", ...scripted, "--routes", routes]);
+    const freeTarget = await mkdtemp(join(tmpdir(), "raccoon-world-free-"));
+    try {
+      const refused = free.code === 0
+        ? await assetforge(["pick", "--run", free.doc.runDir, "--candidate", "c1", "--target", freeTarget])
+        : free;
+      if (refused.code !== 7 || refused.doc?.error?.code !== "license_refused")
+        fail("model3d", `a free-plan CC BY grant must be refused with exit 7, got ${refused.code}`);
+      if ((await readdir(freeTarget)).length !== 0) fail("model3d", "a refused grant wrote into the target");
+    } finally {
+      await rm(freeTarget, { recursive: true, force: true });
+    }
+    return { validator, triangles: manifest.model.triangles, walkMs: walkClip?.durationMs };
+  } finally {
+    await rm(target, { recursive: true, force: true });
+    await rm(runs, { recursive: true, force: true });
+  }
+}
+
 try {
   await pinned(assetforgeDir, "ASSETFORGE_COMMIT", "bash scripts/assetforge.sh fetch");
   await pinned(clockgroveDir, "CLOCKGROVE_COMMIT", "bash scripts/clockgrove.sh fetch");
@@ -398,12 +550,13 @@ try {
   const forecasts = await checkInputs(proved?.qaPerCandidateUsd ?? 0);
   const placeholders = await checkPlaceholders();
   const licensedManifests = await checkLicences();
+  const model3d = await checkModel3d();
   if (failures.length) {
     console.error(failures.join("\n"));
     process.exitCode = 1;
   } else
     console.log(
-      JSON.stringify({ status: "ok", validator: proved.validator, placeholders, licensedManifests, runForecastUsd: forecasts }),
+      JSON.stringify({ status: "ok", validator: proved.validator, placeholders, licensedManifests, runForecastUsd: forecasts, model3d }),
     );
 } catch (error) {
   console.error(error.message);
