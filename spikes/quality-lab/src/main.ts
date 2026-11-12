@@ -253,8 +253,11 @@ async function applyConfig(next: LabConfig) {
   busy = true;
   try {
     config = { ...next };
-    renderer.setPixelRatio(config.dpr);
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    // Resizing the canvas clears it; only a pixel-ratio change needs it, so the last frame stays up during a rebuild.
+    if (renderer.getPixelRatio() !== config.dpr) {
+      renderer.setPixelRatio(config.dpr);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
     stevie?.setFur(config.furShells, config.furFins);
     if (shower.mesh.count !== config.rainCount) {
       scene.remove(shower.mesh);

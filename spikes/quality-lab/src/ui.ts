@@ -84,7 +84,13 @@ border:1px solid var(--line);box-shadow:0 18px 50px rgba(0,0,0,.45);overflow:hid
 .ql-alert .x{min-width:36px;padding:0}
 .ql.busy .ql-sub::before{content:"";display:inline-block;width:9px;height:9px;margin-right:6px;border:2px solid var(--accent);border-right-color:transparent;border-radius:50%;animation:qlspin .8s linear infinite;vertical-align:-1px}
 @keyframes qlspin{to{transform:rotate(360deg)}}
-.ql.busy button:disabled,.ql.busy .switch:disabled{opacity:.7}
+.ql .knob.changed>:first-child::after{content:"";display:inline-block;width:7px;height:7px;margin-left:8px;border-radius:50%;background:var(--accent);vertical-align:middle}
+.ql-chip{position:fixed;z-index:9;left:50%;top:max(56px,calc(env(safe-area-inset-top) + 56px));transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;
+background:rgba(20,21,24,.82);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.1);color:#ecebe6;font:13px/1.3 system-ui,-apple-system,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.ql-chip::before{content:"";width:10px;height:10px;border:2px solid #f5b453;border-right-color:transparent;border-radius:50%;animation:qlspin .8s linear infinite}
+.ql-chip[hidden]{display:none}
+.ql-still{position:fixed;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;filter:brightness(.8) saturate(.9);pointer-events:none}
+.ql-still[hidden]{display:none}
 @media (prefers-reduced-motion:reduce){.ql *{transition:none!important;animation:none!important}}
 `;
 
@@ -165,22 +171,54 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
       : [s.backend === "webgpu" ? "WebGPU" : "WebGL2", s.adapter, `DPR ${s.dpr}`, s.platform, s.software ? "software, not performance" : "", s.timestamps ? "GPU timestamps" : ""].filter(Boolean).join(" · ");
   };
 
-  // Busy: a settings change rebuilds and recompiles the scene, which can take seconds on a phone. Say so, with a timer.
-  let busySince = 0;
+  // Draft and apply: the controls edit a draft, and Apply rebuilds the scene once for the whole batch. A rebuild
+  // recompiles shaders, which takes seconds on a phone; the panel stays usable and the yard's last frame stays up.
+  let draft: LabConfig = { ...lab.status().config };
+  let applyingSince = 0;
+  let applyingName = "";
+  let applyError = "";
   let settledAt = performance.now();
-  const busy = async (work: () => Promise<void>) => {
-    if (busySince || running) return;
-    busySince = performance.now();
+  let sceneWanted: { view: ViewName; state: StateName } | null = null;
+  const pending = () => KNOBS.filter((k) => draft[k] !== lab.status().config[k]);
+  const edit = (next: LabConfig) => {
+    draft = { ...next };
+    applyError = "";
+    syncAll();
+  };
+  // A still of the current frame covers the scene while it rebuilds (a pixel-ratio change clears the canvas).
+  const still = el("img", { class: "ql-still", alt: "", hidden: true });
+  root.append(still);
+  const chip = el("div", { class: "ql-chip", hidden: true });
+  chip.setAttribute("role", "status");
+  root.append(chip);
+  const applyDraft = async () => {
+    if (applyingSince || running || pending().length === 0) return;
+    const target = { ...draft };
+    const name = presetOf(target);
+    applyingName = name ? capital(name) : "your changes";
+    applyingSince = performance.now();
     panel.classList.add("busy");
-    for (const c of allControls()) (c as HTMLButtonElement).disabled = true;
-    paintHead();
+    syncAll();
     try {
-      await work();
+      still.src = await lab.screenshot(Math.min(2400, Math.round(window.innerWidth * Math.min(2, window.devicePixelRatio))));
+      still.hidden = false;
+    } catch {
+      // No still: the canvas keeps its last frame unless the pixel ratio changes.
+    }
+    try {
+      await lab.apply(target);
+    } catch (error) {
+      applyError = String((error as Error)?.message ?? error);
     } finally {
-      busySince = 0;
+      applyingSince = 0;
+      still.hidden = true;
+      still.removeAttribute("src");
       settledAt = performance.now();
       panel.classList.remove("busy");
-      for (const c of allControls()) (c as HTMLButtonElement).disabled = false;
+      const wanted = sceneWanted;
+      sceneWanted = null;
+      if (wanted && wanted.view !== lab.status().view) await lab.setView(wanted.view);
+      if (wanted && wanted.state !== lab.status().state) await lab.setState(wanted.state);
       syncAll();
     }
   };
@@ -197,7 +235,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
       const rate = (frames * 1000) / (now - since);
       const s = lab.status();
       const target = s.platform === "phone" ? 30 : 60;
-      if (busySince) paintHead();
+      if (applyingSince) paintHead();
       else if (!running) {
         fps.textContent = `${Math.round(rate)} fps`;
         fps.className = `ql-fps ${rate >= target * 0.9 ? "good" : rate >= target * 0.6 ? "ok" : "bad"}`;
@@ -223,7 +261,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   alertFix.addEventListener("click", () => {
     alertBox.hidden = true;
     slowWindows = 0;
-    void busy(() => lab.apply({ ...PRESETS.low }));
+    edit({ ...PRESETS.low });
+    void applyDraft();
   });
   alertClose.addEventListener("click", () => {
     alertBox.hidden = true;
@@ -231,13 +270,13 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   });
 
   // A segmented control: one pressed button among a few.
-  const segmented = <T>(label: string, options: readonly [T, string][], get: () => T, set: (v: T) => Promise<void>, accent = false) => {
+  const segmented = <T>(label: string, options: readonly [T, string][], get: () => T, set: (v: T) => Promise<void> | void, accent = false) => {
     const row = el("div", { class: accent ? "seg accent" : "seg" });
     row.setAttribute("role", "group");
     row.setAttribute("aria-label", label);
     const buttons = options.map(([value, text]) => {
       const b = el("button", { type: "button", textContent: text });
-      b.addEventListener("click", () => void busy(() => set(value)));
+      b.addEventListener("click", () => void Promise.resolve(set(value)).then(syncAll));
       return { value, b };
     });
     row.append(...buttons.map((x) => x.b));
@@ -248,8 +287,15 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   };
 
   // Scene
-  const view = segmented<ViewName>("Camera view", [["yard", "Yard"], ["close", "Close-up"]], () => lab.status().view, (v) => lab.setView(v));
-  const state = segmented<StateName>("Time of day", [["dusk", "Dusk"], ["night", "Night"]], () => lab.status().state, (v) => lab.setState(v));
+  // The view and time apply at once; during a rebuild they wait for it to finish.
+  const wantedView = () => sceneWanted?.view ?? lab.status().view;
+  const wantedState = () => sceneWanted?.state ?? lab.status().state;
+  const view = segmented<ViewName>("Camera view", [["yard", "Yard"], ["close", "Close-up"]], wantedView, (v) =>
+    applyingSince ? void (sceneWanted = { view: v, state: wantedState() }) : lab.setView(v),
+  );
+  const state = segmented<StateName>("Time of day", [["dusk", "Dusk"], ["night", "Night"]], wantedState, (v) =>
+    applyingSince ? void (sceneWanted = { view: wantedView(), state: v }) : lab.setState(v),
+  );
   const sceneSection = el("section", {}, el("h2", { textContent: "Scene" }), el("div", { class: "pair" }, view.row, state.row));
 
   // Presets
@@ -258,15 +304,17 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   const preset = segmented<PresetName | null>(
     "Preset",
     PRESET_ORDER.map((name) => [name, capital(name)] as [PresetName, string]),
-    () => presetOf(lab.status().config),
-    (name) => (name ? lab.apply({ ...PRESETS[name] }) : Promise.resolve()),
+    () => presetOf(draft),
+    (name) => {
+      if (name) edit({ ...PRESETS[name] });
+    },
     true,
   );
   const presetHint = el("p", { class: "hint" });
   const presetSection = el("section", {}, el("h2", { textContent: "Quality" }), preset.row, presetHint);
 
   // Effects: one card per group, a switch per on/off knob and a segmented control per levelled knob.
-  const applyKnob = (knob: Knob, value: unknown) => lab.apply({ ...lab.status().config, [knob]: value } as LabConfig);
+  const setKnob = (knob: Knob, value: unknown) => edit({ ...draft, [knob]: value } as LabConfig);
   const knobSyncs: (() => void)[] = [];
   const knobControls: HTMLElement[] = [];
   const effects = el("section", {}, el("h2", { textContent: "Effects" }));
@@ -281,23 +329,27 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
         const id = `ql-${knob}`;
         const cb = el("input", { type: "checkbox", id, class: "switch" });
         cb.setAttribute("role", "switch");
-        cb.addEventListener("change", () => void busy(() => applyKnob(knob, cb.checked)));
-        knobSyncs.push(() => (cb.checked = lab.status().config[knob] as boolean));
+        cb.addEventListener("change", () => setKnob(knob, cb.checked));
+        const row = el("div", { class: "knob" }, el("label", { htmlFor: id, textContent: KNOB_LABELS[knob] }), cb);
+        knobSyncs.push(() => {
+          cb.checked = draft[knob] as boolean;
+          row.classList.toggle("changed", draft[knob] !== lab.status().config[knob]);
+        });
         knobControls.push(cb);
-        list.append(el("div", { class: "knob" }, el("label", { htmlFor: id, textContent: KNOB_LABELS[knob] }), cb));
+        list.append(row);
       } else {
         // Cheapest first reads naturally left to right.
         const options = [...levels].reverse().map((lv) => [lv, levelText(knob, lv)] as [unknown, string]);
-        const seg = segmented<unknown>(KNOB_LABELS[knob], options, () => lab.status().config[knob], (v) => applyKnob(knob, v));
-        knobSyncs.push(seg.sync);
+        const seg = segmented<unknown>(KNOB_LABELS[knob], options, () => draft[knob], (v) => setKnob(knob, v));
+        const row = el("div", { class: "knob wide" }, el("span", { textContent: KNOB_LABELS[knob] }), seg.row);
+        knobSyncs.push(seg.sync, () => row.classList.toggle("changed", draft[knob] !== lab.status().config[knob]));
         knobControls.push(...seg.buttons);
-        list.append(el("div", { class: "knob wide" }, el("span", { textContent: KNOB_LABELS[knob] }), seg.row));
+        list.append(row);
       }
     }
     knobSyncs.push(() => {
-      const config = lab.status().config;
       const on = group.knobs.filter((k) => {
-        const v = config[k];
+        const v = draft[k];
         return typeof v === "boolean" ? v : v !== (LEVELS[k] as readonly unknown[]).at(-1);
       }).length;
       count.textContent = `${on} of ${group.knobs.length} on`;
@@ -305,9 +357,6 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     effects.append(details);
   }
   const controls = [...preset.buttons, ...knobControls];
-  function allControls(): HTMLElement[] {
-    return [...view.buttons, ...state.buttons, ...controls, sweepBtn, ceilingBtn];
-  }
 
   // Runs: the action bar stays in reach at the bottom of the panel.
   const sweepBtn = el("button", { type: "button", class: "btn primary", textContent: "Run the sweep" });
@@ -317,7 +366,11 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   progress.setAttribute("role", "status");
   const runBar = el("i");
   const runBox = el("div", { class: "run" }, progress, el("div", { class: "bar" }, runBar));
-  actions.append(runBox, sweepBtn, ceilingBtn, stopBtn);
+  const applyBtn = el("button", { type: "button", class: "btn primary", hidden: true });
+  const discardBtn = el("button", { type: "button", class: "btn", textContent: "Discard", hidden: true });
+  applyBtn.addEventListener("click", () => void applyDraft());
+  discardBtn.addEventListener("click", () => edit({ ...lab.status().config }));
+  actions.append(runBox, applyBtn, discardBtn, sweepBtn, ceilingBtn, stopBtn);
 
 // Results
   const results = el("div", { class: "tablewrap" });
@@ -406,17 +459,28 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     sweepBtn.hidden = ceilingBtn.hidden = on;
     stopBtn.hidden = !on;
     panel.classList.toggle("running", on);
+    if (!on) draft = { ...lab.status().config };
     if (!on) runBar.style.width = "0";
     for (const c of controls) (c as HTMLButtonElement).disabled = on;
   };
   function paintHead() {
-    if (busySince) {
-      headSub.textContent = `Applying · ${((performance.now() - busySince) / 1000).toFixed(1)} s`;
-      return;
-    }
     const s = lab.status();
-    const name = presetOf(s.config);
-    headSub.textContent = `${name ? capital(name) : "Custom"} · ${s.view === "yard" ? "Yard" : "Close-up"} · ${capital(s.state)}`;
+    const changed = pending().length;
+    const waited = applyingSince ? `${((performance.now() - applyingSince) / 1000).toFixed(1)} s` : "";
+    if (applyingSince) headSub.textContent = `Applying ${applyingName} · ${waited}`;
+    else {
+      const name = presetOf(s.config);
+      headSub.textContent = `${name ? capital(name) : "Custom"} · ${s.view === "yard" ? "Yard" : "Close-up"} · ${capital(s.state)}${changed ? ` · ${changed} pending` : ""}`;
+    }
+    chip.hidden = !applyingSince;
+    chip.textContent = applyingSince ? `Applying ${applyingName} · ${waited}` : "";
+    // The action bar: Apply and Discard while there is a draft or a rebuild, the runs otherwise.
+    const drafting = !running && (changed > 0 || applyingSince > 0);
+    applyBtn.hidden = !drafting;
+    discardBtn.hidden = !drafting || changed === 0;
+    sweepBtn.hidden = ceilingBtn.hidden = drafting || running;
+    applyBtn.disabled = applyingSince > 0;
+    applyBtn.textContent = applyingSince ? `Applying · ${waited}` : `Apply ${changed} change${changed === 1 ? "" : "s"}`;
   }
   function syncAll() {
     refreshStatus();
@@ -425,7 +489,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     preset.sync();
     for (const f of knobSyncs) f();
     paintHead();
-    const name = presetOf(lab.status().config);
+    const name = presetOf(draft);
     presetHint.textContent = name ? "" : "Custom: your switches no longer match a preset.";
   }
 
