@@ -23,6 +23,13 @@ Raccoon World's art direction and Assetforge inputs. The author guide, [docs/art
   - the high three-quarter camera never shows it;
   - it was a false reject in the threshold measurement.
 
+**Gracie** (issue 50)
+- She is the bible subject `gracie`. Her description leads with her signature: long, shaggy, paler grey fur on her lower body.
+- Kirk's photos of her are positive anchors scoped to her subject. They are likeness references, not the look.
+- Her identity lock is the three-quarter view of her approved turnaround, candidate c1 of the three that `node art/tools/turnaround.mjs gracie` generated (Kirk's pick, 2026-11-11), plus her photos.
+- `references/gracie/README.md` has the run, the budget, the pick and its provenance.
+- `art/gracie/character-3d/` holds her `character-3d` spec and run settings for the 3D target profile (#39).
+
 **Negative anchors**
 - Unapproved material is a negative anchor and never a positive one:
   - the 3D spike renders (`references/stevie/77-3d`);

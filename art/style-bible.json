@@ -49,6 +49,48 @@
       "role": "contact sheet cell 3 (identity lock)",
       "subject": "jimothy",
       "look": "character"
+    },
+    {
+      "path": "../references/gracie/gracie-lounging.png",
+      "role": "owner's photo, likeness reference only (not the look); her long pale grey lower-body fur",
+      "subject": "gracie",
+      "look": "character"
+    },
+    {
+      "path": "../references/gracie/gracie-ice-cube.png",
+      "role": "owner's photo, likeness reference only (not the look); hand-like paws with dark palms and soles, ringed tail",
+      "subject": "gracie",
+      "look": "character"
+    },
+    {
+      "path": "../references/gracie/gracie-sleeping.png",
+      "role": "owner's photo, likeness reference only (not the look); rest pose, side-lying with her head tucked onto her front paws",
+      "subject": "gracie",
+      "look": "character"
+    },
+    {
+      "path": "../references/gracie/turnaround-three-quarter.png",
+      "role": "approved turnaround (Kirk, 2026-11-11), three-quarter view (identity lock)",
+      "subject": "gracie",
+      "look": "character"
+    },
+    {
+      "path": "../references/gracie/turnaround-front.png",
+      "role": "approved turnaround (Kirk, 2026-11-11), front view",
+      "subject": "gracie",
+      "look": "character"
+    },
+    {
+      "path": "../references/gracie/turnaround-side.png",
+      "role": "approved turnaround (Kirk, 2026-11-11), side view",
+      "subject": "gracie",
+      "look": "character"
+    },
+    {
+      "path": "../references/gracie/turnaround-back.png",
+      "role": "approved turnaround (Kirk, 2026-11-11), back view",
+      "subject": "gracie",
+      "look": "character"
     }
   ],
   "perspective": "../docs/design/reference/raccoon-world-reference.png",
@@ -59,6 +101,9 @@
     },
     "jimothy": {
       "description": "Jimothy, a short-spined, round, hunched and chubby raccoon with a very fluffy coat and a big fluffy banded tail"
+    },
+    "gracie": {
+      "description": "Gracie, an adult raccoon whose lower body (belly, flanks and hindquarters, down over her legs) has lighter, greyer, noticeably longer and shaggier fur than her back; a full dark eye mask with pale brows and a pale muzzle, rounded pale-rimmed ears and a ringed tail"
     }
   },
   "mood": [

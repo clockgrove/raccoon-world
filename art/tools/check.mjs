@@ -16,15 +16,21 @@
 //                 review pending and complete provenance; a short sheet is refused, never padded.
 // 6. licences:    every committed manifest's licence is the licence REUSE.toml gives its source file,
 //                 so a CC-BY-4.0 pick can't land under the `**` MIT annotation.
+// 7. gracie:      Gracie's bible subject leads with her signature fur, her photos and approved views
+//                 are her subject's references, her approved turnaround is Kirk's pick (c1) with its
+//                 hashes and output grant, her character-3d spec names her subject and gait and the
+//                 pinned Assetforge's character-3d reader accepts it, and her turnaround run forecasts within its $5 cap (issue 50).
 //
 // ASSETFORGE_DIR and CLOCKGROVE_DIR name the pinned checkouts (defaults .assetforge-src, .clockgrove).
 import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import { cp, mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { deriveBible, DERIVED } from "./derive-bible.mjs";
+import { forecast, loadRun, pending, ROUTE, VIEWS } from "./turnaround.mjs";
 
 const run = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -113,17 +119,75 @@ async function checkBible() {
       turnaround: "../references/jimothy/sheet-cell-03.png",
       references: ["../references/jimothy/jimothy-peanut-painted.png"],
     },
+    // Kirk's pick, c1 (#50, 2026-11-11), its approved views only (photos stay subject anchors); not part of the 0.68 measurement, scored in shadow mode only.
+    gracie: {
+      turnaround: "../references/gracie/turnaround-three-quarter.png",
+      references: [
+        "turnaround-front.png", "turnaround-side.png", "turnaround-back.png",
+      ].map((f) => `../references/gracie/${f}`),
+    },
   };
-  if (Object.keys(locks).sort().join() !== "jimothy,stevie")
-    fail("bible", `identity locks must be exactly stevie and jimothy, not ${Object.keys(locks)}`);
+  if (Object.keys(locks).sort().join() !== "gracie,jimothy,stevie")
+    fail("bible", `identity locks must be exactly stevie, jimothy and gracie, not ${Object.keys(locks)}`);
   for (const [name, lock] of Object.entries(expected)) {
     const actual = locks[name];
     if (
       actual?.turnaround !== lock.turnaround ||
       JSON.stringify(actual?.references ?? []) !== JSON.stringify(lock.references)
     )
-      fail("bible", `identity lock ${name} must be the measured set: ${lock.turnaround} ${lock.references}`);
+      fail("bible", `identity lock ${name} must be the decided set: ${lock.turnaround} ${lock.references}`);
   }
+}
+
+async function checkGracie() {
+  const bible = await json("art/style-bible.json");
+  const description = bible.subjects?.gracie?.description ?? "";
+  // Her signature leads: the first clause after her name is her lower-body fur.
+  if (!/^Gracie, [^;]*lower body[^;]*lighter, greyer, noticeably longer and shaggier fur than her back;/.test(description))
+    fail("gracie", `her subject description must lead with her signature lower-body fur: ${description}`);
+  for (const trait of ["full dark eye mask", "pale brows", "pale muzzle", "pale-rimmed ears", "ringed tail"])
+    if (!description.includes(trait)) fail("gracie", `her subject description lacks: ${trait}`);
+  const references = bible.references.filter((r) => r.subject === "gracie").map((r) => r.path).sort();
+  const expected = [
+    "gracie-ice-cube.png", "gracie-lounging.png", "gracie-sleeping.png",
+    "turnaround-back.png", "turnaround-front.png", "turnaround-side.png", "turnaround-three-quarter.png",
+  ].map((f) => `../references/gracie/${f}`);
+  if (JSON.stringify(references) !== JSON.stringify(expected))
+    fail("gracie", `her references must be her photos and her four approved views: ${references}`);
+  // Her approved turnaround is Kirk's pick, c1: the same bytes as the candidate, with its provenance.
+  const approved = await json("references/gracie/provenance-turnaround.json");
+  if (approved.approval?.picked !== "c1" || approved.call?.candidate !== "c1" || approved.call?.status !== "done")
+    fail("gracie", "references/gracie/provenance-turnaround.json must record Kirk's pick, c1, and its call");
+  if (approved.outputGrant?.license !== ROUTE.outputGrant?.license || approved.digitalSourceType !== IPTC_GENERATED)
+    fail("gracie", "her approved turnaround must record its output grant and IPTC trainedAlgorithmicMedia");
+  for (const name of ["turnaround.png", ...VIEWS.map((view) => `turnaround-${view}.png`)]) {
+    const record = approved.files?.[name];
+    const bytes = await readFile(join(root, "references/gracie", name)).catch(() => null);
+    const candidate = await readFile(join(root, "references/gracie/turnaround-candidates/c1", name)).catch(() => null);
+    const sha = (b) => b && createHash("sha256").update(b).digest("hex");
+    if (!record || !bytes || sha(bytes) !== record.sha256 || sha(bytes) !== sha(candidate) || record.outputGrant?.license !== ROUTE.outputGrant?.license)
+      fail("gracie", `references/gracie/${name} must be c1's ${name}, recorded with its hash and output grant`);
+  }
+  const spec = await json("art/gracie/character-3d/spec.json");
+  if (spec.kind !== "character-3d" || spec.subject !== "gracie" || spec.gait !== "quadruped")
+    fail("gracie", "art/gracie/character-3d/spec.json must be kind character-3d, subject gracie, gait quadruped");
+  // The pinned Assetforge's own character-3d reader must accept the spec (gait, clips, height).
+  const { characterSpec } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/profile.ts")).href);
+  try {
+    characterSpec(spec);
+  } catch (error) {
+    fail("gracie", `Assetforge's character-3d reader refuses art/gracie/character-3d/spec.json: ${error.message}`);
+  }
+  const turnaround = await loadRun("gracie");
+  if (turnaround.capUsd !== MAX_RUN_USD) fail("gracie", `the turnaround run's cap must be $${MAX_RUN_USD}`);
+  try {
+    forecast({ calls: [] }, turnaround, pending({ calls: [] }, turnaround.candidates));
+  } catch (error) {
+    fail("gracie", error.message);
+  }
+  if (ROUTE.outputGrant?.license !== "LicenseRef-openai-api" || ROUTE.outputGrant.relabel !== true || ROUTE.digitalSourceType !== IPTC_GENERATED)
+    fail("gracie", "the turnaround route must record OpenAI's relabellable output grant and IPTC trainedAlgorithmicMedia");
+  if (VIEWS.join() !== "front,three-quarter,side,back") fail("gracie", `the turnaround views must be the four views: ${VIEWS}`);
 }
 
 async function checkStyle() {
@@ -329,6 +393,7 @@ try {
   await pinned(clockgroveDir, "CLOCKGROVE_COMMIT", "bash scripts/clockgrove.sh fetch");
   await checkBible();
   await checkStyle();
+  await checkGracie();
   const proved = await proof();
   const forecasts = await checkInputs(proved?.qaPerCandidateUsd ?? 0);
   const placeholders = await checkPlaceholders();
