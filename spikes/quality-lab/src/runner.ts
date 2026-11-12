@@ -141,7 +141,8 @@ export interface CeilingOptions extends RunOptions {
   costs?: SweepReport["costs"];
 }
 
-const DEFAULT_WARMUP_MS = 1500;
+/** Warm-up after frames flow again: late shader variants, shadow maps' first use and GPU clocks settle before the hold. */
+const DEFAULT_WARMUP_MS = 3000;
 const DEFAULT_HOLD_MS = 4000;
 
 const sub = (a: number | null | undefined, b: number | null | undefined) => (a == null || b == null ? null : a - b);
@@ -395,7 +396,7 @@ export function compactJson(report: AnyReport | AnyReport[]): string {
 }
 
 /** The columns of a slim step row. */
-export const SLIM_COLUMNS = ["step", "frameMsP50", "frameMsP95", "gpuMsP50", "gpuMsP95", "triangles", "drawnTriangles", "error"] as const;
+export const SLIM_COLUMNS = ["step", "frameMsP50", "frameMsP95", "gpuMsP50", "gpuMsP95", "triangles", "drawnTriangles", "stallMs", "error"] as const;
 
 /**
  * The reports as compact JSON for a link: one array row per step (SLIM_COLUMNS) and no per-step configs. A sweep
@@ -413,6 +414,7 @@ export function slimJson(reports: AnyReport[]): string {
     s.measurement?.gpuMsP95 ?? null,
     s.triangles ?? s.measurement?.triangles ?? null,
     s.drawnTriangles ?? s.measurement?.drawnTriangles ?? null,
+    s.measurement?.stallMs ?? null,
     s.error ?? null,
   ];
   // The device fields are the same in every report from one page: state them once.
@@ -435,31 +437,3 @@ export function slimJson(reports: AnyReport[]): string {
   return JSON.stringify({ slim: 1, device: common, columns: SLIM_COLUMNS, reports: slim });
 }
 
-export function issueUrl(reports: AnyReport[], maxUrlLength = 7500): string {
-  const first = reports[0];
-  const adapter = (first?.adapter ?? "unknown").slice(0, 40).trim();
-  const title = `Quality lab results: ${first?.platform ?? "unknown"}, ${first?.backend ?? "unknown"}, ${adapter}`;
-  const build = (json: string, truncated: boolean) => {
-    const body =
-      "Quality lab results from this device.\n\n```json\n" +
-      json +
-      "\n```\n" +
-      (truncated ? "\nJSON truncated: use Copy JSON and paste it here.\n" : "");
-    return `https://github.com/clockgrove/raccoon-world/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
-  };
-  const fullJson = compactJson(reports);
-  const url = build(fullJson, false);
-  if (url.length <= maxUrlLength) return url;
-  // Too long for a link: send the slim form (every number, no per-step configs) before truncating anything.
-  const full = slimJson(reports);
-  const slimUrl = build(full, false);
-  if (slimUrl.length <= maxUrlLength) return slimUrl;
-  let lo = 0;
-  let hi = full.length;
-  while (lo < hi) {
-    const mid = Math.ceil((lo + hi) / 2);
-    if (build(full.slice(0, mid), true).length <= maxUrlLength) lo = mid;
-    else hi = mid - 1;
-  }
-  return build(full.slice(0, lo), true);
-}

@@ -326,6 +326,8 @@ async function applyConfig(next: LabConfig) {
 let intervals: number[] | null = null;
 let gpuTimes: number[] | null = null;
 let last = 0;
+/** Frames the loop has drawn since the page started (measure() waits on it). */
+let drawnFrames = 0;
 const timestamps = () => Boolean((renderer as Any).hasFeature?.("timestamp-query")) && Boolean((renderer as Any).backend?.trackTimestamp);
 
 const percentile = (values: number[], p: number) => {
@@ -342,6 +344,7 @@ function loop(now: number) {
   if (intervals && last) intervals.push(now - last);
   last = now;
   render();
+  drawnFrames++;
   if (timestamps()) {
     const gpu = gpuTimes;
     renderer
@@ -398,23 +401,80 @@ const lab: LabHandle & Record<string, unknown> = {
     await nextFrame();
   },
   async measure(options = {}): Promise<Measurement> {
-    const warmupMs = options.warmupMs ?? 1500;
+    const warmupMs = options.warmupMs ?? 3000;
     const holdMs = options.holdMs ?? 4000;
     const until = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
-    measuring = true;
-    const frames: number[] = [];
-    const gpu: number[] = [];
-    try {
-      await until(warmupMs);
-      intervals = frames;
-      gpuTimes = gpu;
-      last = 0;
-      await until(holdMs);
-    } finally {
-      intervals = null;
-      gpuTimes = null;
-      measuring = false;
+    // Timed by frames drawn, not by the clock alone. After a change, a browser can draw nothing for seconds while it
+    // builds new shader pipelines (WebGPU on Windows compiles them on the first frames), and a background tab draws
+    // nothing at all. So the warm-up ends only once frames flow again (that wait is reported as stallMs), the hold
+    // lasts until it has enough frames, and a window that went hidden is measured again once the page is in front.
+    // A config that still draws nothing is an error, never a silent empty measurement. Software GPUs keep the plain
+    // timed windows: their times are dropped and the CI journey runs them with tiny windows.
+    const software = SOFTWARE.test(adapter) || /fallback adapter/u.test(adapter);
+    const MIN_WARM_FRAMES = 10;
+    const MIN_HOLD_FRAMES = 30;
+    const MAX_WAIT_MS = 60_000;
+    const visible = () =>
+      new Promise<void>((resolve) => {
+        if (!document.hidden) return resolve();
+        const shown = () => {
+          if (document.hidden) return;
+          document.removeEventListener("visibilitychange", shown);
+          resolve();
+        };
+        document.addEventListener("visibilitychange", shown);
+      });
+    const framesSince = (count: number, since: number, minMs: number) =>
+      new Promise<boolean>((resolve) => {
+        const tick = () => {
+          const waited = performance.now() - since;
+          if (drawnFrames - count >= (software ? 0 : 1) && waited >= minMs) return resolve(true);
+          if (waited >= MAX_WAIT_MS) return resolve(false);
+          setTimeout(tick, 50);
+        };
+        tick();
+      });
+    let frames: number[] = [];
+    let gpu: number[] = [];
+    let stallMs: number | null = null;
+    for (let attempt = 1; ; attempt++) {
+      await visible();
+      let hidden = false;
+      const onHide = () => {
+        if (document.hidden) hidden = true;
+      };
+      document.addEventListener("visibilitychange", onHide);
+      measuring = true;
+      frames = [];
+      gpu = [];
+      try {
+        const begun = performance.now();
+        const before = drawnFrames;
+        // Frames flowing again: the first one, then MIN_WARM_FRAMES more, and at least warmupMs in all.
+        if (!(await framesSince(before, begun, 0))) throw new Error(`no frame drawn within ${MAX_WAIT_MS / 1000} s`);
+        stallMs = software ? null : Math.round(performance.now() - begun);
+        // The warm-up counts from the first frame, not from the change: a long compile stall must not eat into it.
+        const flowing = drawnFrames;
+        const flowingAt = performance.now();
+        while (!software && drawnFrames - flowing < MIN_WARM_FRAMES && performance.now() - begun < MAX_WAIT_MS) await until(50);
+        const rest = warmupMs - (performance.now() - (software ? begun : flowingAt));
+        if (rest > 0) await until(rest);
+        intervals = frames;
+        gpuTimes = gpu;
+        last = 0;
+        const held = performance.now();
+        await until(holdMs);
+        while (!software && frames.length < MIN_HOLD_FRAMES && performance.now() - held < MAX_WAIT_MS) await until(50);
+      } finally {
+        intervals = null;
+        gpuTimes = null;
+        measuring = false;
+        document.removeEventListener("visibilitychange", onHide);
+      }
+      if (!hidden && !document.hidden) break;
+      if (attempt >= 3) throw new Error("not measured: the page was in the background (keep this tab in front while it runs)");
     }
+    if (!software && frames.length === 0) throw new Error(`no frames during the hold (first frame after ${stallMs} ms)`);
     return {
       frames: frames.length,
       frameMsP50: percentile(frames, 50),
@@ -424,6 +484,7 @@ const lab: LabHandle & Record<string, unknown> = {
       triangles: sceneTriangles(scene),
       drawnTriangles,
       drawCalls,
+      stallMs,
     };
   },
   async screenshot(maxWidth = 320) {

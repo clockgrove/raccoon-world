@@ -1,10 +1,10 @@
 // The quality lab's overlay (issue 45): the scene's view and time, the presets, one control per knob grouped by what
-// it changes, the two runs, the results and the ways to send the numbers back. Plain DOM over the page's LabHandle.
+// it changes, the runs, the results and the ways to copy the numbers back. Plain DOM over the page's LabHandle.
 // Desktop: a panel on the left. Phone: a bottom sheet that starts folded, so the yard is what you see first.
 
 import { KNOBS, KNOB_LABELS, LEVELS, PRESETS, PRESET_ORDER } from "./config.ts";
 import type { Knob, LabConfig, LabHandle, PresetName, StateName, ViewName } from "./config.ts";
-import { compactJson, findCeiling, findTriangleBudget, issueUrl, runSweep } from "./runner.ts";
+import { compactJson, findCeiling, findTriangleBudget, runSweep, slimJson } from "./runner.ts";
 import type { AnyReport, CeilingOptions, RunOptions, StepResult, SweepReport, TriangleOptions } from "./runner.ts";
 
 const CSS = `
@@ -390,26 +390,25 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
 
 // Results
   const results = el("div", { class: "tablewrap" });
-  const send = el("a", { class: "btn primary", target: "_blank", rel: "noopener", textContent: "Send results" });
-  send.setAttribute("aria-disabled", "true");
-  const copyBtn = el("button", { type: "button", class: "btn", textContent: "Copy JSON", disabled: true });
+  const copyBtn = el("button", { type: "button", class: "btn primary", textContent: "Copy results", disabled: true });
   const downloadBtn = el("button", { type: "button", class: "btn", textContent: "Download JSON", disabled: true });
-  const outRow = el("div", { class: "out" }, send, copyBtn, downloadBtn);
-  const empty = el("p", { class: "empty", textContent: "Run the sweep to time each effect on this device. Find the ceiling: the richest set of effects that holds the frame budget. Triangle budget: keeps your effects and raises geometry detail until 60 fps breaks. Then send the results." });
+  const copyNote = el("p", { class: "hint", textContent: "Copy results puts every number on the clipboard in a compact form: paste it back to whoever asked for the run. Download JSON keeps each step's full settings." });
+  const outRow = el("div", { class: "out" }, copyBtn, downloadBtn, copyNote);
+  const empty = el("p", { class: "empty", textContent: "Run the sweep to time each effect on this device. Find the ceiling: the richest set of effects that holds the frame budget. Triangle budget: keeps your effects and raises geometry detail until 60 fps breaks. Then copy the results." });
   const runAllBtn = el("button", { type: "button", class: "btn primary", textContent: "Run everything (about 10–15 min)" });
-  const runAllHint = el("p", { class: "hint", textContent: "Sweep, then ceiling, then triangle budget; then send the results. Keep this page open and the phone unlocked. Landscape matches the game's framing." });
+  const runAllHint = el("p", { class: "hint", textContent: "Sweep, then ceiling, then triangle budget; then copy the results. Keep this page open and in front (on desktop, this tab visible; on a phone, unlocked). Landscape matches the game's framing." });
   const runAllBox = el("div", { class: "runall" }, runAllBtn, runAllHint);
   const resultsSection = el("section", {}, el("h2", { textContent: "Results" }), empty, runAllBox, outRow, results);
 
   const json = () => compactJson(reports.length === 1 ? reports[0]! : reports);
   copyBtn.addEventListener("click", async () => {
     try {
-      await navigator.clipboard.writeText(json());
+      await navigator.clipboard.writeText(slimJson(reports));
       copyBtn.textContent = "Copied";
     } catch {
       copyBtn.textContent = "Copy failed";
     }
-    setTimeout(() => (copyBtn.textContent = "Copy JSON"), 1500);
+    setTimeout(() => (copyBtn.textContent = "Copy results"), 1500);
   });
   downloadBtn.addEventListener("click", () => {
     const url = URL.createObjectURL(new Blob([json()], { type: "application/json" }));
@@ -491,9 +490,6 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     }
     const has = reports.length > 0;
     copyBtn.disabled = downloadBtn.disabled = !has;
-    send.setAttribute("aria-disabled", String(!has));
-    if (has) send.href = issueUrl(reports);
-    else send.removeAttribute("href");
     empty.hidden = has;
     outRow.hidden = !has;
   };
@@ -611,7 +607,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
       chained = false;
       void holdScreen(false);
     }
-    send.scrollIntoView({ behavior: "smooth", block: "center" });
+    copyBtn.scrollIntoView({ behavior: "smooth", block: "center" });
   };
   runAllBtn.addEventListener("click", () => void runAll().catch((e) => (progress.textContent = String(e))));
   sweepBtn.addEventListener("click", () => void doSweep().catch((e) => (progress.textContent = String(e))));
@@ -628,5 +624,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     findCeiling: doCeiling,
     findTriangleBudget: doTriangles,
     reports: () => [...reports],
+    /** Exactly what Copy results puts on the clipboard. */
+    copied: () => slimJson(reports),
   };
 }

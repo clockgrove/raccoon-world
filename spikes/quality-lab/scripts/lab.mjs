@@ -232,14 +232,19 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
       });
       check(counts.four > counts.plain, `${name}: Geometry detail 4× did not add triangles (${JSON.stringify(counts)})`);
       check(counts.meanDiff < 3, `${name}: Geometry detail 4× changed the picture (mean difference ${counts.meanDiff.toFixed(2)} of 255)`);
-      const link = await page.evaluate(() => document.querySelector("a[href^='https://github.com/clockgrove/raccoon-world/issues/new']")?.getAttribute("href") ?? null);
-      check(link, `${name}: no "send results" link to a new issue`);
-      // No frame time of any kind, under any key, in the send link or in the reports the copy and download buttons serialise.
+      const copy = await page.evaluate(() => {
+        const button = [...document.querySelectorAll(".ql button")].find((b) => b.textContent === "Copy results");
+        return { enabled: Boolean(button && !button.disabled), text: globalThis.labRunner.copied() };
+      });
+      check(copy.enabled, `${name}: no enabled "Copy results" button after the runs`);
+      // No frame time of any kind, under any key, in what Copy results copies or in the reports Download JSON saves.
       const times = /"(frameMs\w*|gpuMs\w*|softwareMs|softwareFrameMs|p50|p95)":\s*[-0-9{]/u;
-      check(!times.test(decodeURIComponent(link)), `${name}: the send link carries software frame times`);
+      const slim = JSON.parse(copy.text);
+      const timeColumns = ["frameMsP50", "frameMsP95", "gpuMsP50", "gpuMsP95"].map((c) => slim.columns.indexOf(c));
+      check(slim.reports.length === 3 && slim.reports.every((r) => r.steps.every((row) => timeColumns.every((i) => row[i] == null))), `${name}: Copy results carries software frame times`);
       check(!times.test(JSON.stringify([sweep, ceiling, triangles])), `${name}: the runner's reports carry software frame times`);
       check(errors.length === 0, `${name}: the runner raised ${errors.join("; ")}`);
-      log(`runner: sweep ${sweep.steps.length} step, ceiling ${ceiling.steps.length} steps, triangle budget ${triangles.steps.length} steps, software, no times; detail 4× ${counts.plain} → ${counts.four} triangles, same picture (mean difference ${counts.meanDiff.toFixed(2)}); send link ${link.length} chars`);
+      log(`runner: sweep ${sweep.steps.length} step, ceiling ${ceiling.steps.length} steps, triangle budget ${triangles.steps.length} steps, software, no times; detail 4× ${counts.plain} → ${counts.four} triangles, same picture (mean difference ${counts.meanDiff.toFixed(2)}); copied ${copy.text.length} chars`);
     }
   } finally {
     await browser.close();
