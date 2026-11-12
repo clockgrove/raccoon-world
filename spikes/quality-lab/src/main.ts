@@ -401,7 +401,7 @@ const lab: LabHandle & Record<string, unknown> = {
     await nextFrame();
   },
   async measure(options = {}): Promise<Measurement> {
-    const warmupMs = options.warmupMs ?? 1500;
+    const warmupMs = options.warmupMs ?? 3000;
     const holdMs = options.holdMs ?? 4000;
     const until = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
     // Timed by frames drawn, not by the clock alone. After a change, a browser can draw nothing for seconds while it
@@ -453,9 +453,11 @@ const lab: LabHandle & Record<string, unknown> = {
         // Frames flowing again: the first one, then MIN_WARM_FRAMES more, and at least warmupMs in all.
         if (!(await framesSince(before, begun, 0))) throw new Error(`no frame drawn within ${MAX_WAIT_MS / 1000} s`);
         stallMs = software ? null : Math.round(performance.now() - begun);
+        // The warm-up counts from the first frame, not from the change: a long compile stall must not eat into it.
         const flowing = drawnFrames;
+        const flowingAt = performance.now();
         while (!software && drawnFrames - flowing < MIN_WARM_FRAMES && performance.now() - begun < MAX_WAIT_MS) await until(50);
-        const rest = warmupMs - (performance.now() - begun);
+        const rest = warmupMs - (performance.now() - (software ? begun : flowingAt));
         if (rest > 0) await until(rest);
         intervals = frames;
         gpuTimes = gpu;

@@ -141,7 +141,8 @@ export interface CeilingOptions extends RunOptions {
   costs?: SweepReport["costs"];
 }
 
-const DEFAULT_WARMUP_MS = 1500;
+/** Warm-up after frames flow again: late shader variants, shadow maps' first use and GPU clocks settle before the hold. */
+const DEFAULT_WARMUP_MS = 3000;
 const DEFAULT_HOLD_MS = 4000;
 
 const sub = (a: number | null | undefined, b: number | null | undefined) => (a == null || b == null ? null : a - b);
