@@ -394,6 +394,47 @@ export function compactJson(report: AnyReport | AnyReport[]): string {
   return JSON.stringify(Array.isArray(report) ? report.map(stripShots) : stripShots(report));
 }
 
+/** The columns of a slim step row. */
+export const SLIM_COLUMNS = ["step", "frameMsP50", "frameMsP95", "gpuMsP50", "gpuMsP95", "triangles", "drawnTriangles", "error"] as const;
+
+/**
+ * The reports as compact JSON for a link: one array row per step (SLIM_COLUMNS) and no per-step configs. A sweep
+ * step's id names its config; a ceiling step names what it removed. The full reports stay in Copy and
+ * Download.
+ */
+export function slimJson(reports: AnyReport[]): string {
+  // A ceiling step reads "-knob=level": what it removed from the step before.
+  const name = (s: StepResult & { removed?: Removed }) => (s.removed ? `-${s.removed.knob}=${String(s.removed.to)}` : s.id);
+  const row = (s: StepResult & { removed?: Removed }) => [
+    name(s),
+    s.measurement?.frameMsP50 ?? null,
+    s.measurement?.frameMsP95 ?? null,
+    s.measurement?.gpuMsP50 ?? null,
+    s.measurement?.gpuMsP95 ?? null,
+    s.triangles ?? s.measurement?.triangles ?? null,
+    s.drawnTriangles ?? s.measurement?.drawnTriangles ?? null,
+    s.error ?? null,
+  ];
+  // The device fields are the same in every report from one page: state them once.
+  const device = ["platform", "userAgent", "backend", "adapter", "software", "timestamps"] as const;
+  const first = reports[0] as unknown as Record<string, unknown> | undefined;
+  const common = Object.fromEntries(device.map((k) => [k, k === "userAgent" ? String(first?.[k] ?? "").slice(0, 160) : first?.[k]]));
+  const slim = reports.map((r) => {
+    const { steps, ...head } = r as AnyReport & { costs?: unknown };
+    const rest: Record<string, unknown> = { ...head };
+    delete rest.costs; // derivable from the sweep rows
+    for (const k of device) if (rest[k] === common[k] || k === "userAgent") delete rest[k];
+    // Trailing nulls dropped from each row (no error, no GPU time...).
+    const rows = steps.map((s) => {
+      const cells = row(s);
+      while (cells.length && cells[cells.length - 1] === null) cells.pop();
+      return cells;
+    });
+    return { ...rest, steps: rows };
+  });
+  return JSON.stringify({ slim: 1, device: common, columns: SLIM_COLUMNS, reports: slim });
+}
+
 export function issueUrl(reports: AnyReport[], maxUrlLength = 7500): string {
   const first = reports[0];
   const adapter = (first?.adapter ?? "unknown").slice(0, 40).trim();
@@ -406,9 +447,13 @@ export function issueUrl(reports: AnyReport[], maxUrlLength = 7500): string {
       (truncated ? "\nJSON truncated: use Copy JSON and paste it here.\n" : "");
     return `https://github.com/clockgrove/raccoon-world/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
   };
-  const full = compactJson(reports);
-  const url = build(full, false);
+  const fullJson = compactJson(reports);
+  const url = build(fullJson, false);
   if (url.length <= maxUrlLength) return url;
+  // Too long for a link: send the slim form (every number, no per-step configs) before truncating anything.
+  const full = slimJson(reports);
+  const slimUrl = build(full, false);
+  if (slimUrl.length <= maxUrlLength) return slimUrl;
   let lo = 0;
   let hi = full.length;
   while (lo < hi) {
