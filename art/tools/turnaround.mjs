@@ -109,13 +109,13 @@ async function main(argv) {
   );
   if (dryRun || todo.length === 0) return;
 
-  // Factory's relay takes requests up to 32 MB; the photos travel base64-encoded in the JSON body. A body over that is
-  // refused here, before anything is reserved, rather than by the relay after the reservation.
-  const RELAY_MAX_BYTES = 32 * 1024 * 1024;
+  // Factory's relay takes image edits up to 128 MB (v0.9.16); the photos travel base64-encoded in the JSON body. A body
+  // over that is refused here, before anything is reserved, rather than by the relay after the reservation.
+  const RELAY_MAX_BYTES = 128 * 1024 * 1024;
   const bodyBytes = Buffer.byteLength(JSON.stringify({ model: ROUTE.model, images: photos.map(({ bytes }) => ({ image_url: dataUrl(bytes) })), prompt: run.prompt, ...PARAMETERS }));
   if (RELAYED && bodyBytes > RELAY_MAX_BYTES)
     throw new Error(
-      `the request is ${(bodyBytes / 1048576).toFixed(1)} MB, over the 32 MB Factory's gateway relay takes: use smaller reference photos, or run this in the owner's session`,
+      `the request is ${(bodyBytes / 1048576).toFixed(1)} MB, over the 128 MB Factory's gateway relay takes for an image edit: use smaller reference photos, or run this in the owner's session`,
     );
 
   const token = process.env.AI_GATEWAY_API_KEY;
