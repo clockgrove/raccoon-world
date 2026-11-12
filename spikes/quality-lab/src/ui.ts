@@ -4,8 +4,8 @@
 
 import { KNOBS, KNOB_LABELS, LEVELS, PRESETS, PRESET_ORDER } from "./config.ts";
 import type { Knob, LabConfig, LabHandle, PresetName, StateName, ViewName } from "./config.ts";
-import { compactJson, findCeiling, findTriangleBudget, runSweep, slimJson } from "./runner.ts";
-import type { AnyReport, CeilingOptions, RunOptions, StepResult, SweepReport, TriangleOptions } from "./runner.ts";
+import { compactJson, findCastBudget, findCeiling, findTriangleBudget, runSoak, runSweep, slimJson } from "./runner.ts";
+import type { AnyReport, CastOptions, CeilingOptions, CeilingReport, RunOptions, SoakOptions, StepResult, SweepReport, TriangleOptions } from "./runner.ts";
 
 const CSS = `
 .ql{--accent:#f5b453;--accent-ink:#1b1608;--line:rgba(255,255,255,.09);--fill:rgba(255,255,255,.06);--muted:rgba(236,235,230,.62);
@@ -125,7 +125,7 @@ const GROUPS: readonly { title: string; knobs: readonly Knob[] }[] = [
   { title: "Light and shadow", knobs: ["cascades", "pointShadows", "ao", "probes", "haze", "shafts"] },
   { title: "Rain", knobs: ["rainCount", "splashes", "ripples", "reflections"] },
   { title: "Image", knobs: ["antialias", "upscale", "dpr", "bloom", "grade"] },
-  { title: "Geometry", knobs: ["detail"] },
+  { title: "Geometry and cast", knobs: ["detail", "cast"] },
 ];
 const LEVEL_TEXT: Partial<Record<string, string>> = { none: "Off", msaa: "MSAA", traa: "TRAA", taau: "TAAU", fsr: "FSR 1" };
 const levelText = (knob: Knob, level: unknown) => (knob === "dpr" || knob === "detail" ? `${String(level)}×` : (LEVEL_TEXT[String(level)] ?? String(level)));
@@ -376,6 +376,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   const sweepBtn = el("button", { type: "button", class: "btn primary", textContent: "Run the sweep" });
   const ceilingBtn = el("button", { type: "button", class: "btn", textContent: "Find the ceiling" });
   const trianglesBtn = el("button", { type: "button", class: "btn", textContent: "Triangle budget" });
+  const castBtn = el("button", { type: "button", class: "btn", textContent: "Cast budget" });
+  const soakBtn = el("button", { type: "button", class: "btn", textContent: "Soak (90 s)" });
   const stopBtn = el("button", { type: "button", class: "btn stop", textContent: "Stop", hidden: true });
   const progress = el("p", {});
   progress.setAttribute("role", "status");
@@ -386,7 +388,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   applyBtn.addEventListener("click", () => void applyDraft());
   discardBtn.addEventListener("click", () => edit({ ...lab.status().config }));
   applyBtn.classList.add("apply");
-  actions.append(runBox, applyBtn, discardBtn, sweepBtn, ceilingBtn, trianglesBtn, stopBtn);
+  actions.append(runBox, applyBtn, discardBtn, sweepBtn, ceilingBtn, trianglesBtn, castBtn, soakBtn, stopBtn);
 
 // Results
   const results = el("div", { class: "tablewrap" });
@@ -395,8 +397,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   const copyNote = el("p", { class: "hint", textContent: "Copy results puts every number on the clipboard in a compact form: paste it back to whoever asked for the run. Download JSON keeps each step's full settings." });
   const outRow = el("div", { class: "out" }, copyBtn, downloadBtn, copyNote);
   const empty = el("p", { class: "empty", textContent: "Run the sweep to time each effect on this device. Find the ceiling: the richest set of effects that holds the frame budget. Triangle budget: keeps your effects and raises geometry detail until 60 fps breaks. Then copy the results." });
-  const runAllBtn = el("button", { type: "button", class: "btn primary", textContent: "Run everything (about 10–15 min)" });
-  const runAllHint = el("p", { class: "hint", textContent: "Sweep, then ceiling, then triangle budget; then copy the results. Keep this page open and in front (on desktop, this tab visible; on a phone, unlocked). Landscape matches the game's framing." });
+  const runAllBtn = el("button", { type: "button", class: "btn primary", textContent: "Run everything (about 20–25 min)" });
+  const runAllHint = el("p", { class: "hint", textContent: "Sweep (both framings), then ceiling, triangle budget, cast budget and a 90 s soak at the ceiling; then copy the results. Keep this page open and in front (on desktop, this tab visible; on a phone, unlocked). Landscape matches the game's framing." });
   const runAllBox = el("div", { class: "runall" }, runAllBtn, runAllHint);
   const resultsSection = el("section", {}, el("h2", { textContent: "Results" }), empty, runAllBox, outRow, results);
 
@@ -456,11 +458,51 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     for (const line of lines) results.append(el("p", { textContent: line }));
   };
 
+  const scaleTable = (rep: Extract<Report, { kind: "cast" | "soak" }>, first: string) => {
+    const table = el("table");
+    const tbody = el("tbody");
+    table.append(head(first, "p50", "p95", "p99", "Missed", "GPU p50", "CPU p50", "Draw calls", "Shot"));
+    for (const s of rep.steps) {
+      const m = s.measurement;
+      if (s.error) tbody.append(row([s.label, el("span", { class: "err", textContent: s.error })]));
+      else tbody.append(row([s.label, ms(m?.frameMsP50), ms(m?.frameMsP95), ms(m?.frameMsP99), m?.missedPct != null ? `${m.missedPct}%` : "n/a", ms(m?.gpuMsP50), ms(m?.cpuMsP50), m?.drawCalls != null ? String(m.drawCalls) : "n/a", thumb(s)]));
+    }
+    table.append(tbody);
+    results.append(table);
+  };
+  const renderCast = (rep: Extract<Report, { kind: "cast" }>) => {
+    results.append(el("h3", { textContent: `Cast budget at ${rep.targetFps} fps (p95 within ${rep.budgetMs.toFixed(1)} ms): ${rep.platform}, ${rep.backend}, ${rep.adapter}` }));
+    if (rep.software) results.append(el("p", { class: "sw", textContent: "software, not performance" }));
+    scaleTable(rep, "Raccoons");
+    const lines = [
+      rep.held ? `Held ${rep.targetFps} fps with ${rep.held.cast} raccoon${rep.held.cast === 1 ? "" : "s"} (p95 ${ms(rep.held.frameMsP95)} ms).` : rep.software ? "" : "Missed the budget even with one raccoon.",
+      rep.missed ? `Missed with ${rep.missed.cast} (p95 ${ms(rep.missed.frameMsP95)} ms).` : "",
+      rep.gpuMsPerRaccoon != null ? `Each raccoon adds about ${rep.gpuMsPerRaccoon.toFixed(2)} ms of GPU time${rep.cpuMsPerRaccoon != null ? ` and ${rep.cpuMsPerRaccoon.toFixed(2)} ms of main-thread time` : ""}.` : "",
+      rep.estimatedCast != null ? `About ${rep.estimatedCast} raccoons before the GPU uses 80% of the frame.` : "",
+    ].filter(Boolean);
+    for (const line of lines) results.append(el("p", { textContent: line }));
+  };
+  const renderSoak = (rep: Extract<Report, { kind: "soak" }>) => {
+    results.append(el("h3", { textContent: `Soak: ${rep.steps.length * rep.windowS} s at one config, ${rep.windowS} s windows: ${rep.platform}, ${rep.backend}, ${rep.adapter}` }));
+    if (rep.software) results.append(el("p", { class: "sw", textContent: "software, not performance" }));
+    scaleTable(rep, "Window");
+    if (rep.frameP95Drift != null || rep.gpuP50Drift != null)
+      results.append(el("p", { textContent: `Last window against the first: frame p95 ×${rep.frameP95Drift ?? "n/a"}, GPU p50 ×${rep.gpuP50Drift ?? "n/a"} (above 1.1 means the device slowed down, usually heat).` }));
+  };
+
   const render = () => {
     results.replaceChildren();
     for (const rep of reports) {
       if (rep.kind === "triangles") {
         renderTriangles(rep);
+        continue;
+      }
+      if (rep.kind === "cast") {
+        renderCast(rep);
+        continue;
+      }
+      if (rep.kind === "soak") {
+        renderSoak(rep);
         continue;
       }
       const title = rep.kind === "sweep" ? "Sweep" : `Ceiling (budget ${rep.budgetMs.toFixed(1)} ms p95, strict target ${rep.targetMs.toFixed(1)} ms${rep.held ? `; p95 ${rep.ceilingP95Ms?.toFixed(1)} ms, ${rep.heldStrict ? "within" : "over"} the strict target` : ""})`;
@@ -496,8 +538,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
 
   const setRunning = (on: boolean) => {
     running = on;
-    sweepBtn.disabled = ceilingBtn.disabled = trianglesBtn.disabled = runAllBtn.disabled = on;
-    sweepBtn.hidden = ceilingBtn.hidden = trianglesBtn.hidden = on;
+    sweepBtn.disabled = ceilingBtn.disabled = trianglesBtn.disabled = castBtn.disabled = soakBtn.disabled = runAllBtn.disabled = on;
+    sweepBtn.hidden = ceilingBtn.hidden = trianglesBtn.hidden = castBtn.hidden = soakBtn.hidden = on;
     stopBtn.hidden = !on;
     panel.classList.toggle("running", on);
     if (!on) draft = { ...lab.status().config };
@@ -519,7 +561,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     const drafting = !running && (changed > 0 || applyingSince > 0);
     applyBtn.hidden = !drafting;
     discardBtn.hidden = !drafting || changed === 0;
-    sweepBtn.hidden = ceilingBtn.hidden = trianglesBtn.hidden = drafting || running;
+    sweepBtn.hidden = ceilingBtn.hidden = trianglesBtn.hidden = castBtn.hidden = soakBtn.hidden = drafting || running;
     runAllBtn.disabled = drafting || running;
     applyBtn.disabled = applyingSince > 0;
     applyBtn.textContent = applyingSince ? `Applying · ${waited}` : `Apply ${changed} change${changed === 1 ? "" : "s"}`;
@@ -601,8 +643,12 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     chained = true;
     try {
       await doSweep();
-      if (!abort?.signal.aborted) await doCeiling();
+      const ceiling = abort?.signal.aborted ? null : await doCeiling();
+      // The cast budget and the soak hold the ceiling's effects (the game's best case on this device) when it held.
+      const best = ceiling?.held ? { ...ceiling.ceiling } : undefined;
       if (!abort?.signal.aborted) await doTriangles();
+      if (!abort?.signal.aborted) await doCast(best ? { base: best } : {});
+      if (!abort?.signal.aborted) await doSoak(best ? { config: best } : {});
     } finally {
       chained = false;
       void holdScreen(false);
@@ -614,6 +660,17 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   ceilingBtn.addEventListener("click", () => void doCeiling().catch((e) => (progress.textContent = String(e))));
   const doTriangles = (o: TriangleOptions = {}) => track("Triangle budget", (opts) => findTriangleBudget(lab, opts), o);
   trianglesBtn.addEventListener("click", () => void doTriangles().catch((e) => (progress.textContent = String(e))));
+  const lastCeiling = () => [...reports].reverse().find((r): r is CeilingReport => r.kind === "ceiling" && r.held);
+  const doCast = (o: CastOptions = {}) => track("Cast budget", (opts) => findCastBudget(lab, { ...o, ...opts }), o);
+  castBtn.addEventListener("click", () => {
+    const c = lastCeiling();
+    void doCast(c ? { base: { ...c.ceiling } } : {}).catch((e) => (progress.textContent = String(e)));
+  });
+  const doSoak = (o: SoakOptions = {}) => track("Soak", (opts) => runSoak(lab, { ...o, ...opts }), o);
+  soakBtn.addEventListener("click", () => {
+    const c = lastCeiling();
+    void doSoak(c ? { config: { ...c.ceiling } } : {}).catch((e) => (progress.textContent = String(e)));
+  });
 
   scroll.append(status, sceneSection, presetSection, effects, resultsSection);
   render();
@@ -623,6 +680,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     runSweep: doSweep,
     findCeiling: doCeiling,
     findTriangleBudget: doTriangles,
+    findCastBudget: doCast,
+    runSoak: doSoak,
     reports: () => [...reports],
     /** Exactly what Copy results puts on the clipboard. */
     copied: () => slimJson(reports),

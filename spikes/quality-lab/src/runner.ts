@@ -1,8 +1,8 @@
 // The quality lab's runner (issue 45): the sweep and the ceiling search, as pure logic over a LabHandle. No DOM and
 // no three.js, so the page UI, the CI journey and a node test can all drive it.
 
-import { BUDGET_SLACK, DEFAULT_COST_ORDER, KNOBS, KNOB_LABELS, LEVELS, PRESETS, budgetMs, stepDown, targetMs, sweepSteps } from "./config.ts";
-import type { Knob, LabConfig, LabHandle, LabStatus, Measurement, Platform, StateName, ViewName } from "./config.ts";
+import { BUDGET_SLACK, DEFAULT_COST_ORDER, KNOBS, KNOB_LABELS, LEVELS, PRESET_ORDER, PRESETS, budgetMs, stepDown, targetMs, sweepSteps } from "./config.ts";
+import type { Cast, DeviceInfo, Knob, LabConfig, LabHandle, LabStatus, Measurement, Platform, StateName, ViewName } from "./config.ts";
 
 export interface StepResult {
   id: string;
@@ -43,6 +43,7 @@ export interface SweepReport {
   timestamps: boolean;
   view: ViewName;
   state: StateName;
+  device?: DeviceInfo;
   steps: StepResult[];
   /** Per sweep step with a knob: sign * (step - medium). */
   costs: CostEntry[];
@@ -59,6 +60,7 @@ export interface Removed {
 export interface CeilingReport {
   kind: "ceiling";
   startedAt: string;
+  device?: DeviceInfo;
   platform: Platform;
   /** The p95 the search holds: the strict target interval plus BUDGET_SLACK for display jitter. */
   budgetMs: number;
@@ -82,6 +84,7 @@ export interface CeilingReport {
 export interface TriangleReport {
   kind: "triangles";
   startedAt: string;
+  device?: DeviceInfo;
   platform: Platform;
   /** The fps this run holds: 60 everywhere (Kirk, 2026-11-12: "how much can we increase the triangle detail and keep 60fps"). */
   targetFps: number;
@@ -201,15 +204,33 @@ export async function runSweep(lab: LabHandle, opts: RunOptions = {}): Promise<S
     timestamps: start.timestamps,
     view: start.view,
     state: start.state,
+    device: start.device,
     steps: [],
     costs: [],
   };
+  // The presets again at the close-up zoom (Stevie at about a third of the frame), the game's other framing. A short
+  // run (maxSteps) skips them.
+  const close = opts.maxSteps === undefined ? PRESET_ORDER.map((name) => ({ id: `close:preset:${name}`, label: `Close-up ${name}`, config: { ...PRESETS[name] } })) : [];
+  const total = steps.length + close.length;
   try {
     for (let i = 0; i < steps.length; i++) {
       if (opts.signal?.aborted) break;
       const r = await measureStep(lab, steps[i]!, opts);
       report.steps.push(r);
-      opts.onStep?.(r, i, steps.length);
+      opts.onStep?.(r, i, total);
+    }
+    if (close.length && !opts.signal?.aborted) {
+      await lab.setView("close");
+      try {
+        for (let i = 0; i < close.length; i++) {
+          if (opts.signal?.aborted) break;
+          const r = await measureStep(lab, close[i]!, opts);
+          report.steps.push(r);
+          opts.onStep?.(r, steps.length + i, total);
+        }
+      } finally {
+        await lab.setView(start.view).catch(() => {});
+      }
     }
   } finally {
     await lab.apply(original).catch(() => {});
@@ -254,6 +275,7 @@ export async function findCeiling(lab: LabHandle, opts: CeilingOptions = {}): Pr
   const report: CeilingReport = {
     kind: "ceiling",
     startedAt: new Date().toISOString(),
+    device: start.device,
     platform: start.platform,
     budgetMs: budget,
     targetMs: targetMs(start.platform),
@@ -327,6 +349,7 @@ export async function findTriangleBudget(lab: LabHandle, opts: TriangleOptions =
   const report: TriangleReport = {
     kind: "triangles",
     startedAt: new Date().toISOString(),
+    device: start.device,
     platform: start.platform,
     targetFps: fps,
     budgetMs: budget,
@@ -384,7 +407,205 @@ export async function findTriangleBudget(lab: LabHandle, opts: TriangleOptions =
   return report;
 }
 
-export type AnyReport = SweepReport | CeilingReport | TriangleReport;
+/** Raccoon counts the cast budget run steps through. */
+export const CAST_STEPS: readonly Cast[] = [1, 3, 10, 20];
+
+export interface CastReport {
+  kind: "cast";
+  startedAt: string;
+  device?: DeviceInfo;
+  platform: Platform;
+  targetFps: number;
+  budgetMs: number;
+  backend: LabStatus["backend"];
+  adapter: string;
+  software: boolean;
+  timestamps: boolean;
+  view: ViewName;
+  state: StateName;
+  /** The effects every step keeps (the ceiling when one was found, else the page's config); only the cast changes. */
+  base: LabConfig;
+  steps: StepResult[];
+  held: { cast: number; frameMsP95: number } | null;
+  missed: { cast: number; frameMsP95: number } | null;
+  /** Straight-line fits over the measured steps: GPU and main-thread milliseconds each extra raccoon adds. */
+  gpuMsPerRaccoon: number | null;
+  cpuMsPerRaccoon: number | null;
+  /** Raccoons at which GPU time would reach 80% of the frame, from the GPU fit; null without timestamps. */
+  estimatedCast: number | null;
+  note?: string;
+}
+
+/** A long hold at one config, in windows: does the device slow down as it heats up? */
+export interface SoakReport {
+  kind: "soak";
+  startedAt: string;
+  device?: DeviceInfo;
+  platform: Platform;
+  backend: LabStatus["backend"];
+  adapter: string;
+  software: boolean;
+  timestamps: boolean;
+  view: ViewName;
+  state: StateName;
+  config: LabConfig;
+  windowS: number;
+  /** One step per window, in order. */
+  steps: StepResult[];
+  /** Last window over first: frame p95 and GPU p50 (1.0 = no slowdown; 1.3 = 30% slower by the end). */
+  frameP95Drift: number | null;
+  gpuP50Drift: number | null;
+  note?: string;
+}
+
+/** Least-squares slope and intercept of y on x; null with fewer than two distinct x. */
+function fit(points: { x: number; y: number }[]): { slope: number; intercept: number } | null {
+  if (points.length < 2) return null;
+  const n = points.length;
+  const mx = points.reduce((a, p) => a + p.x, 0) / n;
+  const my = points.reduce((a, p) => a + p.y, 0) / n;
+  const sxx = points.reduce((a, p) => a + (p.x - mx) ** 2, 0);
+  if (sxx === 0) return null;
+  const slope = points.reduce((a, p) => a + (p.x - mx) * (p.y - my), 0) / sxx;
+  return { slope, intercept: my - slope * mx };
+}
+
+export interface CastOptions extends RunOptions {
+  /** The effects to keep (Run everything passes the ceiling it found). Default: the page's current config. */
+  base?: LabConfig;
+  allSteps?: boolean;
+}
+
+/**
+ * The cast budget: the same effects with 1, 3, 10 and 20 raccoons walking (each with the config's fur), at 60 fps.
+ * Every step after the first that holds runs; it stops after the first miss past the second step.
+ */
+export async function findCastBudget(lab: LabHandle, opts: CastOptions = {}): Promise<CastReport> {
+  const start = lab.status();
+  const original = { ...start.config };
+  const base = { ...(opts.base ?? original), cast: 1 as Cast };
+  const fps = 60;
+  const budget = (1000 / fps) * BUDGET_SLACK;
+  const steps = CAST_STEPS.slice(0, opts.maxSteps ?? CAST_STEPS.length);
+  const report: CastReport = {
+    kind: "cast",
+    startedAt: new Date().toISOString(),
+    device: start.device,
+    platform: start.platform,
+    targetFps: fps,
+    budgetMs: budget,
+    backend: start.backend,
+    adapter: start.adapter,
+    software: start.software,
+    timestamps: start.timestamps,
+    view: start.view,
+    state: start.state,
+    base,
+    steps: [],
+    held: null,
+    missed: null,
+    gpuMsPerRaccoon: null,
+    cpuMsPerRaccoon: null,
+    estimatedCast: null,
+  };
+  try {
+    for (let i = 0; i < steps.length; i++) {
+      if (opts.signal?.aborted) break;
+      const cast = steps[i]!;
+      const r = await measureStep(lab, { id: `cast:${cast}`, label: `${cast} raccoon${cast === 1 ? "" : "s"}`, config: { ...base, cast } }, opts);
+      report.steps.push(r);
+      opts.onStep?.(r, i, steps.length);
+      const m = r.measurement;
+      if (r.error || start.software || m?.frameMsP95 == null) continue;
+      const point = { cast, frameMsP95: m.frameMsP95 };
+      if (m.frameMsP95 <= budget) report.held = point;
+      else {
+        report.missed ??= point;
+        if (i >= 1 && !opts.allSteps) break;
+      }
+    }
+  } finally {
+    await lab.apply(original).catch(() => {});
+  }
+  const measured = report.steps.filter((s) => s.measurement && !s.error).map((s) => ({ cast: s.config.cast, m: s.measurement as Measurement }));
+  const gpu = fit(measured.filter((p) => p.m.gpuMsP50 != null).map((p) => ({ x: p.cast, y: p.m.gpuMsP50 as number })));
+  const cpu = fit(measured.filter((p) => p.m.cpuMsP50 != null).map((p) => ({ x: p.cast, y: p.m.cpuMsP50 as number })));
+  const round = (v: number) => Math.round(v * 1000) / 1000;
+  if (gpu) {
+    report.gpuMsPerRaccoon = round(gpu.slope);
+    if (gpu.slope > 0) report.estimatedCast = Math.max(0, Math.floor(((1000 / fps) * GPU_SHARE - gpu.intercept) / gpu.slope));
+  }
+  if (cpu) report.cpuMsPerRaccoon = round(cpu.slope);
+  if (start.software) report.note = "software, not performance: nothing held or missed, and no estimate";
+  return report;
+}
+
+export interface SoakOptions extends RunOptions {
+  /** The config to hold (Run everything passes the ceiling it found). Default: the page's current config. */
+  config?: LabConfig;
+  /** Total seconds and seconds per window. */
+  seconds?: number;
+  windowS?: number;
+}
+
+/** Holds one config for `seconds` (default 90), measured in `windowS` (default 10) windows back to back. */
+export async function runSoak(lab: LabHandle, opts: SoakOptions = {}): Promise<SoakReport> {
+  const start = lab.status();
+  const original = { ...start.config };
+  const config = { ...(opts.config ?? original) };
+  const windowS = opts.windowS ?? 10;
+  const windows = Math.min(opts.maxSteps ?? Number.POSITIVE_INFINITY, Math.max(1, Math.round((opts.seconds ?? 90) / windowS)));
+  const report: SoakReport = {
+    kind: "soak",
+    startedAt: new Date().toISOString(),
+    device: start.device,
+    platform: start.platform,
+    backend: start.backend,
+    adapter: start.adapter,
+    software: start.software,
+    timestamps: start.timestamps,
+    view: start.view,
+    state: start.state,
+    config,
+    windowS,
+    steps: [],
+    frameP95Drift: null,
+    gpuP50Drift: null,
+  };
+  try {
+    await lab.apply(config);
+    for (let i = 0; i < windows; i++) {
+      if (opts.signal?.aborted) break;
+      const result: StepResult = { id: `soak:${(i + 1) * windowS}s`, label: `${i * windowS}–${(i + 1) * windowS} s`, config, measurement: null, backend: start.backend, adapter: start.adapter, dpr: start.dpr, canvas: start.canvas, screenshot: "" };
+      try {
+        // Back to back: the first window warms up as every step does, the rest only wait for frames.
+        const m = await lab.measure({ warmupMs: i === 0 ? (opts.warmupMs ?? DEFAULT_WARMUP_MS) : 0, holdMs: opts.holdMs ?? windowS * 1000 });
+        const status = lab.status();
+        result.triangles = status.triangles;
+        result.drawnTriangles = status.drawnTriangles;
+        if (!status.software) result.measurement = m;
+      } catch (e) {
+        result.error = e instanceof Error ? e.message : String(e);
+      }
+      report.steps.push(result);
+      opts.onStep?.(result, i, windows);
+    }
+  } finally {
+    await lab.apply(original).catch(() => {});
+  }
+  const ok = report.steps.map((s) => s.measurement).filter((m): m is Measurement => Boolean(m));
+  const first = ok[0];
+  const last = ok[ok.length - 1];
+  const ratio = (a?: number | null, b?: number | null) => (a && b ? Math.round((b / a) * 100) / 100 : null);
+  if (first && last && ok.length > 1) {
+    report.frameP95Drift = ratio(first.frameMsP95, last.frameMsP95);
+    report.gpuP50Drift = ratio(first.gpuMsP50, last.gpuMsP50);
+  }
+  if (start.software) report.note = "software, not performance";
+  return report;
+}
+
+export type AnyReport = SweepReport | CeilingReport | TriangleReport | CastReport | SoakReport;
 
 const stripShots = <T extends { steps: { screenshot: string }[] }>(r: T): unknown => ({
   ...r,
@@ -396,7 +617,23 @@ export function compactJson(report: AnyReport | AnyReport[]): string {
 }
 
 /** The columns of a slim step row. */
-export const SLIM_COLUMNS = ["step", "frameMsP50", "frameMsP95", "gpuMsP50", "gpuMsP95", "triangles", "drawnTriangles", "stallMs", "error"] as const;
+export const SLIM_COLUMNS = [
+  "step",
+  "frameMsP50",
+  "frameMsP95",
+  "frameMsP99",
+  "missedPct",
+  "gpuMsP50",
+  "gpuMsP95",
+  "cpuMsP50",
+  "cpuMsP95",
+  "triangles",
+  "drawnTriangles",
+  "drawCalls",
+  "stallMs",
+  "jsHeapMb",
+  "error",
+] as const;
 
 /**
  * The reports as compact JSON for a link: one array row per step (SLIM_COLUMNS) and no per-step configs. A sweep
@@ -410,21 +647,31 @@ export function slimJson(reports: AnyReport[]): string {
     name(s),
     s.measurement?.frameMsP50 ?? null,
     s.measurement?.frameMsP95 ?? null,
+    s.measurement?.frameMsP99 ?? null,
+    s.measurement?.missedPct ?? null,
     s.measurement?.gpuMsP50 ?? null,
     s.measurement?.gpuMsP95 ?? null,
+    s.measurement?.cpuMsP50 != null ? Math.round(s.measurement.cpuMsP50 * 100) / 100 : null,
+    s.measurement?.cpuMsP95 != null ? Math.round(s.measurement.cpuMsP95 * 100) / 100 : null,
     s.triangles ?? s.measurement?.triangles ?? null,
     s.drawnTriangles ?? s.measurement?.drawnTriangles ?? null,
+    s.measurement?.drawCalls ?? null,
     s.measurement?.stallMs ?? null,
+    s.measurement?.jsHeapMb ?? null,
     s.error ?? null,
   ];
   // The device fields are the same in every report from one page: state them once.
   const device = ["platform", "userAgent", "backend", "adapter", "software", "timestamps"] as const;
   const first = reports[0] as unknown as Record<string, unknown> | undefined;
-  const common = Object.fromEntries(device.map((k) => [k, k === "userAgent" ? String(first?.[k] ?? "").slice(0, 160) : first?.[k]]));
+  const common: Record<string, unknown> = Object.fromEntries(device.map((k) => [k, k === "userAgent" ? String(first?.[k] ?? "").slice(0, 160) : first?.[k]]));
+  // Refresh, cores, memory, screen and load times: once, from the first report that has them.
+  const hardware = reports.map((r) => (r as { device?: DeviceInfo }).device).find(Boolean);
+  if (hardware) common.hardware = hardware;
   const slim = reports.map((r) => {
     const { steps, ...head } = r as AnyReport & { costs?: unknown };
     const rest: Record<string, unknown> = { ...head };
     delete rest.costs; // derivable from the sweep rows
+    delete rest.device; // stated once, as device.hardware
     for (const k of device) if (rest[k] === common[k] || k === "userAgent") delete rest[k];
     // Trailing nulls dropped from each row (no error, no GPU time...).
     const rows = steps.map((s) => {

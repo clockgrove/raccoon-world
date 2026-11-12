@@ -9,7 +9,17 @@ The page and scripts behind [the report](../../docs/design/quality-lab.md). The 
 - `src/runner.ts`, `src/ui.ts`: the sweep and the ceiling search, and the panel (a side panel on desktop, a bottom sheet that starts folded on a phone): live fps; switches and presets edit a draft that **Apply** rebuilds once (the panel stays usable, and a still of the yard holds the screen meanwhile); a slow-device banner, the results table, Copy results (every number, compact, for pasting back) and Download JSON.
 - Loading: `index.html` and `main.ts` show a checklist (graphics, the model downloads against `media/manifest.json`, shaders and first frame), each step timed, with a note and Try again after a stall.
 - `src/detail.ts`: Geometry detail, the triangle stress tier. The set and its props are drawn at 1, 4, 16 or 64 times their triangles (each step splits every triangle into four at its edge midpoints, so shapes, normals and UVs hold), plus the scene's triangle count. **Triangle budget** (`findTriangleBudget` in `src/runner.ts`) keeps the current effects and raises detail until the p95 frame time misses 60 fps. With GPU timestamps it also estimates the triangle count at which the GPU would use 80% of a 60 fps frame. The sweep stops at 16×; only this run goes to 64×, and only after 16× holds.
-- **Run everything** (Results) runs the sweep, then the ceiling, then the triangle budget, holding a screen wake lock so a phone doesn't suspend the page. **Copy results** copies every number as a slim table (`slimJson`: one row per step, device fields once) to paste back. A step whose page went into the background (no frames drawn) is measured again once the page is in front, and after three tries is an error, never blank times.
+- **Run everything** (Results) runs, holding a screen wake lock so a phone doesn't suspend the page:
+  - the sweep, in the yard view and then the four presets again at the close-up zoom;
+  - the ceiling;
+  - the triangle budget;
+  - the **cast budget**: the ceiling's effects with 1, 3, 10 and 20 raccoons walking (clones of Stevie's rig, each with his fur), giving GPU and main-thread milliseconds per raccoon and how many fit at 60 fps;
+  - a 90 s **soak** at the ceiling, in 10 s windows, whose last-to-first ratio shows a device slowing as it heats.
+
+  Every step records frame time (p50, p95, p99 and the share of dropped frames), GPU time, main-thread time in the render call, draw calls, triangles, the shader-compile stall and the JS heap. Every report records the display's refresh, cores, memory, screen and load times.
+
+**Copy results** copies every number as a slim table (`slimJson`: one row per step, device fields once) to paste back. A step whose page went into the background (no frames drawn) is measured again once the page is in front, and after three tries is an error, never blank times.
+
 - `scripts/serve.mjs`: `serve` (a dev server) and `build` (the static site with its media; relative URLs, so it works under GitHub Pages' sub-path).
 - `scripts/lab.mjs`: `journey` (the CI check, run by `bash scripts/clockgrove.sh slice`), `shot`, and `shots` (the report's images).
 - `scripts/report.mjs`: writes the report's tables from the results JSON saved under `results/`.

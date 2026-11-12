@@ -14,7 +14,7 @@ import { type LabConfig, type LabHandle, type LabStatus, type Measurement, type 
 import { buildPipeline, grade, type Pipeline } from "./pipeline.ts";
 import { GeometryDetail, sceneTriangles } from "./detail.ts";
 import { webMediaLoader } from "./loader.ts";
-import { type LabStevie, loadStevie } from "./stevie.ts";
+import { createStevie, type LabStevie, loadStevie, type StevieAsset } from "./stevie.ts";
 import { mountUi } from "./ui.ts";
 
 // biome-ignore lint/suspicious/noExplicitAny: TSL nodes and backend internals.
@@ -166,7 +166,26 @@ function ensureProbes() {
 
 // ---- Stevie walks a loop on the open ground of puddles and stepping stones in front of the porch steps ----
 const LOOP = { centre: anchor(480, 680), radius: 0.65 };
-let stevie: LabStevie | null = null;
+let stevie: (LabStevie & { asset: StevieAsset }) | null = null;
+/**
+ * The rest of the cast: clones of Stevie's rig, each with its own skeleton and walk, on loops around his (radii
+ * 0.35 to 1.6 m, spread along each loop). Built once as the count first rises, then shown or hidden.
+ */
+const castExtras: LabStevie[] = [];
+function setCast(count: number) {
+  if (!stevie) return;
+  while (castExtras.length < count - 1) {
+    const i = castExtras.length;
+    const radius = 0.35 + 0.25 * (i % 6);
+    const raccoon = createStevie(stevie.asset, { centre: LOOP.centre, radius }, { clone: true, phase: (i * 7.3) % 60 });
+    scene.add(raccoon.root);
+    castExtras.push(raccoon);
+  }
+  castExtras.forEach((raccoon, i) => {
+    raccoon.root.visible = i < count - 1;
+  });
+}
+const shownCast = () => castExtras.filter((r) => r.root.visible);
 
 // ---- State ----
 let config: LabConfig = { ...(PRESETS[(query.get("preset") as PresetName) ?? "medium"] ?? PRESETS.medium) };
@@ -262,6 +281,7 @@ let detail: GeometryDetail | null = null;
 function render() {
   const t = seconds();
   stevie?.update(t);
+  for (const raccoon of shownCast()) raccoon.update(t);
   shower.update(t);
   placeView();
   renderer.info.reset();
@@ -282,7 +302,9 @@ async function applyConfig(next: LabConfig) {
       renderer.setPixelRatio(config.dpr);
       renderer.setSize(...viewSize(), false);
     }
+    setCast(config.cast);
     stevie?.setFur(config.furShells, config.furFins);
+    for (const raccoon of shownCast()) raccoon.setFur(config.furShells, config.furFins);
     detail?.set(config.detail);
     if (shower.mesh.count !== config.rainCount) {
       scene.remove(shower.mesh);
@@ -323,7 +345,32 @@ async function applyConfig(next: LabConfig) {
 }
 
 // ---- Measurement: requestAnimationFrame intervals, and GPU time from timestamp queries where they exist ----
+/** The display's frame interval with nothing drawn, measured while the models load (null until then). */
+let refreshMs: number | null = null;
+async function probeRefresh() {
+  const times: number[] = [];
+  let prev = 0;
+  await new Promise<void>((resolve) => {
+    const tick = (now: number) => {
+      if (prev) times.push(now - prev);
+      prev = now;
+      if (times.length < 60) requestAnimationFrame(tick);
+      else resolve();
+    };
+    requestAnimationFrame(tick);
+  });
+  const sorted = [...times].sort((a, b) => a - b);
+  refreshMs = Math.round(sorted[Math.floor(sorted.length / 2)]! * 100) / 100;
+}
+/** Seconds each loading step took, and the models' download size. */
+const loadS: { graphics: number | null; models: number | null; shaders: number | null } = { graphics: null, models: null, shaders: null };
+let modelMb: number | null = null;
+const heapMb = () => {
+  const used = (performance as Any).memory?.usedJSHeapSize;
+  return typeof used === "number" ? Math.round(used / 1048576) : null;
+};
 let intervals: number[] | null = null;
+let cpuTimes: number[] | null = null;
 let gpuTimes: number[] | null = null;
 let last = 0;
 /** Frames the loop has drawn since the page started (measure() waits on it). */
@@ -343,7 +390,9 @@ function loop(now: number) {
   }
   if (intervals && last) intervals.push(now - last);
   last = now;
+  const before = performance.now();
   render();
+  cpuTimes?.push(performance.now() - before);
   drawnFrames++;
   if (timestamps()) {
     const gpu = gpuTimes;
@@ -386,6 +435,14 @@ const lab: LabHandle & Record<string, unknown> = {
       view,
       state,
       userAgent: navigator.userAgent,
+      device: {
+        refreshMs,
+        cores: navigator.hardwareConcurrency || null,
+        memoryGb: (navigator as Any).deviceMemory ?? null,
+        screen: [Math.round(screen.width * devicePixelRatio), Math.round(screen.height * devicePixelRatio)],
+        loadS: { ...loadS },
+        modelMb,
+      },
     };
   },
   apply: applyConfig,
@@ -436,6 +493,7 @@ const lab: LabHandle & Record<string, unknown> = {
       });
     let frames: number[] = [];
     let gpu: number[] = [];
+    let cpu: number[] = [];
     let stallMs: number | null = null;
     for (let attempt = 1; ; attempt++) {
       await visible();
@@ -447,6 +505,7 @@ const lab: LabHandle & Record<string, unknown> = {
       measuring = true;
       frames = [];
       gpu = [];
+      cpu = [];
       try {
         const begun = performance.now();
         const before = drawnFrames;
@@ -461,6 +520,7 @@ const lab: LabHandle & Record<string, unknown> = {
         if (rest > 0) await until(rest);
         intervals = frames;
         gpuTimes = gpu;
+        cpuTimes = cpu;
         last = 0;
         const held = performance.now();
         await until(holdMs);
@@ -468,6 +528,7 @@ const lab: LabHandle & Record<string, unknown> = {
       } finally {
         intervals = null;
         gpuTimes = null;
+        cpuTimes = null;
         measuring = false;
         document.removeEventListener("visibilitychange", onHide);
       }
@@ -485,6 +546,12 @@ const lab: LabHandle & Record<string, unknown> = {
       drawnTriangles,
       drawCalls,
       stallMs,
+      frameMsP99: percentile(frames, 99),
+      // A dropped frame: an interval over 1.5 display refreshes (the refresh measured at load, else 60 Hz).
+      missedPct: frames.length ? Math.round((frames.filter((f) => f > 1.5 * (refreshMs ?? 1000 / 60)).length / frames.length) * 1000) / 10 : null,
+      cpuMsP50: percentile(cpu, 50),
+      cpuMsP95: percentile(cpu, 95),
+      jsHeapMb: heapMb(),
     };
   },
   async screenshot(maxWidth = 320) {
@@ -539,6 +606,7 @@ function beginStep(key: StepKey, text: string) {
   statusEl.textContent = text;
 }
 function finishStep(key: StepKey, value = elapsed(stepStarted)) {
+  loadS[key] = Math.round((performance.now() - stepStarted) / 100) / 10;
   const li = stepEl(key);
   li?.classList.remove("active");
   li?.classList.add("done");
@@ -612,6 +680,8 @@ async function init() {
   const gltf = webMediaLoader(renderer);
 
   beginStep("models", "Downloading");
+  // The display's refresh, measured while nothing is drawn yet (the renderer's loop starts after the shaders).
+  void probeRefresh();
   const stevieDownload = tracked("stevie.glb", manifest[model("stevie.glb")]);
   const propDownloads = Object.fromEntries(Object.keys(set.slots).map((name) => [name, tracked(`props/${name}.glb`, manifest[model(`props/${name}.glb`)])]));
   paintDownloads();
@@ -624,6 +694,7 @@ async function init() {
     }),
   ]);
   const total = [...downloads.values()].reduce((sum, d) => sum + (d.total || d.loaded), 0);
+  modelMb = Math.round(total / 1e5) / 10;
   finishStep("models", `${MB(total)} MB in ${elapsed(stepStarted)}`);
   stevie = loaded;
   scene.add(stevie.root);

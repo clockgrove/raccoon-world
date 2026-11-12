@@ -8,6 +8,8 @@ export type Antialias = "none" | "msaa" | "traa";
 /** Upscaling: the scene is drawn at RENDER_SCALE of the canvas and brought back up by TAAU or FSR 1. */
 /** Geometry detail: the yard's static meshes at 1, 4, 16 or 64 times their triangles (src/detail.ts). */
 export type Detail = 1 | 4 | 16 | 64;
+/** The cast: how many raccoons walk the yard (Stevie and clones of his rig, each with his fur), for the per-raccoon cost. */
+export type Cast = 1 | 3 | 10 | 20;
 export type Upscale = "none" | "taau" | "fsr";
 
 export interface LabConfig {
@@ -43,6 +45,8 @@ export interface LabConfig {
   upscale: Upscale;
   /** The triangle stress tier: same shapes, more triangles. Every preset draws the art as made (1). */
   detail: Detail;
+  /** Raccoons walking the yard. Every preset draws one (Stevie); the cast budget run raises it. */
+  cast: Cast;
 }
 
 export type Knob = keyof LabConfig;
@@ -70,6 +74,7 @@ export const LEVELS: { readonly [K in Knob]: readonly LabConfig[K][] } = {
   dpr: [2, 1],
   upscale: ["none", "taau", "fsr"],
   detail: [64, 16, 4, 1],
+  cast: [20, 10, 3, 1],
 };
 
 /** Human labels for the results table and the report. */
@@ -92,6 +97,7 @@ export const KNOB_LABELS: { readonly [K in Knob]: string } = {
   dpr: "Device pixel ratio",
   upscale: "Upscaling",
   detail: "Geometry detail",
+  cast: "Raccoons",
 };
 
 export const KNOBS = Object.keys(LEVELS) as Knob[];
@@ -119,6 +125,7 @@ export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
     dpr: 2,
     upscale: "none",
     detail: 1,
+    cast: 1,
   },
   high: {
     furShells: 8,
@@ -139,6 +146,7 @@ export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
     dpr: 2,
     upscale: "none",
     detail: 1,
+    cast: 1,
   },
   medium: {
     furShells: 4,
@@ -159,6 +167,7 @@ export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
     dpr: 1,
     upscale: "none",
     detail: 1,
+    cast: 1,
   },
   low: {
     furShells: 0,
@@ -179,6 +188,7 @@ export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
     dpr: 1,
     upscale: "none",
     detail: 1,
+    cast: 1,
   },
 };
 
@@ -203,6 +213,8 @@ export interface SweepStep {
  */
 /** The highest Geometry detail the sweep measures. */
 export const SWEEP_MAX_DETAIL = 16;
+/** The largest cast the sweep measures; 20 raccoons is the cast budget run's last step only. */
+export const SWEEP_MAX_CAST = 10;
 
 export function sweepSteps(): SweepStep[] {
   const steps: SweepStep[] = PRESET_ORDER.map((name) => ({ id: `preset:${name}`, label: `${name.charAt(0).toUpperCase()}${name.slice(1)}`, config: { ...PRESETS[name] } }));
@@ -216,7 +228,7 @@ export function sweepSteps(): SweepStep[] {
     }
     if (at > 0) {
       // Geometry detail 64× (millions of triangles) is the triangle budget run's last step only, never a sweep step.
-      for (const level of levels.slice(0, at).reverse().filter((l) => knob !== "detail" || (l as number) <= SWEEP_MAX_DETAIL)) {
+      for (const level of levels.slice(0, at).reverse().filter((l) => (knob !== "detail" || (l as number) <= SWEEP_MAX_DETAIL) && (knob !== "cast" || (l as number) <= SWEEP_MAX_CAST))) {
         const id = typeof level === "boolean" ? `medium+${knob}` : `medium+${knob}=${level}`;
         const label = typeof level === "boolean" ? `Medium + ${KNOB_LABELS[knob]}` : `Medium + ${KNOB_LABELS[knob]} ${level}`;
         steps.push({ id, label, config: { ...medium, [knob]: level }, knob, sign: 1 });
@@ -260,6 +272,7 @@ export const DEFAULT_COST_ORDER: readonly Knob[] = [
   "grade",
   "upscale",
   "detail",
+  "cast",
 ];
 
 export type Platform = "desktop" | "phone";
@@ -290,6 +303,30 @@ export interface Measurement {
   drawCalls?: number | null;
   /** Milliseconds from the start of the measurement until frames flowed again (shader and pipeline compile stalls). */
   stallMs?: number | null;
+  /** The slowest 1% of frame intervals. */
+  frameMsP99?: number | null;
+  /** Share of frame intervals longer than 1.5 display refreshes (a dropped frame or worse), in percent. */
+  missedPct?: number | null;
+  /** Main-thread time per frame spent in the lab's render call (scene update, culling, command encoding and submit). */
+  cpuMsP50?: number | null;
+  cpuMsP95?: number | null;
+  /** JavaScript heap in use at the end of the hold (Chromium only). */
+  jsHeapMb?: number | null;
+}
+
+/** What the page knows about the device, for comparing runs across devices. */
+export interface DeviceInfo {
+  /** The display's frame interval, measured with nothing drawn (about 16.7 ms at 60 Hz, 8.3 ms at 120 Hz). */
+  refreshMs: number | null;
+  /** Logical CPU cores and (Chromium only) device memory in GB, as the browser reports them. */
+  cores: number | null;
+  memoryGb: number | null;
+  /** The canvas in device pixels at DPR 1, and the screen. */
+  screen: [number, number];
+  /** Seconds each loading step took: the renderer, the models (download and decode), the first shader compile. */
+  loadS: { graphics: number | null; models: number | null; shaders: number | null };
+  /** Bytes the models downloaded (compressed web media). */
+  modelMb: number | null;
 }
 
 export interface LabStatus {
@@ -312,6 +349,7 @@ export interface LabStatus {
   view: ViewName;
   state: StateName;
   userAgent: string;
+  device: DeviceInfo;
 }
 
 /** The page's handle, `globalThis.lab`: the runner UI and the CI journey drive the page through it. */
