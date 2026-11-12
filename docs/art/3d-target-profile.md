@@ -169,7 +169,7 @@ The pinned Clockgrove's pack format has no coat field yet (clockgrove/clockgrove
 `node art/tools/model3d.mjs validate <manifest>` reads the written `.glb` and its manifest and measures the model itself. It never trusts the manifest's numbers. It exits 0 when it accepts the model and 1 when it refuses it, and each reason has a stable code:
 
 - **Refused:**
-  - `over-budget:<key>`: over the hand-off budget;
+  - `over-budget:<key>`: over the desktop tier's budget for the model's kind (`tiers.desktop.character`, which equals the flat hand-off `budgets`, or `tiers.desktop.prop`). The kind is `--kind character|prop`, else the manifest's `kind` (`character-3d` or `prop-3d`), else character;
   - `format:container`, `format:texture-media-type` (a texture that is not PNG or JPEG) or `format:units`;
   - `manifest:content-hash`, `manifest:mismatch:<key>`, `manifest:source`, `manifest:bounds` or `manifest:provenance:<field>`;
   - `grant:license`, `grant:relabel` or `grant:non-commercial`;

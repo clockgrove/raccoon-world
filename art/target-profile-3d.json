@@ -7,10 +7,6 @@
     "creator": "Clockgrove",
     "provider": "tripo"
   },
-  "frames": {
-    "width": 32,
-    "height": 32
-  },
   "model3d": {
     "format": "glb",
     "budgets": {

@@ -517,6 +517,15 @@ async function checkModel3d() {
         fail("model3d", `an over-budget model must be refused with over-budget:triangles (exit 1), got ${error.code}: ${error.stdout}${error.stderr}`);
     }
 
+    // The same model checked as a prop is refused against the desktop prop budget, not the character's.
+    try {
+      await run(process.execPath, ["art/tools/model3d.mjs", "validate", manifestPath, "--kind", "prop"], { cwd: target, env });
+      fail("model3d", "a model over the desktop prop budget was accepted as a prop");
+    } catch (error) {
+      if (error.code !== 1 || !String(error.stdout).includes("refused over-budget:"))
+        fail("model3d", `a model over the desktop prop budget must be refused with over-budget:<key> (exit 1), got ${error.code}: ${error.stdout}${error.stderr}`);
+    }
+
     // A grant the profile can't accept (a free-plan CC BY model) is refused with exit 7, nothing written.
     const routes = join(runs, "free-plan-routes.json");
     const freePlan = { license: "CC-BY-4.0", plan: "free", commercial: true, relabel: false, attribution: "3D model generated with Meshy (meshy.ai)" };

@@ -4,6 +4,11 @@
 // root after it writes a model, and check.mjs imports its pure exports.
 //
 //   node art/tools/model3d.mjs validate <manifest> [--profile <path>] [--kind character|prop] [--json]
+//
+// Without --kind the kind comes from the manifest's own `kind` (`character-3d` -> character,
+// `prop-3d` -> prop); a manifest with neither is checked as a character. Refusals use the desktop
+// tier's budget for that kind (model3d.tiers.desktop.<kind>; for a character it equals the flat
+// model3d.budgets that Assetforge reads), flags the other tiers'.
 //   node art/tools/model3d.mjs profile [<path>]
 //
 // validate exits 0 accepted, 1 refused, 2 usage or unreadable input. profile exits 0 good, 1 problems.
@@ -298,7 +303,7 @@ export function validateModel({ profile, manifest, glb, templateBytes, kind = "c
   const flags = [];
   const refuse = (code, detail) => refusals.push({ code, detail });
   const m = profile.model3d ?? {};
-  const budgets = m.budgets ?? {};
+  const budgets = m.tiers?.desktop?.[kind] ?? m.budgets ?? {};
 
   if (m.units !== "m") refuse("format:units", `profile units are ${JSON.stringify(m.units)}, expected "m"`);
 
@@ -314,7 +319,7 @@ export function validateModel({ profile, manifest, glb, templateBytes, kind = "c
     if (!ACCEPTED_MEDIA.includes(type)) refuse("format:texture-media-type", `texture media type ${type} is not image/png or image/jpeg; KTX2 is a target-side build step`);
   }
   for (const key of BUDGET_KEYS) {
-    if (measured[key] > budgets[key]) refuse(`over-budget:${key}`, `${key} ${measured[key]} over the hand-off budget of ${budgets[key]}`);
+    if (measured[key] > budgets[key]) refuse(`over-budget:${key}`, `${key} ${measured[key]} over the hand-off ${kind} budget of ${budgets[key]}`);
   }
 
   if (manifest?.contentHash !== sha256(glb)) refuse("manifest:content-hash", `manifest contentHash ${manifest?.contentHash} is not the sha256 of the model ${sha256(glb)}`);
@@ -398,6 +403,12 @@ export function validateModel({ profile, manifest, glb, templateBytes, kind = "c
 const USAGE = `usage: model3d.mjs validate <manifest> [--profile <path>] [--kind character|prop] [--json]
        model3d.mjs profile [<path>]`;
 const DEFAULT_PROFILE = "art/target-profile-3d.json";
+const MANIFEST_KINDS = { "character-3d": "character", "prop-3d": "prop" };
+
+/** The kind a manifest declares (`character-3d` or `prop-3d`), else character. */
+export function kindOf(manifest) {
+  return MANIFEST_KINDS[manifest?.kind] ?? "character";
+}
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
@@ -406,7 +417,7 @@ function readJson(path) {
 function cli(argv) {
   const [command, ...rest] = argv;
   const positional = [];
-  const options = { profile: DEFAULT_PROFILE, kind: "character", json: false };
+  const options = { profile: DEFAULT_PROFILE, kind: undefined, json: false };
   for (let i = 0; i < rest.length; i++) {
     if (rest[i] === "--json") options.json = true;
     else if (rest[i] === "--profile" || rest[i] === "--kind") options[rest[i].slice(2)] = rest[++i];
@@ -422,9 +433,10 @@ function cli(argv) {
       return problems.length === 0 ? 0 : 1;
     }
     if (command !== "validate" || positional.length !== 1) return usage();
-    if (!["character", "prop"].includes(options.kind) || !options.profile) return usage("bad --kind or --profile");
+    if ((options.kind !== undefined && !["character", "prop"].includes(options.kind)) || !options.profile) return usage("bad --kind or --profile");
     const profile = readJson(options.profile);
     const manifest = readJson(positional[0]);
+    options.kind ??= kindOf(manifest);
     const glb = new Uint8Array(readFileSync(manifest?.source?.path ?? ""));
     const templateBytes = new Uint8Array(readFileSync(resolve(dirname(resolve(options.profile)), profile.model3d?.rig?.template ?? "")));
     const result = validateModel({ profile, manifest, glb, templateBytes, kind: options.kind });
