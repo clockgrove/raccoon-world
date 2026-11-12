@@ -105,11 +105,21 @@ export interface TriangleReport {
    * with fewer than two steps.
    */
   estimatedTriangles: number | null;
+  /**
+   * Set instead of an estimate when the fit lands past MAX_EXTRAPOLATION times the most triangles measured: GPU time
+   * barely grew, so no limit was found up to this many triangles.
+   */
+  noLimitUpTo: number | null;
   note?: string;
 }
 
+/** How far past the largest measured count the GPU-time fit may be trusted. */
+export const MAX_EXTRAPOLATION = 2;
+
 /** Detail steps for the triangle budget: each four times the last. */
 export const TRIANGLE_STEPS = [1, 4, 16, 64] as const;
+/** Steps the triangle budget always measures (the GPU-time estimate needs two points). */
+export const MIN_TRIANGLE_STEPS = 2;
 /** The share of the frame the triangle estimate lets the GPU use. */
 export const GPU_SHARE = 0.8;
 
@@ -120,6 +130,11 @@ export interface RunOptions {
   signal?: AbortSignal;
   /** Stops after this many configs (the CI journey's short runs). */
   maxSteps?: number;
+}
+
+export interface TriangleOptions extends RunOptions {
+  /** Measure every detail step, not just up to the first miss (a maintainer's full curve on a desktop GPU). */
+  allSteps?: boolean;
 }
 
 export interface CeilingOptions extends RunOptions {
@@ -302,7 +317,7 @@ export async function findCeiling(lab: LabHandle, opts: CeilingOptions = {}): Pr
  * refresh, so where GPU timestamps exist it also fits GPU time against triangles and estimates the count at which the
  * GPU would use 80% of a 60 fps frame.
  */
-export async function findTriangleBudget(lab: LabHandle, opts: RunOptions = {}): Promise<TriangleReport> {
+export async function findTriangleBudget(lab: LabHandle, opts: TriangleOptions = {}): Promise<TriangleReport> {
   const start = lab.status();
   const original = { ...start.config };
   const fps = 60;
@@ -325,6 +340,7 @@ export async function findTriangleBudget(lab: LabHandle, opts: RunOptions = {}):
     held: null,
     missed: null,
     estimatedTriangles: null,
+    noLimitUpTo: null,
   };
   try {
     for (let i = 0; i < steps.length; i++) {
@@ -338,8 +354,9 @@ export async function findTriangleBudget(lab: LabHandle, opts: RunOptions = {}):
       const point = { detail: times, triangles: m.triangles ?? 0, frameMsP95: m.frameMsP95 };
       if (m.frameMsP95 <= budget) report.held = point;
       else {
-        report.missed = point;
-        break;
+        report.missed ??= point;
+        // At least two steps always run, so the GPU-time fit has two points even when the art as made misses.
+        if (i >= MIN_TRIANGLE_STEPS - 1 && !opts.allSteps) break;
       }
     }
   } finally {
@@ -357,7 +374,10 @@ export async function findTriangleBudget(lab: LabHandle, opts: RunOptions = {}):
     const slope = sxx > 0 ? points.reduce((a, p) => a + (p.x - mx) * (p.y - my), 0) / sxx : 0;
     const intercept = my - slope * mx;
     const room = (1000 / fps) * GPU_SHARE;
-    if (slope > 0) report.estimatedTriangles = Math.max(0, Math.round((room - intercept) / slope));
+    const most = Math.max(...points.map((p) => p.x));
+    const estimate = slope > 0 ? Math.max(0, Math.round((room - intercept) / slope)) : Number.POSITIVE_INFINITY;
+    if (estimate > most * MAX_EXTRAPOLATION) report.noLimitUpTo = most;
+    else report.estimatedTriangles = estimate;
   }
   if (start.software) report.note = "software, not performance: nothing held or missed, and no estimate";
   return report;

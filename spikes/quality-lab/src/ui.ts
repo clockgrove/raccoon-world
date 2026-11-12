@@ -5,7 +5,7 @@
 import { KNOBS, KNOB_LABELS, LEVELS, PRESETS, PRESET_ORDER } from "./config.ts";
 import type { Knob, LabConfig, LabHandle, PresetName, StateName, ViewName } from "./config.ts";
 import { compactJson, findCeiling, findTriangleBudget, issueUrl, runSweep } from "./runner.ts";
-import type { AnyReport, CeilingOptions, RunOptions, StepResult, SweepReport } from "./runner.ts";
+import type { AnyReport, CeilingOptions, RunOptions, StepResult, SweepReport, TriangleOptions } from "./runner.ts";
 
 const CSS = `
 .ql{--accent:#f5b453;--accent-ink:#1b1608;--line:rgba(255,255,255,.09);--fill:rgba(255,255,255,.06);--muted:rgba(236,235,230,.62);
@@ -447,6 +447,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
       rep.held ? `Held ${rep.targetFps} fps up to ${count(rep.held.triangles)} triangles (detail ${rep.held.detail}×, p95 ${ms(rep.held.frameMsP95)} ms).` : rep.software ? "" : `Missed ${rep.targetFps} fps even with the art as made.`,
       rep.missed ? `Missed at ${count(rep.missed.triangles)} triangles (detail ${rep.missed.detail}×, p95 ${ms(rep.missed.frameMsP95)} ms).` : "",
       rep.estimatedTriangles != null ? `Estimate from GPU time: about ${count(rep.estimatedTriangles)} triangles before the GPU uses 80% of a ${rep.targetFps} fps frame.` : "",
+      rep.noLimitUpTo != null ? `GPU time barely grows with triangles here: no limit found up to ${count(rep.noLimitUpTo)} triangles. Effects and resolution set the frame time, not geometry.` : "",
     ].filter(Boolean);
     for (const line of lines) results.append(el("p", { textContent: line }));
   };
@@ -573,7 +574,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
 
   sweepBtn.addEventListener("click", () => void doSweep().catch((e) => (progress.textContent = String(e))));
   ceilingBtn.addEventListener("click", () => void doCeiling().catch((e) => (progress.textContent = String(e))));
-  const doTriangles = (o: RunOptions = {}) => track("Triangle budget", (opts) => findTriangleBudget(lab, opts), o);
+  const doTriangles = (o: TriangleOptions = {}) => track("Triangle budget", (opts) => findTriangleBudget(lab, opts), o);
   trianglesBtn.addEventListener("click", () => void doTriangles().catch((e) => (progress.textContent = String(e))));
 
   scroll.append(status, sceneSection, presetSection, effects, resultsSection);

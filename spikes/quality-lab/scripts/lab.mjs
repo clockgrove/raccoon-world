@@ -197,7 +197,7 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
       check(ceiling.software === true && ceiling.held === false && ceiling.steps.every((s) => s.measurement === null), `${name}: the ceiling search reported times on a software GPU`);
       const triangles = await page.evaluate(() => globalThis.labRunner.findTriangleBudget({ warmupMs: 50, holdMs: 150, maxSteps: 2 }));
       check(
-        triangles.software === true && triangles.steps.length === 2 && triangles.held === null && triangles.estimatedTriangles === null && triangles.steps.every((s) => s.measurement === null && !s.error),
+        triangles.software === true && triangles.steps.length === 2 && triangles.held === null && triangles.estimatedTriangles === null && triangles.noLimitUpTo === null && triangles.steps.every((s) => s.measurement === null && !s.error),
         `${name}: the triangle budget run did not run cleanly on a software GPU: ${JSON.stringify(triangles).slice(0, 300)}`,
       );
       // Geometry detail must really add triangles: the scene count at 4× is above the art as made.
