@@ -6,7 +6,8 @@ The page and scripts behind [the report](../../docs/design/quality-lab.md). The 
 - `src/config.ts`: the knobs and their levels, the presets, the sweep's steps, the ceiling's step-down and budgets, and the `LabHandle` type.
 - `src/pipeline.ts`: the post graph, rebuilt per config: MSAA, GTAO, haze, god rays, TRAA, TAAU, FSR 1, bloom, tone mapping and grade.
 - `src/stevie.ts`: c3-rigged with its `walk` clip, moving at `speedMps` round the loop, plus fur shells (0, 4, 8 or 16) and fins.
-- `src/runner.ts`, `src/ui.ts`: the sweep and the ceiling search, and the panel with its results table, send link, copy and download.
+- `src/runner.ts`, `src/ui.ts`: the sweep and the ceiling search, and the panel (a side panel on desktop, a bottom sheet that starts folded on a phone): live fps, a busy timer while a change recompiles, a slow-device banner, the results table, send link, copy and download.
+- Loading: `index.html` and `main.ts` show a checklist (graphics, the model downloads against `media/manifest.json`, shaders and first frame), each step timed, with a note and Try again after a stall.
 - `scripts/serve.mjs`: `serve` (a dev server) and `build` (the static site with its media; relative URLs, so it works under GitHub Pages' sub-path).
 - `scripts/lab.mjs`: `journey` (the CI check, run by `bash scripts/clockgrove.sh slice`), `shot`, and `shots` (the report's images).
 - `scripts/report.mjs`: writes the report's tables from the results JSON saved under `results/`.

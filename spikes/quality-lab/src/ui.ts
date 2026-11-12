@@ -1,30 +1,91 @@
-// The quality lab's overlay (issue 45): view/state toggles, presets, one control per knob, the two run buttons, the
-// results table and the ways to send the numbers back. Plain DOM over the page's LabHandle.
+// The quality lab's overlay (issue 45): the scene's view and time, the presets, one control per knob grouped by what
+// it changes, the two runs, the results and the ways to send the numbers back. Plain DOM over the page's LabHandle.
+// Desktop: a panel on the left. Phone: a bottom sheet that starts folded, so the yard is what you see first.
 
 import { KNOBS, KNOB_LABELS, LEVELS, PRESETS, PRESET_ORDER } from "./config.ts";
-import type { Knob, LabConfig, LabHandle, StateName, ViewName } from "./config.ts";
+import type { Knob, LabConfig, LabHandle, PresetName, StateName, ViewName } from "./config.ts";
 import { compactJson, findCeiling, issueUrl, runSweep } from "./runner.ts";
 import type { CeilingOptions, CeilingReport, RunOptions, StepResult, SweepReport } from "./runner.ts";
 
 const CSS = `
-.ql{position:fixed;top:8px;left:8px;z-index:10;width:min(440px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto;box-sizing:border-box;
-background:rgba(14,16,20,.88);color:#e8e8ea;font:13px/1.35 system-ui,sans-serif;border-radius:10px;padding:8px}
-.ql.collapsed>.ql-body{display:none}
-.ql button,.ql a.ql-btn,.ql select{min-height:44px;min-width:44px;box-sizing:border-box;font:inherit;border-radius:8px;border:1px solid #556;background:#2a2f3a;color:inherit;padding:4px 10px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
-.ql button[aria-pressed=true]{background:#3d6fd1;border-color:#7fa6f0}
-.ql button.big{flex:1;font-size:15px;font-weight:600}
-.ql button:disabled,.ql select:disabled{opacity:.45;cursor:default}
-.ql .row{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
-.ql label.knob{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;flex:1 1 200px}
-.ql label.knob input[type=checkbox]{width:24px;height:24px}
-.ql .status{font-size:12px;opacity:.8;word-break:break-word}
-.ql table{border-collapse:collapse;width:100%;font-size:12px}
-.ql th,.ql td{border-bottom:1px solid #334;padding:2px 4px;text-align:right;vertical-align:middle}
-.ql th:first-child,.ql td:first-child{text-align:left}
-.ql img{width:64px;height:auto;display:block;border-radius:3px}
+.ql{--accent:#f5b453;--accent-ink:#1b1608;--line:rgba(255,255,255,.09);--fill:rgba(255,255,255,.06);--muted:rgba(236,235,230,.62);
+position:fixed;z-index:10;box-sizing:border-box;display:flex;flex-direction:column;color:#ecebe6;font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;
+background:rgba(20,21,24,.78);-webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%);
+border:1px solid var(--line);box-shadow:0 18px 50px rgba(0,0,0,.45);overflow:hidden}
+.ql *{box-sizing:border-box}
+@media (min-width:720px){.ql{top:12px;left:12px;bottom:12px;width:360px;border-radius:18px}
+ .ql.collapsed{bottom:auto}}
+@media (max-width:719px){.ql{left:0;right:0;bottom:0;max-height:82dvh;border-radius:20px 20px 0 0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom)}}
+.ql.collapsed .ql-scroll,.ql.collapsed .ql-actions{display:none}
+.ql-head{display:flex;align-items:center;gap:10px;width:100%;min-height:56px;padding:8px 14px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.ql-head .grip{display:none}
+@media (max-width:719px){.ql-head{flex-wrap:wrap;padding-top:14px;position:relative}
+ .ql-head .grip{display:block;position:absolute;top:6px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:rgba(255,255,255,.22)}}
+.ql-title{font-weight:650;font-size:15px}
+.ql-sub{color:var(--muted);font-size:12px}
+.ql-fps{margin-left:auto;padding:3px 9px;border-radius:999px;background:var(--fill);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ql-fps.good{color:#9be29b}.ql-fps.ok{color:#f5d36b}.ql-fps.bad{color:#ff9b8f}
+.ql-chev{width:20px;height:20px;flex:none;transition:transform .2s ease;opacity:.7}
+.ql.collapsed .ql-chev{transform:rotate(180deg)}
+@media (min-width:720px){.ql-chev{transform:rotate(-90deg)}.ql.collapsed .ql-chev{transform:rotate(90deg)}}
+.ql-scroll{flex:1;overflow:auto;overscroll-behavior:contain;padding:0 14px 12px;-webkit-overflow-scrolling:touch}
+.ql-device{margin:0 0 6px;color:var(--muted);font-size:12px;word-break:break-word}
+.ql-device.err{color:#ff9b8f}
+.ql section{padding:12px 0;border-top:1px solid var(--line)}
+.ql h2{margin:0 0 10px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ql .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ql .seg{display:flex;padding:3px;gap:2px;border-radius:12px;background:var(--fill)}
+.ql .seg button{flex:1;min-height:38px;min-width:0;padding:0 8px;border:0;border-radius:9px;background:none;color:inherit;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap;transition:background .15s ease,color .15s ease}
+.ql .seg button[aria-pressed=true]{background:rgba(255,255,255,.16);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.ql .seg.accent button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+.ql .hint{margin:6px 2px 0;color:var(--muted);font-size:12px}
+.ql details{border-radius:14px;background:rgba(255,255,255,.035);margin-bottom:8px}
+.ql summary{display:flex;align-items:center;gap:8px;min-height:48px;padding:0 12px;cursor:pointer;list-style:none;font-weight:600}
+.ql summary::-webkit-details-marker{display:none}
+.ql summary .count{margin-left:auto;color:var(--muted);font-weight:400;font-size:12px}
+.ql summary::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);opacity:.5;margin:-4px 2px 0 4px;transition:transform .2s ease}
+.ql details[open] summary::after{transform:rotate(225deg);margin-top:4px}
+.ql .knobs{padding:0 12px 6px}
+.ql .knob{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:46px;border-top:1px solid var(--line)}
+.ql .knob:first-child{border-top:0}
+.ql .knob.wide{flex-direction:column;align-items:stretch;gap:6px;padding:8px 0}
+.ql .knob.wide .seg button{min-height:34px}
+.ql .switch{appearance:none;-webkit-appearance:none;position:relative;flex:none;width:46px;height:28px;margin:0;border-radius:14px;background:rgba(255,255,255,.18);cursor:pointer;transition:background .18s ease}
+.ql .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .18s ease}
+.ql .switch:checked{background:var(--accent)}
+.ql .switch:checked::after{transform:translateX(18px)}
+.ql .switch:focus-visible,.ql button:focus-visible,.ql a:focus-visible,.ql summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ql-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 14px 12px;border-top:1px solid var(--line);background:rgba(20,21,24,.6)}
+.ql .btn{min-height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--fill);color:inherit;font:inherit;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+.ql .btn.primary{background:var(--accent);border-color:transparent;color:var(--accent-ink)}
+.ql .btn.stop{grid-column:1/-1;background:rgba(255,120,100,.16);border-color:rgba(255,120,100,.35);color:#ffb3a8}
+.ql [hidden]{display:none!important}
+.ql button:disabled,.ql .btn[aria-disabled=true],.ql .switch:disabled{opacity:.4;cursor:default;pointer-events:none}
+.ql .run{grid-column:1/-1;display:none}
+.ql.running .run{display:block}
+.ql .run p{margin:0 0 6px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ql .bar{height:4px;border-radius:2px;background:var(--fill);overflow:hidden}
+.ql .bar>i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s ease}
+.ql .out{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.ql .out .btn{flex:1 1 auto}
+.ql .tablewrap{overflow-x:auto;border-radius:12px;background:rgba(0,0,0,.2)}
+.ql h3{margin:12px 0 8px;font-size:13px}
+.ql table{border-collapse:collapse;width:100%;font-size:12px;font-variant-numeric:tabular-nums}
+.ql th,.ql td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:right;vertical-align:middle;white-space:nowrap}
+.ql th{color:var(--muted);font-weight:500}
+.ql th:first-child,.ql td:first-child{text-align:left;white-space:normal;min-width:140px}
+.ql img{width:64px;height:auto;display:block;border-radius:4px}
 .ql .sw{color:#f0b060}
-.ql .err{color:#f08080}
-.ql .tablewrap{overflow-x:auto}
+.ql .err{color:#ff9b8f}
+.ql .empty{color:var(--muted);font-size:12px;margin:0}
+.ql-alert{display:flex;align-items:center;gap:10px;margin:0 14px 10px;padding:10px 12px;border-radius:12px;background:rgba(245,180,83,.13);border:1px solid rgba(245,180,83,.35);font-size:13px}
+.ql-alert p{margin:0;flex:1}
+.ql-alert .btn{min-height:36px;padding:0 12px;font-size:13px}
+.ql-alert .x{min-width:36px;padding:0}
+.ql.busy .ql-sub::before{content:"";display:inline-block;width:9px;height:9px;margin-right:6px;border:2px solid var(--accent);border-right-color:transparent;border-radius:50%;animation:qlspin .8s linear infinite;vertical-align:-1px}
+@keyframes qlspin{to{transform:rotate(360deg)}}
+.ql.busy button:disabled,.ql.busy .switch:disabled{opacity:.7}
+@media (prefers-reduced-motion:reduce){.ql *{transition:none!important;animation:none!important}}
 `;
 
 type Report = SweepReport | CeilingReport;
@@ -44,107 +105,229 @@ function summarise(config: LabConfig): string {
   return KNOBS.map((k) => `${KNOB_LABELS[k]}: ${String(config[k])}`).join(", ");
 }
 
+/** The knobs grouped by what they change, in the order a person reads them. Every knob is in exactly one group. */
+const GROUPS: readonly { title: string; knobs: readonly Knob[] }[] = [
+  { title: "Stevie", knobs: ["furShells", "furFins"] },
+  { title: "Light and shadow", knobs: ["cascades", "pointShadows", "ao", "probes", "haze", "shafts"] },
+  { title: "Rain", knobs: ["rainCount", "splashes", "ripples", "reflections"] },
+  { title: "Image", knobs: ["antialias", "upscale", "dpr", "bloom", "grade"] },
+];
+const LEVEL_TEXT: Partial<Record<string, string>> = { none: "Off", msaa: "MSAA", traa: "TRAA", taau: "TAAU", fsr: "FSR 1" };
+const levelText = (knob: Knob, level: unknown) => (knob === "dpr" ? `${String(level)}×` : (LEVEL_TEXT[String(level)] ?? String(level)));
+const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const CHEVRON = '<svg class="ql-chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 12.5 10 7.5l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
 export function mountUi(lab: LabHandle, root: HTMLElement): void {
   root.append(el("style", { textContent: CSS }));
+  const phone = lab.status().platform === "phone" || matchMedia("(max-width: 719px)").matches;
   const panel = el("div", { class: "ql" });
-  const body = el("div", { class: "ql-body" });
-  const toggle = el("button", { type: "button", textContent: "Quality lab", ariaExpanded: "true" });
-  toggle.setAttribute("aria-expanded", "true");
-  toggle.addEventListener("click", () => {
-    const collapsed = panel.classList.toggle("collapsed");
+  panel.setAttribute("role", "region");
+  panel.setAttribute("aria-label", "Quality lab");
+
+  // Header: title, the preset in use, live frame rate, and the fold.
+  const headTitle = el("span", { class: "ql-title", textContent: "Quality lab" });
+  const headSub = el("span", { class: "ql-sub" });
+  const fps = el("span", { class: "ql-fps", textContent: "– fps" });
+  fps.setAttribute("aria-hidden", "true");
+  const toggle = el("button", { type: "button", class: "ql-head" });
+  toggle.append(el("span", { class: "grip" }), el("span", {}, headTitle, el("br"), headSub), fps);
+  toggle.insertAdjacentHTML("beforeend", CHEVRON);
+  const setCollapsed = (collapsed: boolean) => {
+    panel.classList.toggle("collapsed", collapsed);
     toggle.setAttribute("aria-expanded", String(!collapsed));
-  });
-  panel.append(toggle, body);
+  };
+  toggle.addEventListener("click", () => setCollapsed(!panel.classList.contains("collapsed")));
+
+  const scroll = el("div", { class: "ql-scroll" });
+  const actions = el("div", { class: "ql-actions" });
+  // The health check: says plainly when the yard is slow on this device, and offers the fix.
+  const alertText = el("p");
+  const alertFix = el("button", { type: "button", class: "btn primary", textContent: "Switch to Low" });
+  const alertClose = el("button", { type: "button", class: "btn x", textContent: "✕", ariaLabel: "Dismiss" });
+  alertClose.setAttribute("aria-label", "Dismiss");
+  const alertBox = el("div", { class: "ql-alert", hidden: true }, alertText, alertFix, alertClose);
+  alertBox.setAttribute("role", "alert");
+  panel.append(toggle, alertBox, scroll, actions);
   root.append(panel);
+  setCollapsed(phone);
 
   let running = false;
   const reports: Report[] = [];
   let lastSweep: SweepReport | undefined;
 
-  const status = el("div", { class: "status", role: "status" });
+  const status = el("p", { class: "ql-device" });
+  status.setAttribute("role", "status");
   const refreshStatus = () => {
     const s = lab.status();
+    status.classList.toggle("err", Boolean(s.failure));
     status.textContent = s.failure
       ? `Failed: ${s.failure}`
-      : `${s.backend}, ${s.adapter}, DPR ${s.dpr}, ${s.platform}${s.software ? ", software, not performance" : ""}${s.timestamps ? ", GPU timestamps" : ""}`;
+      : [s.backend === "webgpu" ? "WebGPU" : "WebGL2", s.adapter, `DPR ${s.dpr}`, s.platform, s.software ? "software, not performance" : "", s.timestamps ? "GPU timestamps" : ""].filter(Boolean).join(" · ");
   };
 
-  // View and state
-  const group = <T extends string>(label: string, options: [T, string][], get: () => T, set: (v: T) => Promise<void>) => {
-    const row = el("div", { class: "row", role: "group", ariaLabel: label });
+  // Busy: a settings change rebuilds and recompiles the scene, which can take seconds on a phone. Say so, with a timer.
+  let busySince = 0;
+  let settledAt = performance.now();
+  const busy = async (work: () => Promise<void>) => {
+    if (busySince || running) return;
+    busySince = performance.now();
+    panel.classList.add("busy");
+    for (const c of allControls()) (c as HTMLButtonElement).disabled = true;
+    paintHead();
+    try {
+      await work();
+    } finally {
+      busySince = 0;
+      settledAt = performance.now();
+      panel.classList.remove("busy");
+      for (const c of allControls()) (c as HTMLButtonElement).disabled = false;
+      syncAll();
+    }
+  };
+
+  // Live frame rate from animation frames; paused during a run so it never touches a measurement.
+  let frames = 0;
+  let since = performance.now();
+  let slowWindows = 0;
+  let dismissed: string | null = null;
+  const configKey = () => JSON.stringify(lab.status().config);
+  const tick = (now: number) => {
+    frames++;
+    if (now - since >= 750) {
+      const rate = (frames * 1000) / (now - since);
+      const s = lab.status();
+      const target = s.platform === "phone" ? 30 : 60;
+      if (busySince) paintHead();
+      else if (!running) {
+        fps.textContent = `${Math.round(rate)} fps`;
+        fps.className = `ql-fps ${rate >= target * 0.9 ? "good" : rate >= target * 0.6 ? "ok" : "bad"}`;
+        // Judge only once a change has settled (shaders warm), and only after three slow readings in a row.
+        slowWindows = now - settledAt > 2000 && rate < target * 0.6 ? slowWindows + 1 : 0;
+        const atLowest = presetOf(s.config) === "low";
+        if (s.software) {
+          alertText.textContent = "This browser is drawing without the GPU (software graphics), so the yard is slow here and its times are not performance.";
+          alertFix.hidden = true;
+          alertBox.hidden = dismissed === "software";
+        } else if (slowWindows >= 3 && dismissed !== configKey()) {
+          alertText.textContent = `Slow on this device: ${Math.round(rate)} fps against a ${target} fps target.${atLowest ? " This is already the lowest preset." : ""}`;
+          alertFix.hidden = atLowest;
+          alertBox.hidden = false;
+        } else if (rate >= target * 0.75) alertBox.hidden = true;
+      }
+      frames = 0;
+      since = now;
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  alertFix.addEventListener("click", () => {
+    alertBox.hidden = true;
+    slowWindows = 0;
+    void busy(() => lab.apply({ ...PRESETS.low }));
+  });
+  alertClose.addEventListener("click", () => {
+    alertBox.hidden = true;
+    dismissed = lab.status().software ? "software" : configKey();
+  });
+
+  // A segmented control: one pressed button among a few.
+  const segmented = <T>(label: string, options: readonly [T, string][], get: () => T, set: (v: T) => Promise<void>, accent = false) => {
+    const row = el("div", { class: accent ? "seg accent" : "seg" });
+    row.setAttribute("role", "group");
     row.setAttribute("aria-label", label);
     const buttons = options.map(([value, text]) => {
       const b = el("button", { type: "button", textContent: text });
-      b.addEventListener("click", async () => {
-        await set(value);
-        sync();
-      });
+      b.addEventListener("click", () => void busy(() => set(value)));
       return { value, b };
     });
-    const sync = () => buttons.forEach(({ value, b }) => b.setAttribute("aria-pressed", String(get() === value)));
     row.append(...buttons.map((x) => x.b));
-    return { row, sync };
+    const sync = () => {
+      for (const { value, b } of buttons) b.setAttribute("aria-pressed", String(get() === value));
+    };
+    return { row, sync, buttons: buttons.map((x) => x.b) };
   };
-  const view = group<ViewName>("Camera view", [["yard", "Yard"], ["close", "Close-up"]], () => lab.status().view, (v) => lab.setView(v));
-  const state = group<StateName>("Time of day", [["dusk", "Dusk"], ["night", "Night"]], () => lab.status().state, (v) => lab.setState(v));
 
-  // Presets and knobs
-  const presetRow = el("div", { class: "row", role: "group" });
-  presetRow.setAttribute("aria-label", "Presets");
-  const presetButtons = PRESET_ORDER.map((name) => {
-    const b = el("button", { type: "button", textContent: name.charAt(0).toUpperCase() + name.slice(1) });
-    b.addEventListener("click", async () => {
-      await lab.apply({ ...PRESETS[name] });
-      syncAll();
-    });
-    return b;
-  });
-  presetRow.append(...presetButtons);
+  // Scene
+  const view = segmented<ViewName>("Camera view", [["yard", "Yard"], ["close", "Close-up"]], () => lab.status().view, (v) => lab.setView(v));
+  const state = segmented<StateName>("Time of day", [["dusk", "Dusk"], ["night", "Night"]], () => lab.status().state, (v) => lab.setState(v));
+  const sceneSection = el("section", {}, el("h2", { textContent: "Scene" }), el("div", { class: "pair" }, view.row, state.row));
 
-  const knobRow = el("div", { class: "row" });
+  // Presets
+  const presetOf = (config: LabConfig): PresetName | null =>
+    PRESET_ORDER.find((name) => KNOBS.every((k) => PRESETS[name][k] === config[k])) ?? null;
+  const preset = segmented<PresetName | null>(
+    "Preset",
+    PRESET_ORDER.map((name) => [name, capital(name)] as [PresetName, string]),
+    () => presetOf(lab.status().config),
+    (name) => (name ? lab.apply({ ...PRESETS[name] }) : Promise.resolve()),
+    true,
+  );
+  const presetHint = el("p", { class: "hint" });
+  const presetSection = el("section", {}, el("h2", { textContent: "Quality" }), preset.row, presetHint);
+
+  // Effects: one card per group, a switch per on/off knob and a segmented control per levelled knob.
+  const applyKnob = (knob: Knob, value: unknown) => lab.apply({ ...lab.status().config, [knob]: value } as LabConfig);
   const knobSyncs: (() => void)[] = [];
-  const applyKnob = async (knob: Knob, value: unknown) => {
-    await lab.apply({ ...lab.status().config, [knob]: value } as LabConfig);
-    syncAll();
-  };
-  for (const knob of KNOBS) {
-    const levels = LEVELS[knob] as readonly unknown[];
-    const label = el("label", { class: "knob" });
-    let input: HTMLInputElement | HTMLSelectElement;
-    if (typeof levels[0] === "boolean") {
-      const cb = el("input", { type: "checkbox" });
-      cb.addEventListener("change", () => void applyKnob(knob, cb.checked));
-      knobSyncs.push(() => (cb.checked = lab.status().config[knob] as boolean));
-      input = cb;
-    } else {
-      const sel = el("select");
-      for (const lv of levels) sel.append(el("option", { value: String(lv), textContent: String(lv) }));
-      sel.addEventListener("change", () => {
-        const picked = levels.find((lv) => String(lv) === sel.value);
-        void applyKnob(knob, picked);
-      });
-      knobSyncs.push(() => (sel.value = String(lab.status().config[knob])));
-      input = sel;
+  const knobControls: HTMLElement[] = [];
+  const effects = el("section", {}, el("h2", { textContent: "Effects" }));
+  for (const group of GROUPS) {
+    const count = el("span", { class: "count" });
+    const details = el("details", { open: !phone && group.title !== "Image" });
+    const list = el("div", { class: "knobs" });
+    details.append(el("summary", {}, group.title, count), list);
+    for (const knob of group.knobs) {
+      const levels = LEVELS[knob] as readonly unknown[];
+      if (typeof levels[0] === "boolean") {
+        const id = `ql-${knob}`;
+        const cb = el("input", { type: "checkbox", id, class: "switch" });
+        cb.setAttribute("role", "switch");
+        cb.addEventListener("change", () => void busy(() => applyKnob(knob, cb.checked)));
+        knobSyncs.push(() => (cb.checked = lab.status().config[knob] as boolean));
+        knobControls.push(cb);
+        list.append(el("div", { class: "knob" }, el("label", { htmlFor: id, textContent: KNOB_LABELS[knob] }), cb));
+      } else {
+        // Cheapest first reads naturally left to right.
+        const options = [...levels].reverse().map((lv) => [lv, levelText(knob, lv)] as [unknown, string]);
+        const seg = segmented<unknown>(KNOB_LABELS[knob], options, () => lab.status().config[knob], (v) => applyKnob(knob, v));
+        knobSyncs.push(seg.sync);
+        knobControls.push(...seg.buttons);
+        list.append(el("div", { class: "knob wide" }, el("span", { textContent: KNOB_LABELS[knob] }), seg.row));
+      }
     }
-    label.append(KNOB_LABELS[knob], input);
-    knobRow.append(label);
+    knobSyncs.push(() => {
+      const config = lab.status().config;
+      const on = group.knobs.filter((k) => {
+        const v = config[k];
+        return typeof v === "boolean" ? v : v !== (LEVELS[k] as readonly unknown[]).at(-1);
+      }).length;
+      count.textContent = `${on} of ${group.knobs.length} on`;
+    });
+    effects.append(details);
   }
-  const controls = [...presetButtons, ...knobRow.querySelectorAll<HTMLElement>("input,select")];
+  const controls = [...preset.buttons, ...knobControls];
+  function allControls(): HTMLElement[] {
+    return [...view.buttons, ...state.buttons, ...controls, sweepBtn, ceilingBtn];
+  }
 
-  // Run controls
-  const sweepBtn = el("button", { type: "button", class: "big", textContent: "Run the sweep" });
-  const ceilingBtn = el("button", { type: "button", class: "big", textContent: "Find the ceiling" });
-  const stopBtn = el("button", { type: "button", textContent: "Stop", disabled: true });
-  const progress = el("div", { class: "status", role: "status" });
-  const runRow = el("div", { class: "row" }, sweepBtn, ceilingBtn, stopBtn);
+  // Runs: the action bar stays in reach at the bottom of the panel.
+  const sweepBtn = el("button", { type: "button", class: "btn primary", textContent: "Run the sweep" });
+  const ceilingBtn = el("button", { type: "button", class: "btn", textContent: "Find the ceiling" });
+  const stopBtn = el("button", { type: "button", class: "btn stop", textContent: "Stop", hidden: true });
+  const progress = el("p", {});
+  progress.setAttribute("role", "status");
+  const runBar = el("i");
+  const runBox = el("div", { class: "run" }, progress, el("div", { class: "bar" }, runBar));
+  actions.append(runBox, sweepBtn, ceilingBtn, stopBtn);
 
-  // Results
+// Results
   const results = el("div", { class: "tablewrap" });
-  const send = el("a", { class: "ql-btn", target: "_blank", rel: "noopener", textContent: "Send results" });
+  const send = el("a", { class: "btn primary", target: "_blank", rel: "noopener", textContent: "Send results" });
   send.setAttribute("aria-disabled", "true");
-  const copyBtn = el("button", { type: "button", textContent: "Copy JSON", disabled: true });
-  const downloadBtn = el("button", { type: "button", textContent: "Download JSON", disabled: true });
-  const outRow = el("div", { class: "row" }, send, copyBtn, downloadBtn);
+  const copyBtn = el("button", { type: "button", class: "btn", textContent: "Copy JSON", disabled: true });
+  const downloadBtn = el("button", { type: "button", class: "btn", textContent: "Download JSON", disabled: true });
+  const outRow = el("div", { class: "out" }, send, copyBtn, downloadBtn);
+  const empty = el("p", { class: "empty", textContent: "Run the sweep to time each effect on this device, or find the ceiling: the richest set that holds the frame budget. Then send the results." });
+  const resultsSection = el("section", {}, el("h2", { textContent: "Results" }), empty, outRow, results);
 
   const json = () => compactJson(reports.length === 1 ? reports[0]! : reports);
   copyBtn.addEventListener("click", async () => {
@@ -213,19 +396,37 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     send.setAttribute("aria-disabled", String(!has));
     if (has) send.href = issueUrl(reports);
     else send.removeAttribute("href");
+    empty.hidden = has;
+    outRow.hidden = !has;
   };
 
   const setRunning = (on: boolean) => {
     running = on;
     sweepBtn.disabled = ceilingBtn.disabled = on;
-    stopBtn.disabled = !on;
+    sweepBtn.hidden = ceilingBtn.hidden = on;
+    stopBtn.hidden = !on;
+    panel.classList.toggle("running", on);
+    if (!on) runBar.style.width = "0";
     for (const c of controls) (c as HTMLButtonElement).disabled = on;
   };
+  function paintHead() {
+    if (busySince) {
+      headSub.textContent = `Applying · ${((performance.now() - busySince) / 1000).toFixed(1)} s`;
+      return;
+    }
+    const s = lab.status();
+    const name = presetOf(s.config);
+    headSub.textContent = `${name ? capital(name) : "Custom"} · ${s.view === "yard" ? "Yard" : "Close-up"} · ${capital(s.state)}`;
+  }
   function syncAll() {
     refreshStatus();
     view.sync();
     state.sync();
-    knobSyncs.forEach((f) => f());
+    preset.sync();
+    for (const f of knobSyncs) f();
+    paintHead();
+    const name = presetOf(lab.status().config);
+    presetHint.textContent = name ? "" : "Custom: your switches no longer match a preset.";
   }
 
   let abort: AbortController | null = null;
@@ -242,7 +443,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
         ...userOpts,
         signal,
         onStep: (r, i, n) => {
-          progress.textContent = `${i + 1}/${n} ${r.label}`;
+          progress.textContent = `${name}: ${i + 1} of ${n} · ${r.label}`;
+          runBar.style.width = `${Math.round(((i + 1) / n) * 100)}%`;
           userOpts.onStep?.(r, i, n);
           syncAll();
         },
@@ -269,7 +471,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   sweepBtn.addEventListener("click", () => void doSweep().catch((e) => (progress.textContent = String(e))));
   ceilingBtn.addEventListener("click", () => void doCeiling().catch((e) => (progress.textContent = String(e))));
 
-  body.append(status, view.row, state.row, presetRow, knobRow, runRow, progress, outRow, results);
+  scroll.append(status, sceneSection, presetSection, effects, resultsSection);
+  render();
   syncAll();
 
   (globalThis as unknown as { labRunner: unknown }).labRunner = {
