@@ -1,0 +1,101 @@
+{
+  "modelManifestVersion": 1,
+  "assetId": "stevie",
+  "kind": "character-3d",
+  "subject": "stevie",
+  "source": {
+    "kind": "generated",
+    "path": "assets/models/stevie/stevie.glb",
+    "mediaType": "model/gltf-binary",
+    "creator": "Clockgrove",
+    "tool": "assetforge"
+  },
+  "license": "MIT",
+  "provenance": {
+    "prompt": "A real-time 3D game character for the style bible version 1.\nSubject: stevie, Stevie, a lean, upright, long-bodied adult raccoon with a dark eye mask, cream muzzle and brows, rounded pale-rimmed ears and a full tail with five dark rings.\nGait: quadruped. Match the approved turnaround views exactly.\nMood: cosy, curious, calm, playful, rainy.",
+    "references": [
+      "a1883f9f3e0a5b293157e6b57c89bed9c880bc72f484cd38a9fd9d9e375b1609",
+      "2d0b8263e757d122fc2e8b48a510fcb723b8cb1f022e674df3d9bc6d265b6fa7",
+      "638757a486fac5adfa08a0c38b4f9c6b85bdf31308883756c1146f085643cfd0",
+      "46d1613454dc6dbe84ffc7b2bd4b6781872f37c79a7a8009111e1a7fb8bb07cc"
+    ],
+    "model": "tripo/v2.5-20250123",
+    "provider": "tripo",
+    "route": "tripo+vercel-ai-gateway:model3d:tripo/v2.5-20250123",
+    "providerTermsVersion": "Tripo API Terms of Service, paid credits (as of 2026-11-10)",
+    "outputGrant": {
+      "license": "LicenseRef-tripo-paid AND LicenseRef-perplexity-api",
+      "plan": "paid + api",
+      "commercial": true,
+      "relabel": true
+    },
+    "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia"
+  },
+  "review": {
+    "status": "pending",
+    "reviewer": null,
+    "reviewedAt": null,
+    "notes": ""
+  },
+  "semantic": {
+    "role": "actor",
+    "entity": "grove.stevie"
+  },
+  "model": {
+    "extension": "glb",
+    "triangles": 59847,
+    "textureMaxPx": 2048,
+    "materials": 1,
+    "bones": 30,
+    "lods": 1,
+    "clips": [
+      {
+        "name": "walk",
+        "durationMs": 743,
+        "loop": true,
+        "generated": true,
+        "speedMps": 0.267756
+      }
+    ],
+    "missingClips": [
+      {
+        "family": "idle",
+        "why": "the target declares no gait profile for \"idle\" (model3d.gaits.idle)"
+      },
+      {
+        "family": "sniff",
+        "why": "the target declares no gait profile for \"sniff\" (model3d.gaits.sniff)"
+      },
+      {
+        "family": "eat",
+        "why": "the target declares no gait profile for \"eat\" (model3d.gaits.eat)"
+      },
+      {
+        "family": "play",
+        "why": "the target declares no gait profile for \"play\" (model3d.gaits.play)"
+      },
+      {
+        "family": "shelter",
+        "why": "the target declares no gait profile for \"shelter\" (model3d.gaits.shelter)"
+      }
+    ],
+    "bounds": {
+      "min": [
+        -0.19247,
+        0,
+        -0.382508
+      ],
+      "max": [
+        0.19247,
+        0.45,
+        0.382508
+      ]
+    },
+    "rig": {
+      "template": "rig/raccoon.json",
+      "sha256": "b2c031d2c65810526b61cd38c9d8b5a31d2199b607d503df3e1b5e87d517a0e9"
+    }
+  },
+  "contentHash": "81e5ece42a8a79e3b8cca4eb94691eadb13e399997a4d9ac78adb5d3e7c7ef3f",
+  "accessibilityLabel": "Stevie, a stocky grey-brown raccoon with a dark eye mask and a ringed tail"
+}
