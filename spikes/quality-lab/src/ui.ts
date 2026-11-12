@@ -83,6 +83,8 @@ border:1px solid var(--line);box-shadow:0 18px 50px rgba(0,0,0,.45);overflow:hid
 .ql img{width:auto;height:auto;max-width:64px;max-height:40px;display:block;border-radius:4px}
 .ql .sw{color:#f0b060}
 .ql .err{color:#ff9b8f}
+.ql .runall{margin:10px 0}
+.ql .runall .btn{width:100%}
 .ql .empty{color:var(--muted);font-size:12px;margin:0}
 .ql-alert{display:flex;align-items:center;gap:10px;margin:0 14px 10px;padding:10px 12px;border-radius:12px;background:rgba(245,180,83,.13);border:1px solid rgba(245,180,83,.35);font-size:13px}
 .ql-alert p{margin:0;flex:1}
@@ -394,7 +396,10 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   const downloadBtn = el("button", { type: "button", class: "btn", textContent: "Download JSON", disabled: true });
   const outRow = el("div", { class: "out" }, send, copyBtn, downloadBtn);
   const empty = el("p", { class: "empty", textContent: "Run the sweep to time each effect on this device. Find the ceiling: the richest set of effects that holds the frame budget. Triangle budget: keeps your effects and raises geometry detail until 60 fps breaks. Then send the results." });
-  const resultsSection = el("section", {}, el("h2", { textContent: "Results" }), empty, outRow, results);
+  const runAllBtn = el("button", { type: "button", class: "btn primary", textContent: "Run everything (about 10–15 min)" });
+  const runAllHint = el("p", { class: "hint", textContent: "Sweep, then ceiling, then triangle budget; then send the results. Keep this page open and the phone unlocked. Landscape matches the game's framing." });
+  const runAllBox = el("div", { class: "runall" }, runAllBtn, runAllHint);
+  const resultsSection = el("section", {}, el("h2", { textContent: "Results" }), empty, runAllBox, outRow, results);
 
   const json = () => compactJson(reports.length === 1 ? reports[0]! : reports);
   copyBtn.addEventListener("click", async () => {
@@ -495,7 +500,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
 
   const setRunning = (on: boolean) => {
     running = on;
-    sweepBtn.disabled = ceilingBtn.disabled = trianglesBtn.disabled = on;
+    sweepBtn.disabled = ceilingBtn.disabled = trianglesBtn.disabled = runAllBtn.disabled = on;
     sweepBtn.hidden = ceilingBtn.hidden = trianglesBtn.hidden = on;
     stopBtn.hidden = !on;
     panel.classList.toggle("running", on);
@@ -519,6 +524,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     applyBtn.hidden = !drafting;
     discardBtn.hidden = !drafting || changed === 0;
     sweepBtn.hidden = ceilingBtn.hidden = trianglesBtn.hidden = drafting || running;
+    runAllBtn.disabled = drafting || running;
     applyBtn.disabled = applyingSince > 0;
     applyBtn.textContent = applyingSince ? `Applying · ${waited}` : `Apply ${changed} change${changed === 1 ? "" : "s"}`;
   }
@@ -536,8 +542,28 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   let abort: AbortController | null = null;
   stopBtn.addEventListener("click", () => abort?.abort());
 
+  // A phone that locks its screen suspends the page and kills a run: hold a screen wake lock while one is going.
+  // biome-ignore lint/suspicious/noExplicitAny: WakeLockSentinel is not in every DOM lib yet.
+  let wake: any = null;
+  const holdScreen = async (on: boolean) => {
+    try {
+      // biome-ignore lint/suspicious/noExplicitAny: navigator.wakeLock is optional.
+      if (on && !wake) wake = await (navigator as any).wakeLock?.request("screen");
+      if (!on && wake) {
+        await wake.release();
+        wake = null;
+      }
+    } catch {
+      // No wake lock (older browser, or the page is hidden): the run goes on, the hint says to keep the screen on.
+    }
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && running) void holdScreen(true);
+  });
+
   const track = async <R extends Report>(name: string, run: (o: RunOptions) => Promise<R>, userOpts: RunOptions = {}): Promise<R> => {
     if (running) throw new Error("a run is already in progress");
+    void holdScreen(true);
     abort = new AbortController();
     const signal = userOpts.signal ? AbortSignal.any([abort.signal, userOpts.signal]) : abort.signal;
     setRunning(true);
@@ -559,6 +585,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
       render();
       return rep;
     } finally {
+      if (!chained) void holdScreen(false);
       setRunning(false);
       syncAll();
     }
@@ -572,6 +599,21 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   const doCeiling = (o: CeilingOptions = {}) =>
     track("Ceiling", (opts) => findCeiling(lab, { ...opts, ...costsOf(o), ...(o.maxSteps !== undefined ? { maxSteps: o.maxSteps } : {}) }), o);
 
+  // Run everything: the sweep, then the ceiling (ranked by the sweep's costs), then the triangle budget, then Send.
+  let chained = false;
+  const runAll = async () => {
+    chained = true;
+    try {
+      await doSweep();
+      if (!abort?.signal.aborted) await doCeiling();
+      if (!abort?.signal.aborted) await doTriangles();
+    } finally {
+      chained = false;
+      void holdScreen(false);
+    }
+    send.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+  runAllBtn.addEventListener("click", () => void runAll().catch((e) => (progress.textContent = String(e))));
   sweepBtn.addEventListener("click", () => void doSweep().catch((e) => (progress.textContent = String(e))));
   ceilingBtn.addEventListener("click", () => void doCeiling().catch((e) => (progress.textContent = String(e))));
   const doTriangles = (o: TriangleOptions = {}) => track("Triangle budget", (opts) => findTriangleBudget(lab, opts), o);
