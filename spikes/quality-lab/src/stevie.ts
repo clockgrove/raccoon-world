@@ -116,9 +116,9 @@ function finMaterial(map: THREE.Texture | null) {
   return material;
 }
 
-export async function loadStevie(url: string, loop: WalkLoop, onProgress?: (event: ProgressEvent) => void): Promise<LabStevie> {
+export async function loadStevie(url: string, loop: WalkLoop, onProgress?: (event: ProgressEvent) => void, loader = new GLTFLoader()): Promise<LabStevie> {
   const started = performance.now();
-  const gltf: Any = await new GLTFLoader().loadAsync(url, onProgress);
+  const gltf: Any = await loader.loadAsync(url, onProgress);
   let body: THREE.SkinnedMesh | undefined;
   gltf.scene.traverse((node: Any) => {
     if (!body && node.isSkinnedMesh) body = node;

@@ -16,12 +16,14 @@ export interface PropReport {
 
 /** Download progress per prop, for a loading screen; onDone fires once each prop is in or has fallen back to its stand-in. */
 export interface PropLoadEvents {
+  /** The loader to use (one set up for KTX2 and meshopt, say); a plain GLTFLoader otherwise. */
+  loader?: GLTFLoader;
   onProgress?(name: string, event: ProgressEvent): void;
   onDone?(name: string): void;
 }
 
 export async function loadProps(slots: Record<string, Slot>, parent: THREE.Object3D, base = "/media/props/", events: PropLoadEvents = {}): Promise<PropReport[]> {
-  const loader = new GLTFLoader();
+  const loader = events.loader ?? new GLTFLoader();
   const reports = await Promise.all(
     Object.entries(slots).map(async ([name, slot]): Promise<PropReport> => {
       let gltf: Any;
