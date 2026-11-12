@@ -265,6 +265,30 @@ Her approved turnaround is candidate c1 of three generated from her photos (`nod
   - Her hind feet are plantigrade: the whole dark sole is planted, the toes are pale, and pale fur covers the top of the foot.
 - **Gait:** she uses the shared raccoon rig and the gait generated from it, as every raccoon does (`docs/design/visual-decisions.md`; `references/stevie/gait-reference/`). She is hunched with her rump high and her head low, her hand-like front paws plant flat, her tail sways low, and her feet stay on one ground line.
 
+## Characters in 3D
+
+Characters are real-time 3D models drawn by Clockgrove's renderer (Kirk, 2026-11-10). They are built against the 3D target profile (`art/target-profile-3d.json`; [docs/art/3d-target-profile.md](../docs/art/3d-target-profile.md)). The look target is still the mockup, and cohesion comes first: one lighting model, one grade, matched detail density, and one camera and scale for the cast and the set.
+
+### Stevie in 3D
+
+His `character-3d` spec is `art/stevie/character-3d/spec.json`, with run settings in `run.json` beside it (up to 4 candidates for $5).
+
+- **Reference:** his approved turnaround. That is the three-quarter view, which is his identity lock, plus the front, side and back views. Assetforge builds the model from these views and scores its renders against the lock in shadow mode.
+- **Identity locks carried over** from the 2D bible, unchanged. He is stocky and rounded on short legs, with a gently arched back. His coat is grey-brown with a darker, streaked back and a warm tan underside. He has a dark brown-black eye mask with cream brows and a cream muzzle, rounded pale-rimmed ears, a full ringed tail with a dark tip, and dark lower legs and hand-like paws. His coat is sleeker than Jimothy's.
+- **Size and facing:** 0.45 m tall, facing +z, on the shared raccoon rig (`art/rig/raccoon.json`).
+- **Clips:** `idle`, `walk`, `sniff`, `eat`, `play` and `shelter`.
+  - `walk` is locomotion. It is generated from the profile's gait: plantigrade hind feet, hand-like front paws planted flat, hunched with the rump high and the head low, a low swaying tail, and feet on one ground line (`references/stevie/gait-reference/`).
+  - The other five come from the provider's library only where nothing generated fits. Until then, each is reported missing and never faked.
+
+### Coats by season
+
+Every raccoon has a summer and a winter coat (Kirk, 2026-11-10). Both are grooms on the same model, UVs and rig.
+
+- **Summer** (the summer photos: `references/gracie/`, `references/stevie/stevie-window-front.png`, `references/stevie/gait-reference/adult-fence-walk.png`): the coat lies flatter and the build looks leaner. The colours are the approved turnaround's, and each character's identity lock describes this coat.
+- **Winter** (`references/coats/winter-coat-frames.png`): long, silver-tipped guard hairs over a dense, pale under-layer, and cheek ruffs that flare out past the mask. The tail is thick, with bold black and buff rings, and the silhouette is rounder. The fur tips are lighter and frosted.
+  - A character's markings, mask and signature stay the same in winter. Gracie's paler, shaggier lower body still reads under her winter coat.
+- **Which coat when:** spring and summer wear `summer`; autumn and winter wear `winter`.
+
 ## Anchors
 
 Positive anchors are approved material only: the mockup, Stevie's approved turnaround (the character look anchor) and its views, Jimothy's painted portrait (environment brushwork) and Jimothy's sheet cell 3, Gracie's approved turnaround views and Kirk's photos of Gracie (likeness references scoped to her subject, not style anchors). Unapproved material is listed as negative anchors and is never a positive one: the 3D spike outputs (`references/stevie/77-3d`), the Assetforge #38 proof outputs (`references/jimothy/assetforge-38-proof`) and the Stevie idle and walk strips made for the 3D comparison (`references/stevie/comparison-candidates`).

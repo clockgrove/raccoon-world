@@ -1,0 +1,22 @@
+{
+  "kind": "character-3d",
+  "assetId": "stevie",
+  "subject": "stevie",
+  "look": "character",
+  "gait": "quadruped",
+  "heightM": 0.45,
+  "clips": ["idle", "walk", "sniff", "eat", "play", "shelter"],
+  "fields": {
+    "semantic": { "role": "actor", "entity": "grove.stevie" },
+    "accessibilityLabel": "Stevie, a stocky grey-brown raccoon with a dark eye mask and a ringed tail",
+    "characterFamily": "raccoon",
+    "clipSources": {
+      "walk": "generated",
+      "idle": "library",
+      "sniff": "library",
+      "eat": "library",
+      "play": "library",
+      "shelter": "library"
+    }
+  }
+}
