@@ -43,22 +43,26 @@ Hand-off budget (`model3d.budgets`): **60,000 triangles, 2048 px textures, 4 mat
 
 ### How the desktop numbers were measured
 
-The numbers come from the quality lab ([quality-lab.md](../design/quality-lab.md); `spikes/quality-lab`; <https://clockgrove.github.io/raccoon-world/quality-lab/>). It runs on Clockgrove's pinned three.js renderer, the renderer of clockgrove/clockgrove#184, at the close-up zoom, with Stevie (c3, 59,847 triangles, 2048 px) walking at about a third of the frame height. Kirk's run of 2026-11-12 was on an RTX 2060 SUPER at 1080p, with WebGL2 through D3D12 and GPU timestamps:
+The numbers come from the quality lab ([quality-lab.md](../design/quality-lab.md); `spikes/quality-lab`; <https://clockgrove.github.io/raccoon-world/quality-lab/>). It runs on Clockgrove's pinned three.js renderer, the renderer of clockgrove/clockgrove#184, at the close-up zoom, with Stevie (c3, 59,847 triangles, 2048 px) walking at about a third of the frame height. Kirk's run of 2026-11-12 (raccoon-world#89) was on an RTX 2060 SUPER at 1080p, with Edge 157, native WebGPU and GPU timestamps. Medium takes 5.2 ms of GPU time:
 
-- **Triangle budget:** Low holds 60 fps from 165k to 6.17M scene triangles (11.8M drawn per frame), with GPU time 5.3 → 6.2 ms.
-- **Geometry detail at Medium:** 16× geometry detail costs about +2 ms of GPU time.
-- **Effects dominate:**
-  - point-light shadows cost +50 ms, because their cube maps redraw the scene;
-  - light shafts cost +24 ms;
-  - reflections cost +7.5 ms;
-  - High and Ultra run at 95–105 ms of GPU time.
+- **Triangle budget:** from the base config, 64× geometry detail (6.4M scene triangles, 12M drawn per frame) holds 60 fps at 11.7 ms of GPU time; the estimate where it breaks is about 7.9M.
+- **Geometry detail at Medium:** 16× geometry detail costs +1.7 ms of GPU time.
+- **Resolution dominates:** a render scale of 2 (DPR 2) costs +11.3 ms. Each effect is small by comparison:
+  - point-light shadows +1.0 ms (their cube maps draw the scene again: 0.56M → 1.7M triangles per frame);
+  - light shafts +0.9 ms;
+  - reflections +0.6 ms;
+  - fur shells, splashes, haze, probes, cascades and bloom under 0.2 ms each;
+  - Ultra at DPR 1, with every effect on, takes 13.2 ms of GPU time.
+- **Shader compiles stall:** after a change, WebGPU on Windows draws nothing for seconds while it builds the new pipelines. The lab reports that wait as `stallMs`.
 
-**Desktop triangle budgets are therefore not GPU-bound at these counts.** A full cast is about ten raccoons at 60k triangles, plus about a hundred set pieces at 30k. That is about 3.6M triangles, inside the 6.17M that held 60 fps on Low, and shadow passes draw it again. The desktop limits are set by the hand-off rather than by the GPU:
+An earlier set of numbers from WebGL2 through WSL's D3D12 translation (point shadows +50 ms, shafts +24 ms) was an artefact of that layer and is not used.
+
+**Desktop triangle budgets are therefore not GPU-bound at these counts.** A full cast is about ten raccoons at 60k triangles, plus about a hundred set pieces at 30k. That is about 3.6M triangles, inside the 6.4M that held 60 fps, and shadow passes draw it again. The desktop limits are set by the hand-off rather than by the GPU:
 
 - **Triangles:** the 60k character budget is Tripo's `face_limit` (Assetforge sends the triangle budget with the call) and c3's measured size.
 - **Texture sizes:** these are the decided ones (below).
 
-The frame budget goes to effects, where the lab measured the cost.
+The frame budget goes to resolution first, then effects; the lab measures both.
 
 ### Phone: pending
 
