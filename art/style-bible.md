@@ -198,9 +198,6 @@ identities:
       - ../references/gracie/turnaround-front.png
       - ../references/gracie/turnaround-side.png
       - ../references/gracie/turnaround-back.png
-      - ../references/gracie/gracie-lounging.png
-      - ../references/gracie/gracie-ice-cube.png
-      - ../references/gracie/gracie-sleeping.png
     signatureFeatures:
       - lower body (belly, flanks and hindquarters, down over her legs) lighter, greyer, noticeably longer and shaggier than her back
       - shorter, darker grey-brown fur on her back
@@ -249,7 +246,7 @@ Each identity lock's written text must agree with its own approved references: A
 - **Stevie:** the approved three-quarter turnaround view, `references/stevie/turnaround-three-quarter.png` (clockgrove/clockgrove#77 pass 1), plus the approved front, side and back views as references. One view alone rejects his other angles (Assetforge's identity lock bar, assetforge#92).
 - **Jimothy:** cell 3 of the 57-frame contact sheet (`references/jimothy/sheet-cell-03.png`, cut from `docs/design/reference/jimothy-sprite-sheet.png` by Assetforge's slicer) plus his painted portrait.
 
-- **Gracie:** the three-quarter view of her approved turnaround, `references/gracie/turnaround-three-quarter.png` (candidate c1, picked by Kirk on 2026-11-11), plus its approved front, side and back views and Kirk's three photos of her as references, as Stevie's lock takes all four views. The 0.68 threshold was measured on Stevie's and Jimothy's locks, not hers, so her score is a record only, like everyone's in shadow mode. Her lock has not yet been run through `identity-check` (a paid call made with the AI Gateway key, outside a Factory run).
+- **Gracie:** the three-quarter view of her approved turnaround, `references/gracie/turnaround-three-quarter.png` (candidate c1, picked by Kirk on 2026-11-11), plus its approved front, side and back views as references, as Stevie's lock takes his four approved views. Kirk's photos of her stay subject anchors (likeness only) and are not part of her lock. The 0.68 threshold was measured on Stevie's and Jimothy's locks, not hers, so her score is a record only, like everyone's in shadow mode. Her lock has not yet been run through `identity-check`: that is an owner step (`bash scripts/assetforge.sh run identity-check --bible art/style-bible.md`, a paid call with the AI Gateway key, outside a Factory run).
 
 Identity scoring runs in shadow mode at 0.68 (`art/target-profile.json`): it records a score beside QA and filters nothing. Bump a lock's `version` when it changes.
 
@@ -257,7 +254,7 @@ Stevie's subject references for generation are the three-quarter view (the lock)
 
 ### Gracie
 
-Her approved turnaround is candidate c1 of three generated from her photos (`node art/tools/turnaround.mjs gracie`; Kirk's pick, 2026-11-11): `references/gracie/turnaround.png` and its four views, with their provenance in `references/gracie/provenance-turnaround.json`. It shows her pale, silvery, shaggy lower body and legs most clearly against her darker back. Her identity lock is its three-quarter view, with the other three views and her photos as references. Her subject references for generation are all four approved views and her photos, as Stevie's are all four of his. Kirk's further photos of her refine the turnaround.
+Her approved turnaround is candidate c1 of three generated from her photos (`node art/tools/turnaround.mjs gracie`; Kirk's pick, 2026-11-11): `references/gracie/turnaround.png` and its four views, with their provenance in `references/gracie/provenance-turnaround.json`. It shows her pale, silvery, shaggy lower body and legs most clearly against her darker back. Her identity lock is its three-quarter view, with the other three views as references. Her subject references for generation are all four approved views and her photos, as Stevie's are all four of his. Kirk's further photos of her refine the turnaround.
 
 - **Signature, first:** her lower body has lighter, greyer, noticeably longer and shaggier fur than her back. This covers her belly, her flanks and her hindquarters, and runs down over her legs. In Kirk's words: "You can tell Gracie with the grey longer fur on lower body." Every image of her keeps it, and it is what sets her apart from Stevie.
 - **Shared raccoon traits:** a full dark eye mask, pale brows and a pale muzzle, rounded ears with pale rims, and a ringed tail.

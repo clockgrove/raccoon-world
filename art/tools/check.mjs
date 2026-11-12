@@ -18,8 +18,8 @@
 //                 so a CC-BY-4.0 pick can't land under the `**` MIT annotation.
 // 7. gracie:      Gracie's bible subject leads with her signature fur, her photos and approved views
 //                 are her subject's references, her approved turnaround is Kirk's pick (c1) with its
-//                 hashes and output grant, her character-3d spec names her subject and gait, and her
-//                 turnaround run forecasts within its $5 cap (issue 50).
+//                 hashes and output grant, her character-3d spec names her subject and gait and the
+//                 pinned Assetforge's character-3d reader accepts it, and her turnaround run forecasts within its $5 cap (issue 50).
 //
 // ASSETFORGE_DIR and CLOCKGROVE_DIR name the pinned checkouts (defaults .assetforge-src, .clockgrove).
 import { execFile } from "node:child_process";
@@ -27,7 +27,7 @@ import { createHash } from "node:crypto";
 import { cp, mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { deriveBible, DERIVED } from "./derive-bible.mjs";
 import { forecast, loadRun, pending, ROUTE, VIEWS } from "./turnaround.mjs";
@@ -119,12 +119,11 @@ async function checkBible() {
       turnaround: "../references/jimothy/sheet-cell-03.png",
       references: ["../references/jimothy/jimothy-peanut-painted.png"],
     },
-    // Kirk's pick, c1 (#50, 2026-11-11); not part of the 0.68 measurement, scored in shadow mode only.
+    // Kirk's pick, c1 (#50, 2026-11-11), its approved views only (photos stay subject anchors); not part of the 0.68 measurement, scored in shadow mode only.
     gracie: {
       turnaround: "../references/gracie/turnaround-three-quarter.png",
       references: [
         "turnaround-front.png", "turnaround-side.png", "turnaround-back.png",
-        "gracie-lounging.png", "gracie-ice-cube.png", "gracie-sleeping.png",
       ].map((f) => `../references/gracie/${f}`),
     },
   };
@@ -172,6 +171,13 @@ async function checkGracie() {
   const spec = await json("art/gracie/character-3d/spec.json");
   if (spec.kind !== "character-3d" || spec.subject !== "gracie" || spec.gait !== "quadruped")
     fail("gracie", "art/gracie/character-3d/spec.json must be kind character-3d, subject gracie, gait quadruped");
+  // The pinned Assetforge's own character-3d reader must accept the spec (gait, clips, height).
+  const { characterSpec } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/profile.ts")).href);
+  try {
+    characterSpec(spec);
+  } catch (error) {
+    fail("gracie", `Assetforge's character-3d reader refuses art/gracie/character-3d/spec.json: ${error.message}`);
+  }
   const turnaround = await loadRun("gracie");
   if (turnaround.capUsd !== MAX_RUN_USD) fail("gracie", `the turnaround run's cap must be $${MAX_RUN_USD}`);
   try {
