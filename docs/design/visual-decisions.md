@@ -19,7 +19,7 @@ These are the owner's decisions about how Raccoon World looks and is drawn. Art 
 
 ## Open, in order
 
-1. **Detail budgets:** polygons, texture size and levels of detail per quality tier, set from each device's measured ceiling (the quality policy above). Raccoon World's 3D target profile declares them, tuned against Clockgrove's renderer (clockgrove/clockgrove#184) at the close-up zoom. The art pipeline reads them from the profile and refuses or flags assets over budget.
+1. **Detail budgets:** polygons, texture size and levels of detail per quality tier, set from each device's measured ceiling (the quality policy above). Raccoon World's 3D target profile (`art/target-profile-3d.json`, [3d-target-profile.md](../art/3d-target-profile.md), #39) declares them. The desktop tier is set from the quality lab's measured run (2026-11-12). The phone tier is provisional, pending Kirk's phone run. The profile's own checks refuse models over the hand-off budget and flag those over a lower tier, each with a stable reason.
 
 ## Consequences
 
