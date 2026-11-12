@@ -195,14 +195,30 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
       check(sweep.steps.every((s) => s.measurement === null && !s.error && s.screenshot.startsWith("data:image/")), `${name}: the sweep reported times, errors or no screenshot on a software GPU`);
       const ceiling = await page.evaluate(() => globalThis.labRunner.findCeiling({ warmupMs: 50, holdMs: 150, maxSteps: 2 }));
       check(ceiling.software === true && ceiling.held === false && ceiling.steps.every((s) => s.measurement === null), `${name}: the ceiling search reported times on a software GPU`);
+      const triangles = await page.evaluate(() => globalThis.labRunner.findTriangleBudget({ warmupMs: 50, holdMs: 150, maxSteps: 2 }));
+      check(
+        triangles.software === true && triangles.steps.length === 2 && triangles.held === null && triangles.estimatedTriangles === null && triangles.steps.every((s) => s.measurement === null && !s.error),
+        `${name}: the triangle budget run did not run cleanly on a software GPU: ${JSON.stringify(triangles).slice(0, 300)}`,
+      );
+      // Geometry detail must really add triangles: the scene count at 4× is above the art as made.
+      const counts = await page.evaluate(async () => {
+        const base = globalThis.lab.status().config;
+        await globalThis.lab.apply({ ...base, detail: 1 });
+        const plain = globalThis.lab.status().triangles;
+        await globalThis.lab.apply({ ...base, detail: 4 });
+        const four = globalThis.lab.status().triangles;
+        await globalThis.lab.apply(base);
+        return { plain, four };
+      });
+      check(counts.four > counts.plain, `${name}: Geometry detail 4× did not add triangles (${JSON.stringify(counts)})`);
       const link = await page.evaluate(() => document.querySelector("a[href^='https://github.com/clockgrove/raccoon-world/issues/new']")?.getAttribute("href") ?? null);
       check(link, `${name}: no "send results" link to a new issue`);
       // No frame time of any kind, under any key, in the send link or in the reports the copy and download buttons serialise.
       const times = /"(frameMs\w*|gpuMs\w*|softwareMs|softwareFrameMs|p50|p95)":\s*[-0-9{]/u;
       check(!times.test(decodeURIComponent(link)), `${name}: the send link carries software frame times`);
-      check(!times.test(JSON.stringify([sweep, ceiling])), `${name}: the runner's reports carry software frame times`);
+      check(!times.test(JSON.stringify([sweep, ceiling, triangles])), `${name}: the runner's reports carry software frame times`);
       check(errors.length === 0, `${name}: the runner raised ${errors.join("; ")}`);
-      log(`runner: sweep ${sweep.steps.length} step and ceiling ${ceiling.steps.length} steps, software, no times; send link ${link.length} chars`);
+      log(`runner: sweep ${sweep.steps.length} step, ceiling ${ceiling.steps.length} steps, triangle budget ${triangles.steps.length} steps, software, no times; detail 4× ${counts.plain} → ${counts.four} triangles; send link ${link.length} chars`);
     }
   } finally {
     await browser.close();

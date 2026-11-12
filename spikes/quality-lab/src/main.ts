@@ -12,6 +12,7 @@ import { loadProps } from "../../ceiling-3d/src/props.ts";
 import { buildSet, lampStrength, rain } from "../../ceiling-3d/src/set.ts";
 import { type LabConfig, type LabHandle, type LabStatus, type Measurement, type Platform, PRESETS, type PresetName, type StateName, type ViewName } from "./config.ts";
 import { buildPipeline, grade, type Pipeline } from "./pipeline.ts";
+import { GeometryDetail, sceneTriangles } from "./detail.ts";
 import { webMediaLoader } from "./loader.ts";
 import { type LabStevie, loadStevie } from "./stevie.ts";
 import { mountUi } from "./ui.ts";
@@ -241,12 +242,22 @@ function seconds() {
   return frozenAt ?? (performance.now() - started) / 1000;
 }
 
+// The renderer's counters cover every render call in a frame (shadow maps, reflection, scene and post passes) only
+// when they are reset once per frame, here, instead of on each call.
+renderer.info.autoReset = false;
+let drawnTriangles: number | null = null;
+let drawCalls: number | null = null;
+let detail: GeometryDetail | null = null;
+
 function render() {
   const t = seconds();
   stevie?.update(t);
   shower.update(t);
   placeView();
+  renderer.info.reset();
   current?.pipeline.render();
+  drawnTriangles = renderer.info.render.triangles;
+  drawCalls = renderer.info.render.drawCalls;
 }
 
 const nextFrame = () => new Promise<number>((resolve) => requestAnimationFrame(resolve));
@@ -262,6 +273,7 @@ async function applyConfig(next: LabConfig) {
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
     stevie?.setFur(config.furShells, config.furFins);
+    detail?.set(config.detail);
     if (shower.mesh.count !== config.rainCount) {
       scene.remove(shower.mesh);
       shower.mesh.geometry.dispose();
@@ -355,6 +367,8 @@ const lab: LabHandle & Record<string, unknown> = {
       platform,
       dpr: renderer.getPixelRatio(),
       canvas: [renderer.domElement.width, renderer.domElement.height],
+      triangles: sceneTriangles(scene),
+      drawnTriangles,
       config: { ...config },
       view,
       state,
@@ -397,6 +411,9 @@ const lab: LabHandle & Record<string, unknown> = {
       frameMsP95: percentile(frames, 95),
       gpuMsP50: percentile(gpu, 50),
       gpuMsP95: percentile(gpu, 95),
+      triangles: sceneTriangles(scene),
+      drawnTriangles,
+      drawCalls,
     };
   },
   async screenshot(maxWidth = 320) {
@@ -539,6 +556,8 @@ async function init() {
   finishStep("models", `${MB(total)} MB in ${elapsed(stepStarted)}`);
   stevie = loaded;
   scene.add(stevie.root);
+  // The triangle stress tier covers the set and its props; the rain and splashes stay as they are.
+  detail = new GeometryDetail([set.root], [shower.mesh, splashes]);
 
   beginStep("shaders", "Preparing the shaders and drawing the first frame");
   await applyConfig(config);

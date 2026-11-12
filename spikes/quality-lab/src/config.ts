@@ -6,6 +6,8 @@
 export type FurShells = 0 | 4 | 8 | 16;
 export type Antialias = "none" | "msaa" | "traa";
 /** Upscaling: the scene is drawn at RENDER_SCALE of the canvas and brought back up by TAAU or FSR 1. */
+/** Geometry detail: the yard's static meshes at 1, 4, 16 or 64 times their triangles (src/detail.ts). */
+export type Detail = 1 | 4 | 16 | 64;
 export type Upscale = "none" | "taau" | "fsr";
 
 export interface LabConfig {
@@ -39,6 +41,8 @@ export interface LabConfig {
   antialias: Antialias;
   dpr: 1 | 2;
   upscale: Upscale;
+  /** The triangle stress tier: same shapes, more triangles. Every preset draws the art as made (1). */
+  detail: Detail;
 }
 
 export type Knob = keyof LabConfig;
@@ -65,6 +69,7 @@ export const LEVELS: { readonly [K in Knob]: readonly LabConfig[K][] } = {
   antialias: ["traa", "msaa", "none"],
   dpr: [2, 1],
   upscale: ["none", "taau", "fsr"],
+  detail: [64, 16, 4, 1],
 };
 
 /** Human labels for the results table and the report. */
@@ -86,6 +91,7 @@ export const KNOB_LABELS: { readonly [K in Knob]: string } = {
   antialias: "Antialiasing",
   dpr: "Device pixel ratio",
   upscale: "Upscaling",
+  detail: "Geometry detail",
 };
 
 export const KNOBS = Object.keys(LEVELS) as Knob[];
@@ -112,6 +118,7 @@ export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
     antialias: "traa",
     dpr: 2,
     upscale: "none",
+    detail: 1,
   },
   high: {
     furShells: 8,
@@ -131,6 +138,7 @@ export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
     antialias: "msaa",
     dpr: 2,
     upscale: "none",
+    detail: 1,
   },
   medium: {
     furShells: 4,
@@ -150,6 +158,7 @@ export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
     antialias: "msaa",
     dpr: 1,
     upscale: "none",
+    detail: 1,
   },
   low: {
     furShells: 0,
@@ -169,6 +178,7 @@ export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
     antialias: "none",
     dpr: 1,
     upscale: "none",
+    detail: 1,
   },
 };
 
@@ -191,6 +201,9 @@ export interface SweepStep {
  * added on top of Medium too. A knob that Medium already holds at its top (bloom, grade, ripples) is measured by
  * removing it from Medium.
  */
+/** The highest Geometry detail the sweep measures. */
+export const SWEEP_MAX_DETAIL = 16;
+
 export function sweepSteps(): SweepStep[] {
   const steps: SweepStep[] = PRESET_ORDER.map((name) => ({ id: `preset:${name}`, label: `${name.charAt(0).toUpperCase()}${name.slice(1)}`, config: { ...PRESETS[name] } }));
   const medium = PRESETS.medium;
@@ -202,7 +215,8 @@ export function sweepSteps(): SweepStep[] {
       continue;
     }
     if (at > 0) {
-      for (const level of levels.slice(0, at).reverse()) {
+      // Geometry detail 64× (millions of triangles) is the triangle budget run's last step only, never a sweep step.
+      for (const level of levels.slice(0, at).reverse().filter((l) => knob !== "detail" || (l as number) <= SWEEP_MAX_DETAIL)) {
         const id = typeof level === "boolean" ? `medium+${knob}` : `medium+${knob}=${level}`;
         const label = typeof level === "boolean" ? `Medium + ${KNOB_LABELS[knob]}` : `Medium + ${KNOB_LABELS[knob]} ${level}`;
         steps.push({ id, label, config: { ...medium, [knob]: level }, knob, sign: 1 });
@@ -245,6 +259,7 @@ export const DEFAULT_COST_ORDER: readonly Knob[] = [
   "ripples",
   "grade",
   "upscale",
+  "detail",
 ];
 
 export type Platform = "desktop" | "phone";
@@ -268,6 +283,11 @@ export interface Measurement {
   /** GPU time per frame from WebGPU timestamp queries; null where the backend has none. */
   gpuMsP50: number | null;
   gpuMsP95: number | null;
+  /** Triangles in the visible scene during the hold (Stevie's fur shells and the rain included). */
+  triangles?: number;
+  /** Triangles the GPU drew per frame across every pass (shadow maps, reflections and post included). */
+  drawnTriangles?: number | null;
+  drawCalls?: number | null;
 }
 
 export interface LabStatus {
@@ -283,6 +303,9 @@ export interface LabStatus {
   platform: Platform;
   dpr: number;
   canvas: [number, number];
+  /** Triangles in the visible scene now, and drawn by the GPU in the last frame (every pass). */
+  triangles: number;
+  drawnTriangles: number | null;
   config: LabConfig;
   view: ViewName;
   state: StateName;

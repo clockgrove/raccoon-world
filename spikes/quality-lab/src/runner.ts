@@ -1,7 +1,7 @@
 // The quality lab's runner (issue 45): the sweep and the ceiling search, as pure logic over a LabHandle. No DOM and
 // no three.js, so the page UI, the CI journey and a node test can all drive it.
 
-import { DEFAULT_COST_ORDER, KNOBS, KNOB_LABELS, LEVELS, PRESETS, budgetMs, stepDown, targetMs, sweepSteps } from "./config.ts";
+import { BUDGET_SLACK, DEFAULT_COST_ORDER, KNOBS, KNOB_LABELS, LEVELS, PRESETS, budgetMs, stepDown, targetMs, sweepSteps } from "./config.ts";
 import type { Knob, LabConfig, LabHandle, LabStatus, Measurement, Platform, StateName, ViewName } from "./config.ts";
 
 export interface StepResult {
@@ -16,6 +16,9 @@ export interface StepResult {
   adapter: string;
   dpr: number;
   canvas: [number, number];
+  /** Triangles in the visible scene during the step, and drawn by the GPU per frame: counts, kept on software GPUs too. */
+  triangles?: number;
+  drawnTriangles?: number | null;
   /** JPEG data URL. */
   screenshot: string;
   error?: string;
@@ -76,6 +79,40 @@ export interface CeilingReport {
   steps: (StepResult & { removed?: Removed })[];
 }
 
+export interface TriangleReport {
+  kind: "triangles";
+  startedAt: string;
+  platform: Platform;
+  /** The fps this run holds: 60 everywhere (Kirk, 2026-11-12: "how much can we increase the triangle detail and keep 60fps"). */
+  targetFps: number;
+  budgetMs: number;
+  backend: LabStatus["backend"];
+  adapter: string;
+  software: boolean;
+  timestamps: boolean;
+  view: ViewName;
+  state: StateName;
+  /** The effects config every step keeps; only Geometry detail changes. */
+  base: LabConfig;
+  steps: StepResult[];
+  /** The highest detail step that held the budget, with its scene triangles; null when even the art as made missed it. */
+  held: { detail: number; triangles: number; frameMsP95: number } | null;
+  /** The first step that missed it, if any. */
+  missed: { detail: number; triangles: number; frameMsP95: number } | null;
+  /**
+   * Scene triangles at which GPU time would reach 80% of the frame (leaving room for the CPU and the compositor),
+   * from a straight-line fit of GPU p50 against triangles over the measured steps. Null without GPU timestamps or
+   * with fewer than two steps.
+   */
+  estimatedTriangles: number | null;
+  note?: string;
+}
+
+/** Detail steps for the triangle budget: each four times the last. */
+export const TRIANGLE_STEPS = [1, 4, 16, 64] as const;
+/** The share of the frame the triangle estimate lets the GPU use. */
+export const GPU_SHARE = 0.8;
+
 export interface RunOptions {
   warmupMs?: number;
   holdMs?: number;
@@ -122,6 +159,8 @@ async function measureStep(
     result.adapter = status.adapter;
     result.dpr = status.dpr;
     result.canvas = status.canvas;
+    result.triangles = status.triangles;
+    result.drawnTriangles = status.drawnTriangles;
     // Software GPUs never count as performance: their frame times are dropped, not kept.
     if (!status.software) result.measurement = m;
     result.screenshot = await lab.screenshot(320);
@@ -257,16 +296,85 @@ export async function findCeiling(lab: LabHandle, opts: CeilingOptions = {}): Pr
   return report;
 }
 
+/**
+ * The triangle budget: keeps the current effects and raises Geometry detail (1, 4, 16, 64 times the yard's static
+ * triangles) until the p95 frame time misses the 60 fps budget. Frame intervals cannot show headroom past the display's
+ * refresh, so where GPU timestamps exist it also fits GPU time against triangles and estimates the count at which the
+ * GPU would use 80% of a 60 fps frame.
+ */
+export async function findTriangleBudget(lab: LabHandle, opts: RunOptions = {}): Promise<TriangleReport> {
+  const start = lab.status();
+  const original = { ...start.config };
+  const fps = 60;
+  const budget = (1000 / fps) * BUDGET_SLACK;
+  const steps = TRIANGLE_STEPS.slice(0, opts.maxSteps ?? TRIANGLE_STEPS.length);
+  const report: TriangleReport = {
+    kind: "triangles",
+    startedAt: new Date().toISOString(),
+    platform: start.platform,
+    targetFps: fps,
+    budgetMs: budget,
+    backend: start.backend,
+    adapter: start.adapter,
+    software: start.software,
+    timestamps: start.timestamps,
+    view: start.view,
+    state: start.state,
+    base: original,
+    steps: [],
+    held: null,
+    missed: null,
+    estimatedTriangles: null,
+  };
+  try {
+    for (let i = 0; i < steps.length; i++) {
+      if (opts.signal?.aborted) break;
+      const times = steps[i]!;
+      const r = await measureStep(lab, { id: `triangles:${times}`, label: `Detail ${times}×`, config: { ...original, detail: times } }, opts);
+      report.steps.push(r);
+      opts.onStep?.(r, i, steps.length);
+      const m = r.measurement;
+      if (r.error || start.software || m?.frameMsP95 == null) continue;
+      const point = { detail: times, triangles: m.triangles ?? 0, frameMsP95: m.frameMsP95 };
+      if (m.frameMsP95 <= budget) report.held = point;
+      else {
+        report.missed = point;
+        break;
+      }
+    }
+  } finally {
+    await lab.apply(original).catch(() => {});
+  }
+  const points = report.steps
+    .map((s) => s.measurement)
+    .filter((m): m is Measurement => m?.gpuMsP50 != null && m.triangles != null)
+    .map((m) => ({ x: m.triangles as number, y: m.gpuMsP50 as number }));
+  if (points.length >= 2) {
+    const n = points.length;
+    const mx = points.reduce((a, p) => a + p.x, 0) / n;
+    const my = points.reduce((a, p) => a + p.y, 0) / n;
+    const sxx = points.reduce((a, p) => a + (p.x - mx) ** 2, 0);
+    const slope = sxx > 0 ? points.reduce((a, p) => a + (p.x - mx) * (p.y - my), 0) / sxx : 0;
+    const intercept = my - slope * mx;
+    const room = (1000 / fps) * GPU_SHARE;
+    if (slope > 0) report.estimatedTriangles = Math.max(0, Math.round((room - intercept) / slope));
+  }
+  if (start.software) report.note = "software, not performance: nothing held or missed, and no estimate";
+  return report;
+}
+
+export type AnyReport = SweepReport | CeilingReport | TriangleReport;
+
 const stripShots = <T extends { steps: { screenshot: string }[] }>(r: T): unknown => ({
   ...r,
   steps: r.steps.map(({ screenshot: _s, ...rest }) => rest),
 });
 
-export function compactJson(report: SweepReport | CeilingReport | (SweepReport | CeilingReport)[]): string {
+export function compactJson(report: AnyReport | AnyReport[]): string {
   return JSON.stringify(Array.isArray(report) ? report.map(stripShots) : stripShots(report));
 }
 
-export function issueUrl(reports: (SweepReport | CeilingReport)[], maxUrlLength = 7500): string {
+export function issueUrl(reports: AnyReport[], maxUrlLength = 7500): string {
   const first = reports[0];
   const adapter = (first?.adapter ?? "unknown").slice(0, 40).trim();
   const title = `Quality lab results: ${first?.platform ?? "unknown"}, ${first?.backend ?? "unknown"}, ${adapter}`;
