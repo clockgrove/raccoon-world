@@ -1,0 +1,1 @@
+{"archetype":{"id":"grove.household-food-kind","version":1},"capabilities":[],"id":"grove.household-food","overrides":[],"placement":{"coordinates":[{"$bigint":"38000"},{"$bigint":"28000"}],"space":{"id":"grove.neighborhood","version":1}},"traits":[]}

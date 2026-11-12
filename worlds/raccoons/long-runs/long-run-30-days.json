@@ -27,6 +27,74 @@
       "expect": true,
       "id": "small-step-equals-aggregate",
       "kind": "equivalence"
+    },
+    {
+      "eventType": "needs.threshold-crossed",
+      "id": "main-hunger-never-urgent",
+      "kind": "eventCount",
+      "operator": "eq",
+      "run": "main",
+      "value": 0,
+      "where": [
+        {
+          "path": [
+            "payload",
+            "need"
+          ],
+          "value": "hunger"
+        }
+      ]
+    },
+    {
+      "eventType": "needs.threshold-crossed",
+      "id": "main-thirst-never-urgent",
+      "kind": "eventCount",
+      "operator": "eq",
+      "run": "main",
+      "value": 0,
+      "where": [
+        {
+          "path": [
+            "payload",
+            "need"
+          ],
+          "value": "thirst"
+        }
+      ]
+    },
+    {
+      "eventType": "needs.threshold-crossed",
+      "id": "aggregate-hunger-never-urgent",
+      "kind": "eventCount",
+      "operator": "eq",
+      "run": "aggregate",
+      "value": 0,
+      "where": [
+        {
+          "path": [
+            "payload",
+            "need"
+          ],
+          "value": "hunger"
+        }
+      ]
+    },
+    {
+      "eventType": "needs.threshold-crossed",
+      "id": "aggregate-thirst-never-urgent",
+      "kind": "eventCount",
+      "operator": "eq",
+      "run": "aggregate",
+      "value": 0,
+      "where": [
+        {
+          "path": [
+            "payload",
+            "need"
+          ],
+          "value": "thirst"
+        }
+      ]
     }
   ],
   "equivalences": [
