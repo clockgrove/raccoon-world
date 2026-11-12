@@ -103,6 +103,13 @@ async function main(argv) {
   );
   if (dryRun || todo.length === 0) return;
 
+  // Inside a Factory worker the key is relayed: the shell holds a relay token and FACTORY_GATEWAY_URL, and the relay
+  // forwards neither image edits nor the credit balance this step prices each call by. The turnaround is made in the
+  // owner's own session (docs/art/author-guide.md), so it refuses here before reserving anything.
+  if (process.env.FACTORY_GATEWAY_URL && !process.env.AI_GATEWAY_URL)
+    throw new Error(
+      "the turnaround runs in the owner's session, not in a Factory worker: Factory's gateway relay forwards neither image edits (/v1/images/edits) nor the credit balance (/v1/credits) this step prices each call by",
+    );
   const token = process.env.AI_GATEWAY_API_KEY;
   if (!token) throw new Error("AI_GATEWAY_API_KEY is not set");
   const save = () => writeFile(ledgerPath, `${JSON.stringify(book, null, 2)}\n`);
