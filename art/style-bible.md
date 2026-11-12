@@ -214,6 +214,9 @@ The palette tokens are the colours the mockup is built from: night ink, raccoon 
 - Do light characters warm from the nearest lamp and cool from the rainy sky, with a pale rim.
 - Do keep each character's identity lock: Stevie stocky and level-backed with a sleek grey-brown coat, Jimothy short-spined, hunched and very fluffy.
 - Do keep full, natural colour.
+- Do give the set more detail where the cast touches it (deck boards, bark, the bowl rim, the den mouth) than in the far background, so there is no jump in detail where a character stands.
+- Do compose the yard so the places where things happen (den mouth, bowl, bin, beds) face the camera, with tall occluders (the cedar, the fence, the house) toward the back.
+- Do light and shade the cast and the set with the same lights, fog and grade, so the cast sits in the scene; keep the backyard's painterliness in its textures, never in a filter over the set alone.
 - Don't make pixel art, hard binary transparency or a palette-quantised image.
 - Don't draw outlines, cel shading or flat cartoon fills.
 - Don't render plastic 3D-looking fur or follow the 3D spike's renders.
