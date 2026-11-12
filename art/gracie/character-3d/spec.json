@@ -2,6 +2,7 @@
   "kind": "character-3d",
   "assetId": "gracie",
   "subject": "gracie",
+  "look": "character",
   "gait": "quadruped",
   "heightM": 0.45,
   "clips": [

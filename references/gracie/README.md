@@ -22,9 +22,13 @@ In Kirk's words: "You can tell Gracie with the grey longer fur on lower body."
 
 ## Style-bible entry and turnaround
 
-Gracie is in the style bible (`art/style-bible.md`, "Gracie") as the subject `gracie`. Her description leads with her signature, and these three photos are her likeness references. She uses the shared raccoon rig and the generated gait. Her 3D inputs are in `art/gracie/character-3d/`: `kind: "character-3d"`, `subject: "gracie"`, `gait: "quadruped"`.
+Gracie is in the style bible (`art/style-bible.md`, "Gracie") as the subject `gracie`. Her description leads with her signature, and these three photos are her likeness references. She uses the shared raccoon rig and the generated gait. Her 3D inputs are in `art/gracie/character-3d/`: `kind: "character-3d"`, `subject: "gracie"`, `look: "character"`, `gait: "quadruped"`.
 
-**Turnaround: waiting on candidates and Kirk's pick.** Her four-view turnaround (front, three-quarter, side and back) is generated from these photos by an image edit through Vercel AI Gateway (`openai/gpt-image-2`), as Stevie's was:
+**Approved turnaround: c1 (Kirk, 2026-11-11).** `turnaround.png` (the 2×2 sheet) and its four views, `turnaround-front.png`, `turnaround-three-quarter.png`, `turnaround-side.png` and `turnaround-back.png`, are candidate c1, copied byte for byte from `turnaround-candidates/c1/`. Kirk picked it because it shows her pale, silvery, shaggy lower body and legs most clearly against her darker back. Its three-quarter view is her identity lock (`identities.gracie` in `art/style-bible.md`, with the other three views and these photos as its references, as Stevie's lock takes all four of his views), and all four views are her subject references.
+
+`provenance-turnaround.json` records the pick and c1's call: provider (Vercel AI Gateway), model (`openai/gpt-image-2`), route, prompt, input photo hashes, the $0.50 reservation, the measured cost ($0.21), provider terms and output grant (`outputGrant`: OpenAI API terms, commercial and relabellable, so the images are MIT here under `REUSE.toml`'s `**` annotation), and each file's hash. Every image is tagged IPTC `trainedAlgorithmicMedia`. `art/tools/check.mjs` checks that the approved files are c1's bytes.
+
+The candidates were generated on Kirk's box from these photos plus `gracie-and-stevie.png`, by an image edit through Vercel AI Gateway, as Stevie's were:
 
 ```sh
 node art/tools/turnaround.mjs gracie --dry-run   # forecast: no key, no spend
@@ -32,15 +36,7 @@ node art/tools/turnaround.mjs gracie             # needs AI_GATEWAY_API_KEY in t
 ```
 
 - **Inputs:** the prompt, the photos, the candidate count (3) and the $5 cap are in `art/gracie/turnaround.json`.
-- **Budget:** each call reserves $0.50 against the cap before it runs. A call that would pass the cap is refused.
-- **Outputs:** the candidates go to `turnaround-candidates/cN/`: the 2×2 sheet `turnaround.png` and its four cropped views.
-- **Provenance:** `turnaround-candidates/provenance.json` records each call's provider, model, route, endpoint, prompt, input hashes, reservation, measured cost, provider terms and output grant (`outputGrant`: OpenAI API terms, commercial and relabellable, so the images are MIT here under `REUSE.toml`'s `**` annotation). It also records each file's hash, and every image is tagged IPTC `trainedAlgorithmicMedia`.
-
-The candidates are review material, not approved art. **The pick is Kirk's.** Once he has picked:
-
-1. Copy the picked candidate's views to `references/gracie/turnaround-{front,three-quarter,side,back}.png`, with its provenance.
-2. Add Gracie's identity lock (`identities.gracie`, approved, with the three-quarter view as the turnaround and these photos as references). Assetforge accepts a lock only on an approved turnaround, which is why she has none yet.
-3. Add the approved front and side views as her subject references.
-4. Add Gracie to the lock set that `art/tools/check.mjs` expects.
+- **Budget:** each call reserves $0.50 against the cap before it runs; a call that would pass the cap is refused. The three calls cost $0.62 of the $5 cap.
+- **Candidates:** `turnaround-candidates/c1`, `c2` and `c3`, each a 2×2 sheet and its four cropped views, with every call recorded in `turnaround-candidates/provenance.json`. They stay as review material; only c1 is approved.
 
 His further photos of her refine the turnaround.

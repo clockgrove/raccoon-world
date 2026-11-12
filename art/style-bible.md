@@ -63,12 +63,31 @@ anchors:
     - path: ../references/gracie/gracie-lounging.png
       role: owner's photo, likeness reference only (not the look); her long pale grey lower-body fur
       subject: gracie
+      look: character
     - path: ../references/gracie/gracie-ice-cube.png
       role: owner's photo, likeness reference only (not the look); hand-like paws with dark palms and soles, ringed tail
       subject: gracie
+      look: character
     - path: ../references/gracie/gracie-sleeping.png
       role: owner's photo, likeness reference only (not the look); rest pose, side-lying with her head tucked onto her front paws
       subject: gracie
+      look: character
+    - path: ../references/gracie/turnaround-three-quarter.png
+      role: approved turnaround (Kirk, 2026-11-11), three-quarter view (identity lock)
+      subject: gracie
+      look: character
+    - path: ../references/gracie/turnaround-front.png
+      role: approved turnaround (Kirk, 2026-11-11), front view
+      subject: gracie
+      look: character
+    - path: ../references/gracie/turnaround-side.png
+      role: approved turnaround (Kirk, 2026-11-11), side view
+      subject: gracie
+      look: character
+    - path: ../references/gracie/turnaround-back.png
+      role: approved turnaround (Kirk, 2026-11-11), back view
+      subject: gracie
+      look: character
   negative:
     - path: ../references/stevie/77-3d/preview-fal-three-quarter-bind.png
       role: unapproved 3D spike render; not the look
@@ -171,6 +190,26 @@ identities:
       - dark eye mask, cream brows and muzzle, bright round eyes
     proportions: short spine, round chubby body carried low, short legs, big tail
     palette: ["#5c5049", "#282323", "#e2d7c2", "#9c8064", "#3a3330"]
+  gracie:
+    version: "1"
+    approved: true
+    turnaround: ../references/gracie/turnaround-three-quarter.png
+    references:
+      - ../references/gracie/turnaround-front.png
+      - ../references/gracie/turnaround-side.png
+      - ../references/gracie/turnaround-back.png
+      - ../references/gracie/gracie-lounging.png
+      - ../references/gracie/gracie-ice-cube.png
+      - ../references/gracie/gracie-sleeping.png
+    signatureFeatures:
+      - lower body (belly, flanks and hindquarters, down over her legs) lighter, greyer, noticeably longer and shaggier than her back
+      - shorter, darker grey-brown fur on her back
+      - full dark eye mask with pale brows and a pale muzzle
+      - rounded ears with pale rims
+      - ringed tail with dark and tan bands, dark tip
+      - long-fingered hand-like front paws with dark palms; plantigrade hind feet with dark soles and pale fur over the top
+    proportions: true-to-life adult raccoon on all fours, back gently arched; her shaggy lower-body fur makes her look full and fluffy below a sleeker back
+    palette: ["#6b6559", "#b3ab9e", "#282323", "#e2d7c2", "#ae9675"]
 perspective: ../docs/design/reference/raccoon-world-reference.png
 perspectiveDescription: high three-quarter isometric view from above, the camera looking down on the yard at roughly 30 to 35 degrees, ground plane receding to the upper right
 subjects:
@@ -210,17 +249,19 @@ Each identity lock's written text must agree with its own approved references: A
 - **Stevie:** the approved three-quarter turnaround view, `references/stevie/turnaround-three-quarter.png` (clockgrove/clockgrove#77 pass 1), plus the approved front, side and back views as references. One view alone rejects his other angles (Assetforge's identity lock bar, assetforge#92).
 - **Jimothy:** cell 3 of the 57-frame contact sheet (`references/jimothy/sheet-cell-03.png`, cut from `docs/design/reference/jimothy-sprite-sheet.png` by Assetforge's slicer) plus his painted portrait.
 
+- **Gracie:** the three-quarter view of her approved turnaround, `references/gracie/turnaround-three-quarter.png` (candidate c1, picked by Kirk on 2026-11-11), plus its approved front, side and back views and Kirk's three photos of her as references, as Stevie's lock takes all four views. The 0.68 threshold was measured on Stevie's and Jimothy's locks, not hers, so her score is a record only, like everyone's in shadow mode. Her lock has not yet been run through `identity-check` (a paid call made with the AI Gateway key, outside a Factory run).
+
 Identity scoring runs in shadow mode at 0.68 (`art/target-profile.json`): it records a score beside QA and filters nothing. Bump a lock's `version` when it changes.
 
 Stevie's subject references for generation are the three-quarter view (the lock) plus the approved front, side and back views. They fix his mask, ears, rounded back and stocky, short-legged build from every angle a sheet or a 3D turntable draws him in.
 
 ### Gracie
 
-Gracie has a subject entry and photo references, and no identity lock yet. Assetforge accepts a lock only on an approved turnaround. Her four-view turnaround is generated from her photos (`node art/tools/turnaround.mjs gracie`), and Kirk picks one. The picked three-quarter view then becomes her lock, and the other approved views become her subject references.
+Her approved turnaround is candidate c1 of three generated from her photos (`node art/tools/turnaround.mjs gracie`; Kirk's pick, 2026-11-11): `references/gracie/turnaround.png` and its four views, with their provenance in `references/gracie/provenance-turnaround.json`. It shows her pale, silvery, shaggy lower body and legs most clearly against her darker back. Her identity lock is its three-quarter view, with the other three views and her photos as references. Her subject references for generation are all four approved views and her photos, as Stevie's are all four of his. Kirk's further photos of her refine the turnaround.
 
 - **Signature, first:** her lower body has lighter, greyer, noticeably longer and shaggier fur than her back. This covers her belly, her flanks and her hindquarters, and runs down over her legs. In Kirk's words: "You can tell Gracie with the grey longer fur on lower body." Every image of her keeps it, and it is what sets her apart from Stevie.
 - **Shared raccoon traits:** a full dark eye mask, pale brows and a pale muzzle, rounded ears with pale rims, and a ringed tail.
-- **References:** Kirk's three photos in `references/gracie/` (`gracie-lounging.png`, `gracie-ice-cube.png`, `gracie-sleeping.png`). They fix her likeness only. The look is still this bible's painterly storybook realism, never photographic.
+- **References:** Kirk's three photos in `references/gracie/` (`gracie-lounging.png`, `gracie-ice-cube.png`, `gracie-sleeping.png`). They fix her likeness only. The look is still this bible's character look, never photographic.
 - **Rest pose** (for shelter and rest clips): she lies on her side, slightly curled, with her head tucked down onto her front paws, eyes closed and her tail lying along her body.
 - **Paws:**
   - Her front paws are long-fingered and hand-like, with dark palms and pale fur over the tops. She holds and turns small things in one paw, which is the reference for `eat`.
@@ -229,7 +270,7 @@ Gracie has a subject entry and photo references, and no identity lock yet. Asset
 
 ## Anchors
 
-Positive anchors are approved material only: the mockup, Stevie's approved turnaround (the character look anchor) and its views, Jimothy's painted portrait (environment brushwork) and Jimothy's sheet cell 3 and Kirk's photos of Gracie (likeness references scoped to her subject, not style anchors). Unapproved material is listed as negative anchors and is never a positive one: the 3D spike outputs (`references/stevie/77-3d`), the Assetforge #38 proof outputs (`references/jimothy/assetforge-38-proof`) and the Stevie idle and walk strips made for the 3D comparison (`references/stevie/comparison-candidates`).
+Positive anchors are approved material only: the mockup, Stevie's approved turnaround (the character look anchor) and its views, Jimothy's painted portrait (environment brushwork) and Jimothy's sheet cell 3, Gracie's approved turnaround views and Kirk's photos of Gracie (likeness references scoped to her subject, not style anchors). Unapproved material is listed as negative anchors and is never a positive one: the 3D spike outputs (`references/stevie/77-3d`), the Assetforge #38 proof outputs (`references/jimothy/assetforge-38-proof`) and the Stevie idle and walk strips made for the 3D comparison (`references/stevie/comparison-candidates`).
 
 ## Palette and lighting tokens
 
