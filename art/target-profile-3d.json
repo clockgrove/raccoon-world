@@ -1,0 +1,173 @@
+{
+  "$comment": "Raccoon World's 3D target profile (issue 39). The numbers and why: docs/art/3d-target-profile.md. Checked by art/tools/model3d.mjs and bash scripts/assetforge.sh check.",
+  "name": "raccoon-world-3d",
+  "license": "MIT",
+  "acceptedLicenses": [],
+  "values": {
+    "creator": "Clockgrove",
+    "provider": "tripo"
+  },
+  "model3d": {
+    "format": "glb",
+    "budgets": {
+      "triangles": 60000,
+      "textureMaxPx": 2048,
+      "materials": 4,
+      "bones": 80,
+      "lods": 3
+    },
+    "forward": "+z",
+    "units": "m",
+    "turntable": {
+      "sizePx": 512
+    },
+    "handoff": {
+      "container": "glb",
+      "compression": "none required; EXT_meshopt_compression and KHR_draco_mesh_compression are not expected",
+      "textureMediaTypes": ["image/png", "image/jpeg"],
+      "ktx2": "not required"
+    },
+    "shipped": {
+      "container": "glb",
+      "geometry": "EXT_meshopt_compression",
+      "textures": {
+        "normal": "KTX2 UASTC, mipmapped",
+        "other": "KTX2 ETC1S, mipmapped"
+      },
+      "textureMaxPx": {
+        "character": 2048,
+        "prop": 1024
+      },
+      "buildStep": "spikes/stevie-3d/scripts/web-media.mjs"
+    },
+    "tiers": {
+      "desktop": {
+        "status": "measured",
+        "character": { "triangles": 60000, "textureMaxPx": 2048, "materials": 4, "bones": 80, "lods": 3 },
+        "prop": { "triangles": 30000, "textureMaxPx": 1024, "materials": 4, "bones": 8, "lods": 3 }
+      },
+      "phone": {
+        "status": "pending",
+        "character": { "triangles": 20000, "textureMaxPx": 1024, "materials": 4, "bones": 80, "lods": 3 },
+        "prop": { "triangles": 10000, "textureMaxPx": 512, "materials": 4, "bones": 8, "lods": 3 }
+      }
+    },
+    "lods": [
+      { "level": 0, "triangleRatio": 1, "minScreenHeight": 0.15 },
+      { "level": 1, "triangleRatio": 0.33, "minScreenHeight": 0.05 },
+      { "level": 2, "triangleRatio": 0.1, "minScreenHeight": 0 }
+    ],
+    "rig": {
+      "template": "rig/raccoon.json",
+      "kind": "raccoon"
+    },
+    "gaits": {
+      "walk": {
+        "footfall": ["hind_l", "fore_l", "hind_r", "fore_r"],
+        "dutyFactor": 0.68,
+        "strideBodyLengths": 0.26,
+        "stepHeightBodyLengths": 0.025,
+        "backArchDeg": 22,
+        "hipHeightRatio": 1.1,
+        "headPitchDeg": 28,
+        "tailPitchDeg": 18,
+        "tailSwayDeg": 8,
+        "speedBodyLengthsPerSecond": 0.35,
+        "swingCurlDeg": {
+          "fore": 45,
+          "hind": 10
+        },
+        "reference": "../references/stevie/gait-reference"
+      }
+    },
+    "clipSets": {
+      "raccoon": {
+        "required": ["idle", "walk", "sniff", "eat", "play", "shelter"],
+        "generated": ["walk"]
+      }
+    },
+    "groom": {
+      "seasons": ["summer", "winter"],
+      "traits": {
+        "summer": "coat lies flatter and the build looks leaner; shorter guard hairs; base colour as the approved turnaround, so no tint texture",
+        "winter": "long, silver-tipped guard hairs over a dense, pale under-layer; cheek ruffs flaring past the mask; thick tail with bold black and buff rings; a rounder silhouette; a lighter, frosted tip colour carried by output.textures.tint.winter"
+      },
+      "calendar": {
+        "seasons": {
+          "spring": [3, 4, 5],
+          "summer": [6, 7, 8],
+          "autumn": [9, 10, 11],
+          "winter": [12, 1, 2]
+        },
+        "coats": {
+          "spring": "summer",
+          "summer": "summer",
+          "autumn": "winter",
+          "winter": "winter"
+        }
+      }
+    }
+  },
+  "layout": {
+    "media": "assets/models/{{spec.assetId}}/{{spec.assetId}}.{{output.extension}}",
+    "manifest": "assets/models/{{spec.assetId}}/manifest.json",
+    "provenance": "assets/models/{{spec.assetId}}/{{spec.assetId}}.{{output.extension}}.provenance.json"
+  },
+  "manifest": {
+    "modelManifestVersion": 1,
+    "assetId": "{{spec.assetId}}",
+    "kind": "{{spec.kind}}",
+    "subject": "{{spec.subject}}",
+    "source": {
+      "kind": "generated",
+      "path": "{{output.path}}",
+      "mediaType": "{{output.mediaType}}",
+      "creator": "{{profile.creator}}",
+      "tool": "assetforge"
+    },
+    "license": "{{provenance.license}}",
+    "provenance": {
+      "prompt": "{{provenance.prompt}}",
+      "references": "{{provenance.referenceHashes}}",
+      "model": "{{provenance.calls.0.model}}",
+      "provider": "{{profile.provider}}",
+      "route": "{{provenance.calls.0.route}}",
+      "providerTermsVersion": "{{provenance.calls.0.providerTerms}}",
+      "outputGrant": "{{provenance.outputGrant}}",
+      "digitalSourceType": "{{provenance.digitalSourceType}}"
+    },
+    "review": {
+      "status": "pending",
+      "reviewer": null,
+      "reviewedAt": null,
+      "notes": ""
+    },
+    "semantic": "{{spec.fields.semantic?}}",
+    "model": {
+      "extension": "{{output.extension}}",
+      "triangles": "{{output.triangles}}",
+      "textureMaxPx": "{{output.textureMaxPx}}",
+      "materials": "{{output.materials}}",
+      "bones": "{{output.bones}}",
+      "lods": "{{output.lods}}",
+      "clips": "{{output.clips}}",
+      "missingClips": "{{output.missingClips?}}",
+      "bounds": "{{output.bounds}}",
+      "rig": "{{output.rig}}"
+    },
+    "contentHash": "{{output.sha256}}",
+    "accessibilityLabel": "{{spec.fields.accessibilityLabel?}}"
+  },
+  "review": {
+    "path": "review.status",
+    "pending": "pending"
+  },
+  "validator": {
+    "command": ["node", "art/tools/model3d.mjs", "validate", "{{manifest}}"]
+  },
+  "identity": {
+    "mode": "shadow",
+    "threshold": 0.68,
+    "question": "score"
+  }
+}
