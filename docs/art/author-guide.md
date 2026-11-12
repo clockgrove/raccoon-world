@@ -45,7 +45,7 @@ The forecast lists the sheet, the grouping proposal and the identity score (abou
 
 ## 2. Generate up to four candidates
 
-This is the step that spends money. It runs outside Factory, in the owner's lead agent session, with the organisation's `AI_GATEWAY_API_KEY` in the environment. Never commit the key or print it.
+This is the step that spends money. It runs in the owner's lead agent session with the organisation's `AI_GATEWAY_API_KEY` in the environment. Never commit the key or print it. It can also run in a Factory worker, through Factory's gateway relay: the call goes to `FACTORY_GATEWAY_URL`, Factory prices and caps it, and the ledger records the gateway's own cost from the answer. The relay takes image edits up to 128 MB; the reference photos travel base64-encoded (Gracie's four make 38.5 MB).
 
 ```sh
 for candidate in 1 2 3 4; do
