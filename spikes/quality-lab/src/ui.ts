@@ -4,8 +4,8 @@
 
 import { KNOBS, KNOB_LABELS, LEVELS, PRESETS, PRESET_ORDER } from "./config.ts";
 import type { Knob, LabConfig, LabHandle, PresetName, StateName, ViewName } from "./config.ts";
-import { compactJson, findCeiling, issueUrl, runSweep } from "./runner.ts";
-import type { CeilingOptions, CeilingReport, RunOptions, StepResult, SweepReport } from "./runner.ts";
+import { compactJson, findCeiling, findTriangleBudget, issueUrl, runSweep } from "./runner.ts";
+import type { AnyReport, CeilingOptions, RunOptions, StepResult, SweepReport, TriangleOptions } from "./runner.ts";
 
 const CSS = `
 .ql{--accent:#f5b453;--accent-ink:#1b1608;--line:rgba(255,255,255,.09);--fill:rgba(255,255,255,.06);--muted:rgba(236,235,230,.62);
@@ -24,6 +24,10 @@ border:1px solid var(--line);box-shadow:0 18px 50px rgba(0,0,0,.45);overflow:hid
 .ql-title{font-weight:650;font-size:15px}
 .ql-sub{color:var(--muted);font-size:12px}
 .ql-fps{margin-left:auto;padding:3px 9px;border-radius:999px;background:var(--fill);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ql-meters{margin-left:auto;display:flex;gap:6px;align-items:center}
+.ql-meters .ql-fps{margin-left:0}
+.ql-tris{padding:3px 9px;border-radius:999px;background:var(--fill);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--muted)}
+@media (max-width:719px){.ql-tris{display:none}.ql:not(.collapsed) .ql-tris{display:inline}}
 .ql-fps.good{color:#9be29b}.ql-fps.ok{color:#f5d36b}.ql-fps.bad{color:#ff9b8f}
 .ql-chev{width:20px;height:20px;flex:none;transition:transform .2s ease;opacity:.7}
 .ql.collapsed .ql-chev{transform:rotate(180deg)}
@@ -55,9 +59,11 @@ border:1px solid var(--line);box-shadow:0 18px 50px rgba(0,0,0,.45);overflow:hid
 .ql .switch:checked{background:var(--accent)}
 .ql .switch:checked::after{transform:translateX(18px)}
 .ql .switch:focus-visible,.ql button:focus-visible,.ql a:focus-visible,.ql summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.ql-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 14px 12px;border-top:1px solid var(--line);background:rgba(20,21,24,.6)}
+.ql-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 14px 12px;border-top:1px solid var(--line);background:rgba(20,21,24,.6)}
 .ql .btn{min-height:46px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--fill);color:inherit;font:inherit;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
 .ql .btn.primary{background:var(--accent);border-color:transparent;color:var(--accent-ink)}
+.ql-actions .btn{padding:0 8px;font-size:13px;line-height:1.2;text-align:center}
+.ql-actions .btn.apply{grid-column:span 2}
 .ql .btn.stop{grid-column:1/-1;background:rgba(255,120,100,.16);border-color:rgba(255,120,100,.35);color:#ffb3a8}
 .ql [hidden]{display:none!important}
 .ql button:disabled,.ql .btn[aria-disabled=true],.ql .switch:disabled{opacity:.4;cursor:default;pointer-events:none}
@@ -74,7 +80,7 @@ border:1px solid var(--line);box-shadow:0 18px 50px rgba(0,0,0,.45);overflow:hid
 .ql th,.ql td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:right;vertical-align:middle;white-space:nowrap}
 .ql th{color:var(--muted);font-weight:500}
 .ql th:first-child,.ql td:first-child{text-align:left;white-space:normal;min-width:140px}
-.ql img{width:64px;height:auto;display:block;border-radius:4px}
+.ql img{width:auto;height:auto;max-width:64px;max-height:40px;display:block;border-radius:4px}
 .ql .sw{color:#f0b060}
 .ql .err{color:#ff9b8f}
 .ql .empty{color:var(--muted);font-size:12px;margin:0}
@@ -94,7 +100,7 @@ background:rgba(20,21,24,.82);-webkit-backdrop-filter:blur(16px);backdrop-filter
 @media (prefers-reduced-motion:reduce){.ql *{transition:none!important;animation:none!important}}
 `;
 
-type Report = SweepReport | CeilingReport;
+type Report = AnyReport;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> & { class?: string } = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -117,9 +123,12 @@ const GROUPS: readonly { title: string; knobs: readonly Knob[] }[] = [
   { title: "Light and shadow", knobs: ["cascades", "pointShadows", "ao", "probes", "haze", "shafts"] },
   { title: "Rain", knobs: ["rainCount", "splashes", "ripples", "reflections"] },
   { title: "Image", knobs: ["antialias", "upscale", "dpr", "bloom", "grade"] },
+  { title: "Geometry", knobs: ["detail"] },
 ];
 const LEVEL_TEXT: Partial<Record<string, string>> = { none: "Off", msaa: "MSAA", traa: "TRAA", taau: "TAAU", fsr: "FSR 1" };
-const levelText = (knob: Knob, level: unknown) => (knob === "dpr" ? `${String(level)}×` : (LEVEL_TEXT[String(level)] ?? String(level)));
+const levelText = (knob: Knob, level: unknown) => (knob === "dpr" || knob === "detail" ? `${String(level)}×` : (LEVEL_TEXT[String(level)] ?? String(level)));
+/** 1234567 → "1.23M", 182000 → "182k". */
+const count = (n: number | null | undefined) => (n == null ? "n/a" : n >= 1e6 ? `${(n / 1e6).toFixed(2)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n));
 const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const CHEVRON = '<svg class="ql-chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 12.5 10 7.5l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
@@ -134,9 +143,10 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   const headTitle = el("span", { class: "ql-title", textContent: "Quality lab" });
   const headSub = el("span", { class: "ql-sub" });
   const fps = el("span", { class: "ql-fps", textContent: "– fps" });
+  const tris = el("span", { class: "ql-tris", title: "Triangles in the scene" });
   fps.setAttribute("aria-hidden", "true");
   const toggle = el("button", { type: "button", class: "ql-head" });
-  toggle.append(el("span", { class: "grip" }), el("span", {}, headTitle, el("br"), headSub), fps);
+  toggle.append(el("span", { class: "grip" }), el("span", {}, headTitle, el("br"), headSub), el("span", { class: "ql-meters" }, tris, fps));
   toggle.insertAdjacentHTML("beforeend", CHEVRON);
   const setCollapsed = (collapsed: boolean) => {
     panel.classList.toggle("collapsed", collapsed);
@@ -238,6 +248,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
       if (applyingSince) paintHead();
       else if (!running) {
         fps.textContent = `${Math.round(rate)} fps`;
+        tris.textContent = `${count(s.triangles)} tris`;
         fps.className = `ql-fps ${rate >= target * 0.9 ? "good" : rate >= target * 0.6 ? "ok" : "bad"}`;
         // Judge only once a change has settled (shaders warm), and only after three slow readings in a row.
         slowWindows = now - settledAt > 2000 && rate < target * 0.6 ? slowWindows + 1 : 0;
@@ -352,7 +363,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
         const v = draft[k];
         return typeof v === "boolean" ? v : v !== (LEVELS[k] as readonly unknown[]).at(-1);
       }).length;
-      count.textContent = `${on} of ${group.knobs.length} on`;
+      const only = group.knobs.length === 1 ? group.knobs[0]! : null;
+      count.textContent = only ? levelText(only, draft[only]) : `${on} of ${group.knobs.length} on`;
     });
     effects.append(details);
   }
@@ -361,6 +373,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   // Runs: the action bar stays in reach at the bottom of the panel.
   const sweepBtn = el("button", { type: "button", class: "btn primary", textContent: "Run the sweep" });
   const ceilingBtn = el("button", { type: "button", class: "btn", textContent: "Find the ceiling" });
+  const trianglesBtn = el("button", { type: "button", class: "btn", textContent: "Triangle budget" });
   const stopBtn = el("button", { type: "button", class: "btn stop", textContent: "Stop", hidden: true });
   const progress = el("p", {});
   progress.setAttribute("role", "status");
@@ -370,7 +383,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   const discardBtn = el("button", { type: "button", class: "btn", textContent: "Discard", hidden: true });
   applyBtn.addEventListener("click", () => void applyDraft());
   discardBtn.addEventListener("click", () => edit({ ...lab.status().config }));
-  actions.append(runBox, applyBtn, discardBtn, sweepBtn, ceilingBtn, stopBtn);
+  applyBtn.classList.add("apply");
+  actions.append(runBox, applyBtn, discardBtn, sweepBtn, ceilingBtn, trianglesBtn, stopBtn);
 
 // Results
   const results = el("div", { class: "tablewrap" });
@@ -379,7 +393,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   const copyBtn = el("button", { type: "button", class: "btn", textContent: "Copy JSON", disabled: true });
   const downloadBtn = el("button", { type: "button", class: "btn", textContent: "Download JSON", disabled: true });
   const outRow = el("div", { class: "out" }, send, copyBtn, downloadBtn);
-  const empty = el("p", { class: "empty", textContent: "Run the sweep to time each effect on this device, or find the ceiling: the richest set that holds the frame budget. Then send the results." });
+  const empty = el("p", { class: "empty", textContent: "Run the sweep to time each effect on this device. Find the ceiling: the richest set of effects that holds the frame budget. Triangle budget: keeps your effects and raises geometry detail until 60 fps breaks. Then send the results." });
   const resultsSection = el("section", {}, el("h2", { textContent: "Results" }), empty, outRow, results);
 
   const json = () => compactJson(reports.length === 1 ? reports[0]! : reports);
@@ -416,9 +430,35 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     return [r.label, ...times, r.backend, String(r.dpr), thumb(r)];
   };
 
+  const renderTriangles = (rep: Extract<Report, { kind: "triangles" }>) => {
+    results.append(el("h3", { textContent: `Triangle budget at ${rep.targetFps} fps (p95 within ${rep.budgetMs.toFixed(1)} ms): ${rep.platform}, ${rep.backend}, ${rep.adapter}` }));
+    if (rep.software) results.append(el("p", { class: "sw", textContent: "software, not performance" }));
+    const table = el("table");
+    const tbody = el("tbody");
+    table.append(head("Detail", "Triangles", "Drawn/frame", "p50", "p95", "GPU p50", "GPU p95", "Shot"));
+    for (const s of rep.steps) {
+      const m = s.measurement;
+      if (s.error) tbody.append(row([s.label, el("span", { class: "err", textContent: s.error })]));
+      else tbody.append(row([s.label, count(s.triangles ?? m?.triangles), count(s.drawnTriangles ?? m?.drawnTriangles), ms(m?.frameMsP50), ms(m?.frameMsP95), ms(m?.gpuMsP50), ms(m?.gpuMsP95), thumb(s)]));
+    }
+    table.append(tbody);
+    results.append(table);
+    const lines = [
+      rep.held ? `Held ${rep.targetFps} fps up to ${count(rep.held.triangles)} triangles (detail ${rep.held.detail}×, p95 ${ms(rep.held.frameMsP95)} ms).` : rep.software ? "" : `Missed ${rep.targetFps} fps even with the art as made.`,
+      rep.missed ? `Missed at ${count(rep.missed.triangles)} triangles (detail ${rep.missed.detail}×, p95 ${ms(rep.missed.frameMsP95)} ms).` : "",
+      rep.estimatedTriangles != null ? `Estimate from GPU time: about ${count(rep.estimatedTriangles)} triangles before the GPU uses 80% of a ${rep.targetFps} fps frame.` : "",
+      rep.noLimitUpTo != null ? `GPU time barely grows with triangles here: no limit found up to ${count(rep.noLimitUpTo)} triangles. Effects and resolution set the frame time, not geometry.` : "",
+    ].filter(Boolean);
+    for (const line of lines) results.append(el("p", { textContent: line }));
+  };
+
   const render = () => {
     results.replaceChildren();
     for (const rep of reports) {
+      if (rep.kind === "triangles") {
+        renderTriangles(rep);
+        continue;
+      }
       const title = rep.kind === "sweep" ? "Sweep" : `Ceiling (budget ${rep.budgetMs.toFixed(1)} ms p95, strict target ${rep.targetMs.toFixed(1)} ms${rep.held ? `; p95 ${rep.ceilingP95Ms?.toFixed(1)} ms, ${rep.heldStrict ? "within" : "over"} the strict target` : ""})`;
       results.append(el("h3", { textContent: `${title}: ${rep.platform}, ${rep.backend}, ${rep.adapter}` }));
       if (rep.software) results.append(el("p", { class: "sw", textContent: "software, not performance" }));
@@ -455,8 +495,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
 
   const setRunning = (on: boolean) => {
     running = on;
-    sweepBtn.disabled = ceilingBtn.disabled = on;
-    sweepBtn.hidden = ceilingBtn.hidden = on;
+    sweepBtn.disabled = ceilingBtn.disabled = trianglesBtn.disabled = on;
+    sweepBtn.hidden = ceilingBtn.hidden = trianglesBtn.hidden = on;
     stopBtn.hidden = !on;
     panel.classList.toggle("running", on);
     if (!on) draft = { ...lab.status().config };
@@ -478,7 +518,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     const drafting = !running && (changed > 0 || applyingSince > 0);
     applyBtn.hidden = !drafting;
     discardBtn.hidden = !drafting || changed === 0;
-    sweepBtn.hidden = ceilingBtn.hidden = drafting || running;
+    sweepBtn.hidden = ceilingBtn.hidden = trianglesBtn.hidden = drafting || running;
     applyBtn.disabled = applyingSince > 0;
     applyBtn.textContent = applyingSince ? `Applying · ${waited}` : `Apply ${changed} change${changed === 1 ? "" : "s"}`;
   }
@@ -534,6 +574,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
 
   sweepBtn.addEventListener("click", () => void doSweep().catch((e) => (progress.textContent = String(e))));
   ceilingBtn.addEventListener("click", () => void doCeiling().catch((e) => (progress.textContent = String(e))));
+  const doTriangles = (o: TriangleOptions = {}) => track("Triangle budget", (opts) => findTriangleBudget(lab, opts), o);
+  trianglesBtn.addEventListener("click", () => void doTriangles().catch((e) => (progress.textContent = String(e))));
 
   scroll.append(status, sceneSection, presetSection, effects, resultsSection);
   render();
@@ -542,6 +584,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   (globalThis as unknown as { labRunner: unknown }).labRunner = {
     runSweep: doSweep,
     findCeiling: doCeiling,
+    findTriangleBudget: doTriangles,
     reports: () => [...reports],
   };
 }
