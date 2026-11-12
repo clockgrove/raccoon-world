@@ -4,15 +4,25 @@ world: Raccoon World
 preset: cozy-storybook
 axes:
   rendering: painterly
-  realism: characters in naturalistic illustrated realism like Stevie's approved turnaround (soft, believable fur and anatomy, high quality, never photographic and never heavily painterly); the environment a touch more painterly than the characters, never photo-accurate; never cartoon-flat
+  realism: high-quality illustrated realism, never photographic and never cartoon-flat; characters are naturalistic and the environment a touch painterly (see looks)
   proportions: true-to-life raccoon proportions; each character keeps the build of their identity lock
   outline:
     weight: none
     colour: "{outline}"
   shading: soft
-  detailDensity: high on the characters' faces, masks and banded tails; medium on fur bodies; lower on background foliage
-  texture: characters with fine, soft, naturalistic fur and fur strands at every silhouette edge, no visible brushwork; environment with soft visible brushwork and a wet sheen on stone and wood
+  detailDensity: high where the eye lands, lower in the background
+  texture: soft, believable surfaces; each look below sets its own texture
   lightingKey: warm amber lantern and window light against cool blue-grey dusk and rain; soft rim light separating fur from the background
+looks:
+  character:
+    realism: naturalistic illustrated realism like Stevie's approved turnaround; soft, believable fur and anatomy; high quality; never photographic and never heavily painterly
+    detailDensity: high on faces, masks and banded tails; medium on fur bodies
+    texture: fine, soft, naturalistic fur with fur strands at every silhouette edge; no visible brushwork
+  environment:
+    rendering: painterly
+    realism: a touch more painterly than the characters; believable materials, never photo-accurate
+    detailDensity: medium on the house, porch, path and props; lower on background foliage
+    texture: soft visible brushwork; a wet sheen on stone and wood
 tone:
   audience: all-ages
   moodRange: [cosy, curious, calm, playful, rainy]
@@ -28,21 +38,27 @@ anchors:
     - path: ../references/stevie/turnaround.png
       role: character look anchor (owner, 2026-11-11)
       subject: stevie
+      look: character
     - path: ../references/jimothy/jimothy-peanut-painted.png
-      role: painted brushwork anchor for the environment; characters follow the turnaround's look
+      role: painted brushwork anchor for the environment
       subject: jimothy
+      look: environment
     - path: ../references/stevie/turnaround-three-quarter.png
       role: approved turnaround, three-quarter view (identity lock)
       subject: stevie
+      look: character
     - path: ../references/stevie/turnaround-front.png
       role: approved turnaround, front view
       subject: stevie
+      look: character
     - path: ../references/stevie/turnaround-side.png
       role: approved turnaround, side view
       subject: stevie
+      look: character
     - path: ../references/jimothy/sheet-cell-03.png
       role: contact sheet cell 3 (identity lock)
       subject: jimothy
+      look: character
   negative:
     - path: ../references/stevie/77-3d/preview-fal-three-quarter-bind.png
       role: unapproved 3D spike render; not the look
@@ -164,6 +180,8 @@ It is not pixel art, not flat cartoon and not photographic. Characters and envir
 - **Characters** look like Stevie's approved turnaround (`references/stevie/turnaround.png`): high-quality, naturalistic illustrated fur, soft and believable. They are not photographic and not heavily painterly. The 3D characters are textured and lit to match it.
 - **The environment** (the backyard) is a touch more painterly than the characters, so it never tries to be photo-accurate. Jimothy's painted portrait (`references/jimothy/jimothy-peanut-painted.png`) shows the kind of brushwork wanted there.
 - **Quality stays high throughout,** without over-indexing on painterly.
+
+The front matter's `looks` carry the split: `character` and `environment` each set their own realism, texture and detail, and every character spec sets `look: character`, so it is planned with the character look and its anchors. Shared axes (lighting, shading, palette and content limits) apply to both.
 
 ## Perspective
 
