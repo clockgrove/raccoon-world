@@ -22,4 +22,4 @@
 {"id":"final-decision-actor","kind":"path","operator":"eq","path":["decisions",106,"decision","objectId"],"run":"main","value":"grove.kit"},
 {"id":"final-decision-time","kind":"path","operator":"eq","path":["decisions",106,"decision","simulationTime"],"run":"main","value":10926586047},
 {"id":"final-decision-omits-after-death-belief","kind":"path","operator":"eq","path":["decisions",106,"decision","beliefRefs"],"run":"main","value":["scripted:kit-learned-snack","scripted:kit-stevie-before-death"]}
-],"kind":"clockgrove.scenario","name":"death-and-successor","pack":{"id":"clockgrove.green-lake-yard","version":"1.3.0"},"schemaVersion":1,"steps":[{"key":"span","kind":"advance","mode":"fast-forward","to":{"$bigint":"10972800000"}}]}
+],"kind":"clockgrove.scenario","name":"death-and-successor","pack":{"id":"clockgrove.green-lake-yard","version":"1.4.0"},"schemaVersion":1,"steps":[{"key":"span","kind":"advance","mode":"fast-forward","to":{"$bigint":"10972800000"}}]}

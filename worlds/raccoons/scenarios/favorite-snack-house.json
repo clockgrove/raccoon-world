@@ -18,4 +18,4 @@
 {"id":"hungry-before-expectation","kind":"path","operator":"eq","path":["decisions",6,"decision","candidates",12,"features","expectation"],"run":"main","value":0},
 {"id":"rule-intent-recorded","kind":"path","operator":"eq","path":["rules","intents",0,"ruleId"],"run":"main","value":"grove.on-choice"},
 {"id":"rule-intents-not-executed","kind":"path","operator":"eq","path":["rules","disposition"],"run":"main","value":"recorded-not-executed"}
-],"kind":"clockgrove.scenario","name":"favorite-snack-house","pack":{"id":"clockgrove.green-lake-yard","version":"1.3.0"},"schemaVersion":1,"steps":[{"key":"span","kind":"advance","mode":"fast-forward","to":{"$bigint":"8899200000"}}]}
+],"kind":"clockgrove.scenario","name":"favorite-snack-house","pack":{"id":"clockgrove.green-lake-yard","version":"1.4.0"},"schemaVersion":1,"steps":[{"key":"span","kind":"advance","mode":"fast-forward","to":{"$bigint":"8899200000"}}]}

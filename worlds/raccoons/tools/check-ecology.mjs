@@ -18,6 +18,14 @@ const pack = await loadPack(packDirectory);
 const build = await buildWorldPack(pack.source, packPorts);
 assert.equal(build.ok, true, JSON.stringify(build.error));
 const names = process.argv.slice(2);
+// Reviewed counts from the one-year run (see README, "Pressures in the one-year run").
+const YEAR = {
+  compostMeals: 16,
+  emptyCompostMeals: 332,
+  trashMeals: 1,
+  emptyTrashMeals: 1,
+  dryBowlDecisions: 2,
+};
 if (!names.length) names.push("closed-world-resources", "long-run-one-year");
 for (const name of names) {
   const document = decodeResource(
@@ -47,8 +55,12 @@ for (const name of names) {
           collected: 0,
           evaporated: 0,
           transfers: 0,
-          emptyBinAvoidances: 0,
-          dryPuddleAvoidances: 0,
+          compostMeals: 0,
+          emptyCompostMeals: 0,
+          trashMeals: 0,
+          emptyTrashMeals: 0,
+          dryBowlDecisions: 0,
+          householdStorePerceived: 0,
           calls: 0,
         };
         stats.set(run, stat);
@@ -63,19 +75,29 @@ for (const name of names) {
             if (outcome.ok) {
               for (const draft of outcome.result.decisionDrafts) {
                 const d = draft.decision;
-                for (const [target, counter] of [
-                  ["grove.trash-can", "emptyBinAvoidances"],
-                  ["grove.rain-puddle", "dryPuddleAvoidances"],
+                const exclusion = (target) =>
+                  d.candidates?.find((c) => c.action.targetObjectId === target)?.excludedReason;
+                const selected = d.selectedAction?.targetObjectId;
+                const meal = d.selectedAction?.kind === "seek-food";
+                // A bin the household fills only on its own day: full, the raccoon eats from it; seen
+                // empty, it eats from another holder instead.
+                for (const [target, full, empty] of [
+                  ["grove.yard-compost", "compostMeals", "emptyCompostMeals"],
+                  ["grove.trash-can", "trashMeals", "emptyTrashMeals"],
                 ]) {
-                  if (
-                    d.candidates?.some(
-                      (c) =>
-                        c.action.targetObjectId === target && c.excludedReason === "unavailable",
-                    ) &&
-                    d.selectedAction?.targetObjectId !== target
-                  )
-                    stat[counter] += 1;
+                  if (meal && selected === target) stat[full] += 1;
+                  if (meal && selected !== target && exclusion(target) === "unavailable")
+                    stat[empty] += 1;
                 }
+                if (
+                  ["grove.water-bowl", "grove.snack-house-bowl"].some(
+                    (bowl) => exclusion(bowl) === "unavailable",
+                  )
+                )
+                  stat.dryBowlDecisions += 1;
+                for (const store of ["grove.household-food", "grove.household-water"])
+                  if (exclusion(store) !== undefined && exclusion(store) !== "outside-current-space-or-frame")
+                    stat.householdStorePerceived += 1;
               }
               for (const event of outcome.result.events) {
                 const p = event.payload;
@@ -122,7 +144,17 @@ for (const name of names) {
       assert.equal(stat.plantYield, 64, `${run}: finite fruit yield`);
       assert.ok(stat.collected > 0 && stat.evaporated > 0, `${run}: weather pressures`);
       assert.ok(stat.transfers > 0, `${run}: household provisioning`);
-      assert.ok(stat.emptyBinAvoidances > 0, `${run}: empty bins affect choices`);
+      // Exact, reviewed values from the native year run (identical in both execution shapes).
+      assert.equal(stat.compostMeals, YEAR.compostMeals, `${run}: meals from the fresh compost heap`);
+      assert.equal(
+        stat.emptyCompostMeals,
+        YEAR.emptyCompostMeals,
+        `${run}: compost heap seen empty, meal taken from another holder`,
+      );
+      assert.equal(stat.trashMeals, YEAR.trashMeals, `${run}: meals from the bin`);
+      assert.equal(stat.emptyTrashMeals, YEAR.emptyTrashMeals, `${run}: bin seen empty`);
+      assert.equal(stat.dryBowlDecisions, YEAR.dryBowlDecisions, `${run}: home bowl seen dry`);
+      assert.equal(stat.householdStorePerceived, 0, `${run}: household stores stay off-screen`);
     }
   }
 }

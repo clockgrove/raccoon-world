@@ -1,4 +1,4 @@
-# clockgrove.green-lake-yard@1.3.0
+# clockgrove.green-lake-yard@1.4.0
 
 The Wave 1 reference world: a data-only pack. It holds no code and no engine behaviour. Its
 versioned presentation metadata, `presentation.json` (`presentationVersion` 1, issue 813), binds the stable actor
@@ -21,14 +21,17 @@ state hash depends on it. Every value below is a resource the shared conformance
   which joins the `fence-gap` anchor to the `snack-house` region and starts open. Because the gate separates
   `snack-door` from the other anchors, every route to `snack-door` or to a point inside the snack house goes
   through the gate, also from a start that is not on an anchor.
+- **Space** `grove.zz-household-store`: a separate frame with no regions, anchors or routes, holding only the
+  household's two stores. Nothing in it is in any raccoon's space, so the stores are never perceived, routed
+  to or eaten from; only the household processes move material out of them.
 - **Archetypes**: social raccoon (`grove.raccoon-kind`), kit (`grove.kit-kind`), den, porch, food/trash source,
   water source, a cedar hollow shelter, cedar, herb (plant), the weather/day-night sky and a gate
   (`grove.gate-kind`). Both raccoon archetypes carry the `grove.needs` trait.
 - **Actors**: Stevie, Gracie and a kit with `lifecycle` seeds (one household; the kit names Gracie and Stevie as
-  parents), plus the placed objects: trash can, snack dish, cat-food bowl, den stash, pantry bin, finite household stores, fruit tree, berry patch, rain puddle, two water bowls (one in the den,
+  parents), plus the placed objects: trash can, snack dish, cat-food bowl, den stash, pantry bin, yard compost heap, finite household stores (in their own space), fruit tree, berry patch, rain puddle, two water bowls (one in the den,
   one in the snack house), den, porch, cedar hollow, cedar, herb, sky and the fence gate (`grove.fence-gate`,
   carrying the portal).
-- **Policies**: one clock policy and one `clockgrove.world-behavior-policy` (`grove-yard-3`) covering the clock
+- **Policies**: one clock policy and one `clockgrove.world-behavior-policy` (`grove-yard-4`) covering the clock
   ratio, a three-day weather cycle with day and night, needs, utility, growth and resources, gestation, aging and
   death. Its utility record declares ambiguity (`score-margin` with `maxMargin` 0, so exact score ties are
   ambiguous, and the novelty condition `unperceived-target`): such a decision still takes its routine choice and
@@ -46,7 +49,7 @@ state hash depends on it. Every value below is a resource the shared conformance
 
 ## Hunger against rain
 
-`grove-yard-3` weighs shelter at 926 (`shelterWeight`) against hunger at 5000 (`hungerWeight`), so a hungry
+`grove-yard-4` weighs shelter at 926 (`shelterWeight`) against hunger at 5000 (`hungerWeight`), so a hungry
 raccoon eats in the rain instead of sheltering next to food.
 
 - **Threshold: hunger 6000.** Take a dry raccoon in the heaviest rain (9000), with the den (protection 9000) and
@@ -64,64 +67,125 @@ raccoon eats in the rain instead of sheltering next to food.
 
 ## Closed-world material policy
 
-`resources/policies/behavior.json` declares only platform causes. Genesis holds finite household
-inventory: **10,000 food units and 20,000 water units**, away from the raccoons’ normal perception range.
-These are the house’s supplies for this run, not inexhaustible taps. Nothing replenishes either store.
-The food budget covers at most 3,314 units of scheduled deliveries over 365 mornings, leaving room for
-reviewed scenario transfers. Water covers at most 17,520 units (two 24-unit deliveries per morning).
-Actual transfers can be lower: a nonempty perishable destination or a full water bowl refuses a delivery.
-The refusal is journaled and that occurrence is spent; it never creates inventory.
+`resources/policies/behavior.json` declares only platform causes: household transfers from finite stores,
+rain collection and evaporation, and plant growth yield. No food or water appears from nothing.
 
-All six household processes start at day 100, 06:00 (`8661600000` ms), under principal
-`grove.householder`. This is an off-screen person, not an actor with new capabilities.
+### Household stores
 
-| Process | Finite transfer and cadence | Reason |
+Genesis holds the house's finite supplies: **40,000 food units and 140,000 water units**, in
+`grove.zz-household-store`. The stores sit in their own space, as Clockgrove's #187 reference does, so they
+are household inventory, not food lying in the yard: a raccoon can only eat what a household process has
+moved into the yard. Nothing replenishes either store.
+
+**Horizon: about ten years.** The scheduled deliveries ask for at most 3,526 food units a year (cat food
+1,095, snacks 1,095, pantry 488, bins 636, compost 212) and 17,520 water units a year (two 24-unit fills a
+morning). Refused deliveries take less: the reviewed one-year run before the compost heap drew 3,314 food
+and 11,664 water, because a bowl still holding rain refuses its morning fill. 40,000 food covers more than
+eleven years of the food maximum. 140,000 water covers twelve years at the measured rate and eight years if
+every fill were accepted. A world run past that horizon empties a store: each later delivery is refused and
+journaled, and the yard lives on rain and growth alone. That is the closed-world rule; the horizon is stated
+here so it is a known limit, not a surprise.
+
+### Household processes
+
+All household processes act under principal `grove.householder`, an off-screen person declared as a world
+process, not an actor. Each process is an ordinary `resource.transfer` from a store, journaled with
+`process.command-attempted` and the transfer, so every refill names its cause. A nonempty perishable
+destination or a full water bowl refuses a delivery; the refusal is journaled and that occurrence is spent.
+
+| Process | Transfer and cadence | Reason |
 | --- | --- | --- |
-| `grove.feed-cats` | 3 food to `grove.cat-food-bowl`, daily | Feral-cat food beside the den supports Gracie and newborns; raccoons raid it. |
-| `grove.fill-snack-dish` | 3 food to `grove.snack-dish`, daily | Household leftovers support the snack-house family. |
-| `grove.fill-pantry` | 4 food to `grove.pantry-bin`, every 3 days | An intermittent alternative; the bin is empty between deliveries. |
-| `grove.bins-out` | 12 food to `grove.trash-can`, weekly | Weekly household rubbish, rather than daily spontaneous trash. |
-| `grove.fill-water-bowl` | 24 water to `grove.water-bowl`, daily | Outside drinking dish near the den. |
-| `grove.fill-snack-house-bowl` | 24 water to `grove.snack-house-bowl`, daily | Outside drinking dish near the snack house. |
+| `grove.feed-cats` | 3 food to `grove.cat-food-bowl`, daily from day 100, 06:00 | The feral-cat bowl beside the den, which the raccoons raid. Three one-unit meals a day feed the family living by the den. |
+| `grove.fill-snack-dish` | 3 food to `grove.snack-dish`, daily from day 100, 06:00 | The same meal count for the snack-house family. |
+| `grove.fill-pantry` | 4 food to `grove.pantry-bin`, every 3 days from day 100, 06:00 | The house's pantry bin, out of the raccoons' reach; an intermittent store the food-decay scenario drains. |
+| `grove.bins-out` | 12 food to `grove.trash-can`, weekly from day 100, 06:00 | Rubbish goes out once a week, not daily: with a 24-hour shelf life the bin is empty six days in seven. Twelve units is the week's food waste: four days' worth of a dish's three-unit meal. |
+| `grove.tip-scraps` | 4 food to `grove.yard-compost`, weekly from day 168, 18:00 | Kitchen scraps tipped on the compost heap by the den after the evening meal. Four units is one fresh meal for each of up to four raccoons (`maxPopulation`). Delivered at 18:00, the scraps are six hours old at the den's midnight decisions, fresher than the 18-hour-old cat food, so the raccoons eat them first; the rest of the week the heap is empty. The heap starts on day 168, after the last reviewed short scenario (`months-fast-forward` ends on day 161), so those scenarios keep their reviewed behaviour. |
+| `grove.fill-water-bowl` | 24 water to `grove.water-bowl`, daily from day 100, 06:00 | The outside dish by the den, filled each morning. 24 units is a day's evaporation (below), so a filled bowl lasts until the next morning in dry weather. |
+| `grove.fill-snack-house-bowl` | 24 water to `grove.snack-house-bowl`, daily from day 100, 06:00 | The same dish at the snack house. |
 
-Cat food, snacks, trash, pantry food and carried-to-den food have a 24-hour shelf life. Thus weekly
-bins really become empty; the pantry is intermittent too. The den stash starts empty and has **no refill
-process**. Ordinary transfers debit a source, let a raccoon carry a food holder, then deposit its contents
-in the stash. Direct transfers between declared perishable holders retain arrival times. The scenario’s carried holder is an ordinary inventory holder; its later deposit uses the transfer instant under the platform’s existing freshness rules.
-The recorded daily pantry rule now proposes a finite transfer; rules remain recorded, not executed.
+Cat food, snacks, trash, compost, pantry food and carried-to-den food have a 24-hour shelf life (one decision
+interval): food the household puts out is eaten that day or spoils, so a bin is really empty between
+deliveries. The den stash starts empty and has **no refill process**: food reaches it only when a raccoon
+carries it there (an ordinary transfer into a carried holder, movement, and a transfer into the stash). Direct
+transfers between declared perishable holders keep their arrival times; the carried holder's later deposit
+uses the transfer instant under the platform's freshness rules. The recorded daily pantry rule proposes a
+finite transfer; rules remain recorded, not executed.
+
+### Growth
 
 The fruit tree and garden berries each yield **16 food at 10 growing days and another 16 at 20 growing
-days** (864000000 and 1728000000 growing ms). Growth counts bright light with wetness at least 3000,
-not elapsed calendar days. Two finite crops provide forage without recurring magical replenishment.
-The cedar and herb keep their existing non-food growth stages. Fruit stays on its plant until consumed
-or transferred; the platform does not make yielding plants perishable or repeat the final stage.
+days** (864000000 and 1728000000 growing ms). Growth counts bright light with wetness at least 3000, not
+calendar days, so a crop needs both sun and rain. Both plants reach both stages in the year run (64 units
+in all, asserted exactly). Sixteen units is a picking that feeds one raccoon for 16 days at one meal a day,
+and two pickings a plant keep growth a seasonal supplement, not a second household. Fruit stays on its plant until eaten
+or moved; the platform does not make yielding plants perishable or repeat the final stage. The tree and
+berries stand in the garden, outside the den and snack-house families' 5 m perception range, so the
+year run's raccoons, who stay near home food, do not eat the fruit; it is forage for a raccoon that
+goes to the garden. The cedar and herb keep their existing non-food growth stages.
 
 ## Water and needs
 
-Both home bowls start empty and hold **32 water units**. The puddle starts empty, holds **12**, collects
-4 units/hour at full rain and evaporates 1 unit/hour. Each bowl collects 2 units/hour at full rain before
-shelter attenuation, and evaporates 1 unit/hour. Collection scales by rain intensity and the unprotected
-fraction; evaporation stops at empty, collection stops at capacity, and fractional quantities carry
-between advances. Dry weather can empty the puddle; household transfers provide reliable drinking water.
-The three-day weather cycle includes two completely dry days, 12 hours of heavy rain, six dry hours and
-six hours of light rain. These are real periods without collection, not cosmetic weather.
+| Holder | Capacity | Catchment (units/hour at full rain) | Evaporation (units/hour) |
+| --- | --- | --- | --- |
+| `grove.water-bowl`, `grove.snack-house-bowl` | 32 | 2 | 1 |
+| `grove.rain-puddle` | 12 | 4 | 1 |
 
-The bowls remain co-located with the home food: den at (8000, 22000), snack house at (30000, 13000).
-That keeps food and water within the 5 m perception range, including for newborns. The meal relieves
-1200 hunger against 800 daily hunger growth: two meals repay a day spent drinking or sheltering.
-Thirst grows 100/day and a drink relieves 1000. Utility weighs both hunger and thirst at 5000; the
-926 shelter weight preserves the hunger-6000 rain threshold explained above.
-The one-year native run peaks at hunger 6800 and thirst 5446, below both urgent thresholds (7000).
-Wet exposure can briefly lower health to 9989; hunger and thirst never become discomfort or health-loss
-causes. The proof checks every integrated needs/health event, not just the final population.
+- **Bowl capacity 32**: one 24-unit morning fill plus 8 units of headroom for rain. A bowl holding more
+  than 8 units refuses the morning delivery, so the household tops up a dish rather than overfilling it.
+- **Bowl catchment 2**: a small dish. Twelve hours of heavy rain (9000) collect about 21 units, nearly one
+  morning's fill, so a storm alone can water a home for a day.
+- **Puddle capacity 12, catchment 4**: a shallow hollow drains a wider area than a dish but holds little. It
+  fills in about five hours of heavy rain and, at 1 unit an hour, is dry 12 hours after the rain stops:
+  for most of the two dry days in each three-day cycle it holds nothing. That is the dry-spell pressure the
+  `closed-world-resources` scenario shows: a raccoon at the garden drinks from the wet puddle and, at the
+  same puddle dried, stays.
+- **Evaporation 1 unit an hour** for every holder: the smallest nonzero rate the policy accepts (it is in
+  whole units per hour). A bowl therefore loses 24 units a day, exactly one morning delivery: in dry
+  weather a bowl filled at 06:00 is empty by the next morning. Most household water evaporates rather than
+  being drunk. In the year run each bowl collects about 2,990 units from rain and receives about 5,830 from
+  the household, loses about 8,750 to evaporation, and gives about 60 drinks. That is intended: an outdoor
+  dish also waters cats and birds, and a raccoon needs one drink about every ten days (below).
+
+Collection scales by rain intensity and the unprotected fraction; evaporation stops at empty, collection
+stops at capacity, and fractional quantities carry between advances. The three-day weather cycle has two
+completely dry days, 12 hours of heavy rain, six dry hours and six hours of light rain.
+
+The bowls stay co-located with the home food: den at (8000, 22000), snack house at (30000, 13000), and the
+compost heap 2.2 m from the den mouth at (10000, 23000). That keeps food and water within the 5 m
+perception range, including for newborns. A meal relieves 1200 hunger against 800 daily hunger growth:
+two meals repay a day spent drinking or sheltering. Thirst grows 100 a day and a drink relieves 1000, so one
+drink lasts ten days. Utility weighs hunger and thirst at 5000; the 926 shelter weight preserves the
+hunger-6000 rain threshold above.
+
+### Pressures in the one-year run
+
+`tools/check-ecology.mjs` asserts these exact counts, the same in the live and aggregate runs:
+
+- **Empty compost heap: 332 meals taken elsewhere.** From day 168 the den family meets the heap on each
+  decision. In 16 decisions it holds the fresh scraps and the raccoon eats there; in 332 it is empty
+  (`unavailable`) and the raccoon eats the older cat food instead. The bin's weekly rhythm changes what they
+  eat, not just what they see.
+- **Trash can: 1 meal, 1 seen empty.** The trash can sits at `trash-front`, away from both homes, so only
+  Stevie's early decisions there meet it.
+- **Dry home bowl: 2 decisions.** A home bowl is seen dry twice; the morning fill matches a day's
+  evaporation, so a home bowl is rarely dry at a decision. Across the year the three
+  outdoor water holders collect 9,523 units from rain and lose 21,039 to evaporation.
+- **No household store is ever perceived**: every decision lists both stores as
+  `outside-current-space-or-frame`.
+- **Needs**: hunger peaks at 6800 and thirst at 5446, below both urgent thresholds (7000). Wet exposure can
+  briefly lower health to 9989; hunger and thirst never become discomfort or health-loss causes. The proof
+  checks every integrated needs and health event, not just the final population. Both plants yield 64
+  units in all.
+
+### Origins
 
 Every accepted material change is checked by native per-holder and global conservation invariants.
 `resource.weather-integrated` names rain collection and evaporation; `growth.stage-changed` names the
 plant and yielding stage; a household refill records `process.command-attempted` followed by
 `resource.transferred`, naming the principal, process and finite source. Consumption identifies the
-food or water holder. Recorded Why displays the historical producing event’s rain, growth or transfer
+food or water holder. Recorded Why displays the historical producing event's rain, growth or transfer
 cause (including household process identity), which remains inspectable after consumption. This uses
-Clockgrove’s existing cause history; it does not add transitive inventory lineage to a meal command.
+Clockgrove's existing cause history; it does not add transitive inventory lineage to a meal command.
 
 ## Scenarios
 
