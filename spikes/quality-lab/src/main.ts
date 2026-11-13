@@ -296,15 +296,15 @@ const nextFrame = () => new Promise<number>((resolve) => requestAnimationFrame(r
 async function applyConfig(next: LabConfig) {
   busy = true;
   try {
-    config = { ...next };
+    config = { coat: "summer", furMode: "groomed", ...next };
     // Resizing the canvas clears it; only a pixel-ratio change needs it, so the last frame stays up during a rebuild.
     if (renderer.getPixelRatio() !== config.dpr) {
       renderer.setPixelRatio(config.dpr);
       renderer.setSize(...viewSize(), false);
     }
     setCast(config.cast);
-    stevie?.setFur(config.furShells, config.furFins);
-    for (const raccoon of shownCast()) raccoon.setFur(config.furShells, config.furFins);
+    stevie?.setFur(config.furShells, config.furFins, config.coat ?? "summer", config.furMode ?? "groomed");
+    for (const raccoon of shownCast()) raccoon.setFur(config.furShells, config.furFins, config.coat ?? "summer", config.furMode ?? "groomed");
     detail?.set(config.detail);
     if (shower.mesh.count !== config.rainCount) {
       scene.remove(shower.mesh);
@@ -686,7 +686,7 @@ async function init() {
   const propDownloads = Object.fromEntries(Object.keys(set.slots).map((name) => [name, tracked(`props/${name}.glb`, manifest[model(`props/${name}.glb`)])]));
   paintDownloads();
   const [loaded] = await Promise.all([
-    loadStevie(media(model("stevie.glb")), LOOP, stevieDownload.onProgress, gltf).finally(stevieDownload.finish),
+    loadStevie(media(model("stevie.glb")), LOOP, stevieDownload.onProgress, gltf, (key) => tracked(key, manifest[key])).finally(stevieDownload.finish),
     loadProps(set.slots, set.groups.props as THREE.Object3D, media(model("props/")), {
       onProgress: (name, event) => propDownloads[name]?.onProgress(event),
       onDone: (name) => propDownloads[name]?.finish(),

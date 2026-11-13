@@ -2,7 +2,7 @@
 // no three.js, so the page UI, the CI journey and a node test can all drive it.
 
 import { BUDGET_SLACK, DEFAULT_COST_ORDER, KNOBS, KNOB_LABELS, LEVELS, PRESET_ORDER, PRESETS, budgetMs, stepDown, targetMs, sweepSteps } from "./config.ts";
-import type { Cast, DeviceInfo, Knob, LabConfig, LabHandle, LabStatus, Measurement, Platform, StateName, ViewName } from "./config.ts";
+import type { Cast, DeviceInfo, Knob, LabConfig, LabHandle, LabStatus, Measurement, Platform, PresetName, StateName, ViewName } from "./config.ts";
 
 export interface StepResult {
   id: string;
@@ -192,7 +192,7 @@ async function measureStep(
 export async function runSweep(lab: LabHandle, opts: RunOptions = {}): Promise<SweepReport> {
   const start = lab.status();
   const original = { ...start.config };
-  const steps = sweepSteps().slice(0, opts.maxSteps ?? Number.POSITIVE_INFINITY);
+  const steps = sweepSteps().slice(0, opts.maxSteps ?? Number.POSITIVE_INFINITY).map((s) => ({ ...s, config: { ...s.config, coat: original.coat, furMode: original.furMode } }));
   const report: SweepReport = {
     kind: "sweep",
     startedAt: new Date().toISOString(),
@@ -210,7 +210,7 @@ export async function runSweep(lab: LabHandle, opts: RunOptions = {}): Promise<S
   };
   // The presets again at the close-up zoom (Stevie at about a third of the frame), the game's other framing. A short
   // run (maxSteps) skips them.
-  const close = opts.maxSteps === undefined ? PRESET_ORDER.map((name) => ({ id: `close:preset:${name}`, label: `Close-up ${name}`, config: { ...PRESETS[name] } })) : [];
+  const close = opts.maxSteps === undefined ? PRESET_ORDER.map((name) => ({ id: `close:preset:${name}`, label: `Close-up ${name}`, config: { ...PRESETS[name], coat: original.coat, furMode: original.furMode } })) : [];
   const total = steps.length + close.length;
   try {
     for (let i = 0; i < steps.length; i++) {
@@ -288,7 +288,7 @@ export async function findCeiling(lab: LabHandle, opts: CeilingOptions = {}): Pr
     ceiling: original,
     steps: [],
   };
-  let config = { ...PRESETS.ultra };
+  let config = { ...PRESETS.ultra, coat: original.coat, furMode: original.furMode };
   let prev: StepResult | null = null;
   let removed: Removed | undefined;
   try {
@@ -605,7 +605,79 @@ export async function runSoak(lab: LabHandle, opts: SoakOptions = {}): Promise<S
   return report;
 }
 
-export type AnyReport = SweepReport | CeilingReport | TriangleReport | CastReport | SoakReport;
+export interface FurComparisonReport {
+  kind: "fur";
+  startedAt: string;
+  device?: DeviceInfo;
+  platform: Platform;
+  backend: LabStatus["backend"];
+  adapter: string;
+  software: boolean;
+  timestamps: boolean;
+  view: ViewName;
+  state: StateName;
+  coat: LabConfig["coat"];
+  steps: StepResult[];
+  /** Groomed minus uniform, with every other setting held fixed. */
+  costs: { preset: PresetName; gpuMsP50: number | null; cpuMsP50: number | null }[];
+  castBudgets: Omit<CastReport, "steps">[];
+}
+
+export interface FurComparisonOptions extends RunOptions {
+  /** Defaults to every preset; a short focused browser proof can select just Medium. */
+  presets?: readonly PresetName[];
+  /** Effects held by both cast runs; defaults to the page's current config. */
+  base?: LabConfig;
+}
+
+export async function compareFur(lab: LabHandle, opts: FurComparisonOptions = {}): Promise<FurComparisonReport> {
+  const start = lab.status();
+  const original = { ...start.config };
+  const presets = opts.presets ?? PRESET_ORDER;
+  const report: FurComparisonReport = {
+    kind: "fur", startedAt: new Date().toISOString(), device: start.device,
+    platform: start.platform, backend: start.backend, adapter: start.adapter,
+    software: start.software, timestamps: start.timestamps, view: start.view,
+    state: start.state, coat: original.coat ?? "summer", steps: [], costs: [], castBudgets: [],
+  };
+  const total = presets.length * 2 + Math.min(opts.maxSteps ?? CAST_STEPS.length, CAST_STEPS.length) * 2;
+  const append = (r: StepResult) => {
+    report.steps.push(r);
+    opts.onStep?.(r, report.steps.length - 1, total);
+  };
+  try {
+    for (const preset of presets) {
+      if (opts.signal?.aborted) break;
+      const pair: StepResult[] = [];
+      for (const furMode of ["uniform", "groomed"] as const) {
+        if (opts.signal?.aborted) break;
+        const config = { ...PRESETS[preset], coat: report.coat, furMode };
+        const r = await measureStep(lab, { id: `fur:${preset}:${furMode}`, label: `${preset} · ${furMode} · ${report.coat}`, config }, opts);
+        pair.push(r);
+        append(r);
+      }
+      const [uniform, groomed] = pair;
+      if (uniform && groomed) report.costs.push({ preset,
+        gpuMsP50: sub(groomed.measurement?.gpuMsP50, uniform.measurement?.gpuMsP50),
+        cpuMsP50: sub(groomed.measurement?.cpuMsP50, uniform.measurement?.cpuMsP50),
+      });
+    }
+    for (const furMode of ["uniform", "groomed"] as const) {
+      if (opts.signal?.aborted) break;
+      const base = { ...(opts.base ?? original), coat: report.coat, furMode };
+      // Both curves measure the same counts, including counts beyond a budget miss.
+      const { steps, ...summary } = await findCastBudget(lab, { ...opts, base, allSteps: true,
+        onStep: (r) => append({ ...r, id: `fur:${furMode}:${r.id}`, label: `${furMode} · ${r.label}` }),
+      });
+      report.castBudgets.push(summary);
+    }
+  } finally {
+    await lab.apply(original).catch(() => {});
+  }
+  return report;
+}
+
+export type AnyReport = SweepReport | CeilingReport | TriangleReport | CastReport | SoakReport | FurComparisonReport;
 
 const stripShots = <T extends { steps: { screenshot: string }[] }>(r: T): unknown => ({
   ...r,
@@ -670,7 +742,7 @@ export function slimJson(reports: AnyReport[]): string {
   const slim = reports.map((r) => {
     const { steps, ...head } = r as AnyReport & { costs?: unknown };
     const rest: Record<string, unknown> = { ...head };
-    delete rest.costs; // derivable from the sweep rows
+    if (r.kind === "sweep") delete rest.costs; // derivable from the sweep rows
     delete rest.device; // stated once, as device.hardware
     for (const k of device) if (rest[k] === common[k] || k === "userAgent") delete rest[k];
     // Trailing nulls dropped from each row (no error, no GPU time...).

@@ -3,6 +3,8 @@
 // drive. Pure data and types: no three.js here, so the runner and the scripts can share it.
 
 /** Fur shells drawn over Stevie's body (0 = none). */
+export type Coat = "summer" | "winter";
+export type FurMode = "groomed" | "uniform";
 export type FurShells = 0 | 4 | 8 | 16;
 export type Antialias = "none" | "msaa" | "traa";
 /** Upscaling: the scene is drawn at RENDER_SCALE of the canvas and brought back up by TAAU or FSR 1. */
@@ -13,6 +15,8 @@ export type Cast = 1 | 3 | 10 | 20;
 export type Upscale = "none" | "taau" | "fsr";
 
 export interface LabConfig {
+  coat: Coat;
+  furMode: FurMode;
   /** Fur: shell count. */
   furShells: FurShells;
   /** Fur: silhouette fins. */
@@ -49,7 +53,7 @@ export interface LabConfig {
   cast: Cast;
 }
 
-export type Knob = keyof LabConfig;
+export type Knob = Exclude<keyof LabConfig, "coat" | "furMode">;
 
 /** The scale the scene pass draws at when an upscaler is on. */
 export const RENDER_SCALE = 0.67;
@@ -107,6 +111,8 @@ export type PresetName = "ultra" | "high" | "medium" | "low";
 /** Ultra is every effect at its top level. No preset is reserved for phones. */
 export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
   ultra: {
+    coat: "summer",
+    furMode: "groomed",
     furShells: 16,
     furFins: true,
     haze: true,
@@ -128,6 +134,8 @@ export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
     cast: 1,
   },
   high: {
+    coat: "summer",
+    furMode: "groomed",
     furShells: 8,
     furFins: true,
     haze: false,
@@ -151,6 +159,8 @@ export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
     cast: 1,
   },
   medium: {
+    coat: "summer",
+    furMode: "groomed",
     furShells: 4,
     furFins: false,
     haze: false,
@@ -172,6 +182,8 @@ export const PRESETS: Readonly<Record<PresetName, LabConfig>> = {
     cast: 1,
   },
   low: {
+    coat: "summer",
+    furMode: "groomed",
     furShells: 0,
     furFins: false,
     haze: false,
