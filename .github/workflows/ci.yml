@@ -20,7 +20,8 @@ permissions:
 jobs:
   ci:
     runs-on: ubuntu-26.04
-    timeout-minutes: 20
+    # The software-GPU slice alone takes 9–18 min on main; 20 cancelled main and rw#33 runs mid-slice.
+    timeout-minutes: 35
     steps:
       - name: Check out with Git LFS objects
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
