@@ -1,1 +1,1 @@
-{"components":{},"id":"grove.raccoon-kind","traits":[{"id":"grove.needs","version":1}],"version":1}
+{"components":{"clockgrove.containment":{"state":{"capacity":1,"kind":"persona-inventory"},"type":"clockgrove.containment","version":1}},"id":"grove.raccoon-kind","traits":[{"id":"grove.needs","version":1}],"version":1}

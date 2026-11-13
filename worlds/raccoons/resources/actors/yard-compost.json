@@ -1,0 +1,1 @@
+{"archetype":{"id":"grove.food-source-kind","version":1},"capabilities":[],"id":"grove.yard-compost","overrides":[],"placement":{"coordinates":[{"$bigint":"10000"},{"$bigint":"23000"}],"space":{"id":"grove.neighborhood","version":1}},"traits":[]}
