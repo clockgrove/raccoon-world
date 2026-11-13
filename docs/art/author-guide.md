@@ -93,6 +93,8 @@ bash scripts/assetforge.sh run animation-qa --import .assetforge/imports/<import
 
 Then commit the strip, manifest and provenance. `.gitattributes` puts the PNG in Git LFS, and `REUSE.toml`'s `**` annotation covers an MIT pick.
 
+**Pick into a clone with Git LFS set up.** A clone made where Git LFS isn't installed globally has no LFS filters, so its media are pointer files and `git add` would commit picked media as plain blobs. Run `git lfs install --local` and `git lfs pull` in the clone before the pick. `git diff --cached` then shows each picked file as a three-line pointer.
+
 **A CC-BY-4.0 pick** needs its own REUSE annotation, in the same commit, the way `REUSE.toml` already does for the Meshy models. Add an `override` annotation for the strip and its provenance file, with the provider as copyright holder and the credit line Assetforge recorded:
 
 ```toml
