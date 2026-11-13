@@ -1,7 +1,7 @@
 // Drives the quality lab (issue 45) in a real browser through `globalThis.lab` and `globalThis.labRunner`.
 //
 //   node spikes/quality-lab/scripts/lab.mjs journey [--backend webgpu|webgl2|both]
-//       CI check on SwiftShader: builds the static site (the one GitHub Pages serves), serves it, and on each backend
+//       CI check on SwiftShader: runs tests/media.journey.node.test.mjs (the shipped media), then builds the static site (the one GitHub Pages serves), serves it, and on each backend
 //       checks the renderer is the software GPU and reports itself so, then applies every preset and every sweep
 //       config and checks each one draws a frame without an error, that the walk moves Stevie, and that the runner's
 //       sweep and ceiling search run and report no times. Software-GPU times are never reported.
@@ -261,6 +261,20 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
   }
 }
 
+// Kirk's pick c1 (#107): the source GLB's sha256, as its manifest's contentHash records it. The earlier c3 had the
+// same triangle and joint counts, so the hash is what tells them apart.
+const STEVIE_C1_SHA256 = "2680c2c4f6d9c9ecf4210f7054a40bcb62a71047688161424edb35bd97840985";
+
+/** The sha256 of the model file the page loaded, fetched again from the URL Stevie reports. */
+async function loadedSha256(page) {
+  return page.evaluate(async () => {
+    const bytes = await fetch(new URL(globalThis.lab.stevie().url, document.baseURI)).then((r) => r.arrayBuffer());
+    return [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))].map((b) => b.toString(16).padStart(2, "0")).join("");
+  });
+}
+
+const near = (a, b, tolerance) => Math.abs(a - b) <= tolerance * Math.abs(b);
+
 async function checkGroom(page, backend, errors, out) {
   if (await page.locator(".ql.collapsed").count()) await page.locator(".ql-head").click();
   const reportCount = await page.evaluate(() => globalThis.labRunner.reports().length);
@@ -277,6 +291,12 @@ async function checkGroom(page, backend, errors, out) {
   });
   const initial = await page.evaluate(() => globalThis.lab.stevie());
   check(initial.source === "assets/models/stevie/stevie.glb" && initial.triangles === 59847 && initial.joints === 30, `${backend}: wrong approved model: ${JSON.stringify(initial)}`);
+  // The loaded file is the web media built from c1: its bytes match web-media.json, whose source hash is c1's.
+  const webMedia = JSON.parse(await readFile(path.join(repo, "references/web-media/web-media.json"), "utf8")).files["stevie.glb"];
+  const loaded = await loadedSha256(page);
+  check(webMedia.sourceSha256 === STEVIE_C1_SHA256 && loaded === webMedia.sha256 && initial.contentHash === STEVIE_C1_SHA256, `${backend}: loaded model is not c1's web media: ${JSON.stringify({ url: initial.url, loaded, webMedia: webMedia.sha256, contentHash: initial.contentHash })}`);
+  // The quantized media keeps its scale in the inverse bind matrices; the lab must find it, not assume metres.
+  check(initial.metresPerUnit.every((m) => m > 0.2 && m < 0.6) && initial.metresPerUnit.every((m) => near(m, initial.metresPerUnit[0], 1e-3)), `${backend}: compressed media's bind scale not found: ${JSON.stringify(initial.metresPerUnit)}`);
   const download = await page.evaluate(async () => {
     const sizes = await fetch(new URL("media/manifest.json", document.baseURI)).then((r) => r.json());
     const bytes = Object.entries(sizes).filter(([key]) => !key.startsWith("source/") && /\.(glb|ktx2)$/u.test(key)).reduce((sum, [, size]) => sum + size, 0);
@@ -293,6 +313,7 @@ async function checkGroom(page, backend, errors, out) {
     }, { coat, furMode });
     const metrics = await page.evaluate(() => globalThis.lab.stevie());
     check(metrics.coat === coat && metrics.furMode === furMode && metrics.maxLengthM === maxLengthM, `${backend}: wrong groom: ${JSON.stringify(metrics)}`);
+    check(metrics.drawnMaxLengthM?.length === 3 && metrics.drawnMaxLengthM.every((m) => near(m, maxLengthM, 1e-6)), `${backend}: ${coat} ${furMode} fur is not drawn at ${maxLengthM} m: ${JSON.stringify(metrics.drawnMaxLengthM)}`);
     if (furMode === "groomed") {
       check(["length", "direction", "density"].every((kind) => metrics.groom?.[kind] === `assets/models/stevie/stevie.groom.${coat}.${kind}.ktx2`), `${backend}: wrong seasonal map paths: ${JSON.stringify(metrics.groom)}`);
       check(metrics.baseColor === "assets/models/stevie/stevie.baseColor.ktx2" && metrics.eyesMask === "assets/models/stevie/stevie.eyes.mask.ktx2", `${backend}: missing base colour or eye mask`);
@@ -335,6 +356,7 @@ async function checkGroom(page, backend, errors, out) {
   check(copied.reports.length === reportCount + 1 && added.kind === "fur" && added.costs.length === 1 && added.costs[0].cpuMsP50 === null && added.castBudgets.length === 2, `${backend}: comparison missing from Copy results`);
   check(errors.length === 0, `${backend}: page errors: ${errors.join("; ")}`);
   console.log(`lab groom (${backend}): controls, paired preset/cast steps and exported results pass; software timings suppressed`);
+  return initial;
 }
 
 /** The issue 81 path: shipped media, both coat renders and paired measurements through the real page. */
@@ -344,12 +366,13 @@ async function groomJourney(args) {
   const site = await staticServer(SITE);
   const browser = await chromium.launch({ headless: true, args: SWIFTSHADER_FLAGS });
   try {
+    let compressed;
     for (const backend of args.backend && args.backend !== "both" ? [args.backend] : ["webgpu", "webgl2"]) {
       console.log(`lab groom (${backend}): opening approved Stevie in the yard`);
       const { page, context, status, errors } = await open(browser, site.url, { backend, width: Number(args.width ?? 640), height: Number(args.height ?? 360), ui: true, extra: { t: "1", preset: "medium", idle: "1" } });
       check(status.backend === backend && status.software, `${backend}: expected software ${backend}`);
       check(status.config.coat === "summer" && status.config.furMode === "groomed", `${backend}: summer groom is not the default`);
-      await checkGroom(page, backend, errors, args.out);
+      compressed = await checkGroom(page, backend, errors, args.out);
       await context.close();
     }
     console.log("lab groom: opening source media for compatibility");
@@ -357,15 +380,27 @@ async function groomJourney(args) {
     const sourceMetrics = await source.page.evaluate(() => globalThis.lab.stevie());
     check(sourceMetrics.triangles === 59847 && sourceMetrics.groom.length === "assets/models/stevie/stevie.groom.summer.length.png" && sourceMetrics.baseColor === "assets/models/stevie/stevie.baseColor.png", "source media did not retain the uncompressed model and maps");
     check((await colours(source.page, await source.page.evaluate(() => globalThis.lab.frame()))) > 20 && source.errors.length === 0, "source media failed to render");
+    check((await loadedSha256(source.page)) === STEVIE_C1_SHA256, "source media did not load c1's GLB");
+    // Both files are the same raccoon in metres: the source's units are metres, and the bind-pose sizes agree.
+    check(sourceMetrics.metresPerUnit.every((m) => near(m, 1, 1e-3)), `source media is not in metres: ${JSON.stringify(sourceMetrics.metresPerUnit)}`);
+    check(sourceMetrics.bindSizeM.every((m, i) => near(compressed.bindSizeM[i], m, 0.005)), `compressed and source bind sizes differ: ${JSON.stringify({ compressed: compressed.bindSizeM, source: sourceMetrics.bindSizeM })}`);
+    check(sourceMetrics.drawnMaxLengthM?.every((m) => near(m, 0.035, 1e-6)), `source summer fur is not drawn at 0.035 m: ${JSON.stringify(sourceMetrics.drawnMaxLengthM)}`);
     await source.context.close();
-    console.log("lab groom: uncompressed source media renders");
+    console.log(`lab groom: uncompressed source media renders; metres per unit ${compressed.metresPerUnit.map((m) => m.toFixed(4))} (web media) and ${sourceMetrics.metresPerUnit.map((m) => m.toFixed(4))} (source), bind size ${compressed.bindSizeM.map((m) => m.toFixed(3))} m and ${sourceMetrics.bindSizeM.map((m) => m.toFixed(3))} m`);
   } finally {
     await browser.close();
     site.server.close();
   }
 }
 
+/** The shipped media's own tests (#81): compressed model and maps, manifest and provenance, as the site serves them. */
+function mediaTests() {
+  const result = spawnSync(process.execPath, ["--test", path.join(repo, "spikes/quality-lab/tests/media.journey.node.test.mjs")], { stdio: "inherit", env: process.env });
+  if (result.status !== 0) throw new Error("the quality lab's media tests failed (see output above)");
+}
+
 async function journey(args) {
+  mediaTests();
   ensureChromium();
   const started = Date.now();
   const { media } = await buildSite(SITE);

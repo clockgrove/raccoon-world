@@ -13,6 +13,7 @@ import {
   texture,
   uv,
   vec2,
+  vec3,
 } from "three/tsl";
 import type { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
@@ -139,6 +140,7 @@ export function groomMaterial(
   layer: number,
   layers: number,
   fin = false,
+  metresPerUnit: THREE.Vector3 = new THREE.Vector3(1, 1, 1),
 ) {
   const maps = asset.coats[coat];
   const h: Any = fin ? attribute("fin", "vec2").y : float(layer / layers);
@@ -151,7 +153,10 @@ export function groomMaterial(
     bent.div(bent.length().max(0.0001)),
     step(float(0.0001), bent.length()),
   );
-  const displacement = direction.mul(length.mul(maps.maxLengthM).mul(h));
+  // The comb is in metres along the model's axes; the mesh's local units need not be metres (quantized web media
+  // stores positions as normalised int16 and moves the scale into the inverse bind matrices), so convert per axis.
+  const unitsPerMetre = vec3(1 / metresPerUnit.x, 1 / metresPerUnit.y, 1 / metresPerUnit.z);
+  const displacement = direction.mul(length.mul(maps.maxLengthM).mul(h)).mul(unitsPerMetre);
   const material = new GroomMaterial(displacement, fin ? THREE.DoubleSide : THREE.FrontSide);
   const cell = fin ? vec2(attribute("fin", "vec2").x.mul(20), 0.5) : uv().mul(420);
   const strand = mx_noise_float(cell.floor().add(0.5)).mul(0.5).add(0.5);
@@ -175,6 +180,7 @@ export function groomMaterial(
   material.userData = {
     coat,
     maxLengthM: maps.maxLengthM,
+    unitsPerMetre: [1 / metresPerUnit.x, 1 / metresPerUnit.y, 1 / metresPerUnit.z],
     groom: maps.paths,
     eyes: asset.manifest.model.eyes.path,
   };

@@ -130,6 +130,50 @@ export interface StevieAsset {
   /** Shared across raccoons: the fur shell materials by "count-layer", the fins' geometry and material. */
   shellMaterials: Map<string, THREE.Material>;
   fins: Map<string, { geometry: THREE.BufferGeometry; material: THREE.Material }>;
+  /** The URL the model was loaded from, and the body mesh's local units in metres along each axis. */
+  url: string;
+  bind: BindScale;
+}
+
+export interface BindScale {
+  metresPerUnit: THREE.Vector3;
+  /** The body's rest-pose bounding box size in metres, independent of how the file stores its positions. */
+  sizeM: THREE.Vector3;
+}
+
+function isBody(node: Any, eyesMaterial: string) {
+  return node.isSkinnedMesh && node.material.name !== eyesMaterial;
+}
+
+/**
+ * Metres per local unit of the body mesh at its bind pose. Skinned vertices reach the world through
+ * bone.matrixWorld x boneInverse x bindMatrix, so a file can store positions in any units and carry the scale in its
+ * inverse bind matrices: the quantized web media does (normalised int16 positions, inverse bind matrices scaled by
+ * about 0.38), the source GLB does not. Fur lengths are metres, so shells and fins divide by this.
+ */
+function bindScale(scene: THREE.Object3D, eyesMaterial: string): BindScale {
+  let body: THREE.SkinnedMesh | undefined;
+  scene.traverse((node: Any) => {
+    if (!body && isBody(node, eyesMaterial)) body = node;
+  });
+  if (!body) throw new Error("Stevie's glTF holds no skinned mesh");
+  const mesh: THREE.SkinnedMesh = body;
+  scene.updateMatrixWorld(true);
+  const { bones, boneInverses } = mesh.skeleton;
+  const metresPerUnit = new THREE.Vector3();
+  const scale = new THREE.Vector3();
+  const toBind = new THREE.Matrix4();
+  // The scene root sits at the origin with no scale when loaded, so bone.matrixWorld is in the file's metres.
+  for (let i = 0; i < bones.length; i++) {
+    toBind.multiplyMatrices(bones[i].matrixWorld, boneInverses[i]).multiply(mesh.bindMatrix);
+    metresPerUnit.add(scale.setFromMatrixScale(toBind));
+  }
+  metresPerUnit.divideScalar(bones.length);
+  if (![metresPerUnit.x, metresPerUnit.y, metresPerUnit.z].every((v) => v > 0 && Number.isFinite(v)))
+    throw new Error(`Stevie's bind pose has no usable scale: ${metresPerUnit.toArray()}`);
+  mesh.geometry.computeBoundingBox();
+  const sizeM = mesh.geometry.boundingBox!.getSize(new THREE.Vector3()).multiply(metresPerUnit);
+  return { metresPerUnit, sizeM };
 }
 
 export async function loadStevieAsset(url: string, onProgress?: (event: ProgressEvent) => void, loader = new GLTFLoader(), trackGroom?: TrackGroomDownload): Promise<StevieAsset> {
@@ -144,7 +188,8 @@ export async function loadStevieAsset(url: string, onProgress?: (event: Progress
   });
   const clip: THREE.AnimationClip = gltf.animations.find((c: THREE.AnimationClip) => c.name === "walk") ?? gltf.animations[0];
   if (!clip) throw new Error("Stevie's glTF holds no walk clip");
-  return { gltf, groom, clip, speedMps: groom.manifest.model.clips.find((c: Any) => c.name === "walk")?.speedMps ?? recordedSpeed(gltf), loadMs: Math.round(performance.now() - started), shellMaterials: new Map(), fins: new Map() };
+  const bind = bindScale(gltf.scene, groom.manifest.model.eyes.material);
+  return { gltf, groom, clip, speedMps: groom.manifest.model.clips.find((c: Any) => c.name === "walk")?.speedMps ?? recordedSpeed(gltf), loadMs: Math.round(performance.now() - started), shellMaterials: new Map(), fins: new Map(), url, bind };
 }
 
 /**
@@ -162,7 +207,7 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
       node.castShadow = true;
       node.receiveShadow = true;
       node.frustumCulled = false;
-      if (!body && node.material.name !== asset.groom.manifest.model.eyes.material) body = node;
+      if (!body && isBody(node, asset.groom.manifest.model.eyes.material)) body = node;
     }
   });
   if (!body) throw new Error("Stevie's glTF holds no skinned mesh");
@@ -175,6 +220,9 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
   const map: THREE.Texture | null = material.map ?? null;
   const geometry = skinned.geometry;
   const parent = skinned.parent ?? scene;
+  const { metresPerUnit } = asset.bind;
+  // furShell and finGeometry push along the local normal by a scalar; the web media's quantization scale is uniform.
+  const unitsPerMetre = 3 / (metresPerUnit.x + metresPerUnit.y + metresPerUnit.z);
 
   const attach = (mesh: THREE.SkinnedMesh) => {
     mesh.position.copy(skinned.position);
@@ -200,7 +248,8 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
         const key = `${mode}-${coat}-${count}-${layer}`;
         let shellMaterial = asset.shellMaterials.get(key);
         if (!shellMaterial) {
-          shellMaterial = mode === "groomed" ? groomMaterial(asset.groom, coat, layer, count) : furShell(map ?? new THREE.Texture(), layer, count, FUR_LENGTH);
+          shellMaterial = mode === "groomed" ? groomMaterial(asset.groom, coat, layer, count, false, metresPerUnit) : furShell(map ?? new THREE.Texture(), layer, count, FUR_LENGTH * unitsPerMetre);
+          if (mode === "uniform") shellMaterial.userData = { unitsPerMetre: [unitsPerMetre, unitsPerMetre, unitsPerMetre] };
           asset.shellMaterials.set(key, shellMaterial);
         }
         const shell = new THREE.SkinnedMesh(geometry, shellMaterial);
@@ -220,8 +269,8 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
       let shared = asset.fins.get(key);
       if (!shared) {
         shared = mode === "groomed"
-          ? { geometry: finGeometry(geometry, 0), material: groomMaterial(asset.groom, coat, 1, 1, true) }
-          : { geometry: finGeometry(geometry, FUR_LENGTH * 1.5), material: finMaterial(map) };
+          ? { geometry: finGeometry(geometry, 0), material: groomMaterial(asset.groom, coat, 1, 1, true, metresPerUnit) }
+          : { geometry: finGeometry(geometry, FUR_LENGTH * 1.5 * unitsPerMetre), material: finMaterial(map) };
         asset.fins.set(key, shared);
       }
       fins = attach(new THREE.SkinnedMesh(shared.geometry, shared.material));
@@ -250,6 +299,10 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
   });
   const metrics: Record<string, unknown> = {
     source: SOURCE,
+    url: asset.url,
+    contentHash: asset.groom.manifest.contentHash,
+    metresPerUnit: metresPerUnit.toArray(),
+    bindSizeM: asset.bind.sizeM.toArray(),
     triangles,
     joints: skinned.skeleton.bones.length,
     clip: clip.name,
@@ -288,6 +341,11 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
       metrics.coat = coat;
       metrics.furMode = furMode;
       metrics.maxLengthM = furMode === "groomed" ? asset.groom.coats[coat].maxLengthM : FUR_LENGTH;
+      // The longest strand as drawn, per axis: the local displacement the shown shells' material was built with,
+      // carried back through the bind pose's scale to metres. It differs from maxLengthM if the conversion is wrong.
+      const top = shells > 0 ? shellsFor(shells, coat, furMode).at(-1) : undefined;
+      const perUnit = (top?.material as Any)?.userData?.unitsPerMetre as number[] | undefined;
+      metrics.drawnMaxLengthM = perUnit ? perUnit.map((u, i) => (metrics.maxLengthM as number) * u * metresPerUnit.getComponent(i)) : null;
       metrics.groom = asset.groom.coats[coat].paths;
       metrics.baseColor = asset.groom.manifest.model.textures.baseColor.path;
       metrics.eyesMask = asset.groom.manifest.model.eyes.path;
