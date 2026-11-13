@@ -18,10 +18,15 @@ const pack = await loadPack(packDirectory);
 const build = await buildWorldPack(pack.source, packPorts);
 assert.equal(build.ok, true, JSON.stringify(build.error));
 const names = process.argv.slice(2);
+// A bin counts from its household process's first delivery: before it, the bin has never held food.
+const firstDelivery = Object.fromEntries(
+  JSON.parse(readFileSync(resolve(packDirectory, "resources/policies/behavior.json"), "utf8"))
+    .policy.processes.map((p) => [p.command.payload.toObjectId, BigInt(p.firstAtMs.$bigint)]),
+);
 // Reviewed counts from the one-year run (see README, "Pressures in the one-year run").
 const YEAR = {
   compostMeals: 16,
-  emptyCompostMeals: 332,
+  emptyCompostMeals: 278,
   trashMeals: 1,
   emptyTrashMeals: 1,
   dryBowlDecisions: 2,
@@ -85,6 +90,7 @@ for (const name of names) {
                   ["grove.yard-compost", "compostMeals", "emptyCompostMeals"],
                   ["grove.trash-can", "trashMeals", "emptyTrashMeals"],
                 ]) {
+                  if (d.simulationTime < firstDelivery[target]) continue;
                   if (meal && selected === target) stat[full] += 1;
                   if (meal && selected !== target && exclusion(target) === "unavailable")
                     stat[empty] += 1;

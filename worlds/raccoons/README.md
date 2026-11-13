@@ -159,11 +159,12 @@ hunger-6000 rain threshold above.
 
 ### Pressures in the one-year run
 
-`tools/check-ecology.mjs` asserts these exact counts, the same in the live and aggregate runs:
+`tools/check-ecology.mjs` asserts these exact counts in both the live and aggregate runs. A bin counts only from
+its process's first delivery; before that it has never held food:
 
-- **Empty compost heap: 332 meals taken elsewhere.** From day 168 the den family meets the heap on each
-  decision. In 16 decisions it holds the fresh scraps and the raccoon eats there; in 332 it is empty
-  (`unavailable`) and the raccoon eats the older cat food instead. The bin's weekly rhythm changes what they
+- **Empty compost heap: 278 meals taken elsewhere.** From the first scraps (day 168, 18:00) the den family
+  meets the heap at every decision. In 16 decisions it holds the fresh scraps and the raccoon eats there; in
+  278 it is empty (`unavailable`) and the raccoon eats the older cat food instead. The bin's weekly rhythm changes what they
   eat, not just what they see.
 - **Trash can: 1 meal, 1 seen empty.** The trash can sits at `trash-front`, away from both homes, so only
   Stevie's early decisions there meet it.
