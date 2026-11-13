@@ -153,7 +153,7 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
     check(status.software === true, `${name}: the lab does not flag SwiftShader as software`);
     check(status.config.coat === "summer" && status.config.furMode === "groomed", `${name}: summer groom is not the default`);
     const stevie = await page.evaluate(() => globalThis.lab.stevie());
-    check(stevie && stevie.joints === 30 && stevie.clip === "walk", `${name}: Stevie is not the approved c1 on the 30-joint rig with a walk: ${JSON.stringify(stevie)}`);
+    check(stevie && stevie.joints === 30 && stevie.clip === "walk", `${name}: Stevie is not the approved model on the 30-joint rig with a walk: ${JSON.stringify(stevie)}`);
     check(Math.abs(stevie.speedMps - 0.267756) < 1e-6, `${name}: Stevie walks at ${stevie.speedMps} m/s, not 0.267756`);
     const frames = {};
     for (const step of steps) {
@@ -261,9 +261,9 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
   }
 }
 
-// Kirk's pick c1 (#107): the source GLB's sha256, as its manifest's contentHash records it. The earlier c3 had the
-// same triangle and joint counts, so the hash is what tells them apart.
-const STEVIE_C1_SHA256 = "2680c2c4f6d9c9ecf4210f7054a40bcb62a71047688161424edb35bd97840985";
+// Kirk's approved Stevie (c1 of #107 with the cleaner face of #114): the source GLB's sha256, as its manifest's
+// contentHash records it. Other candidates had the same triangle and joint counts, so the hash is what tells them apart.
+const STEVIE_SHA256 = "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355";
 
 /** The sha256 of the model file the page loaded, fetched again from the URL Stevie reports. */
 async function loadedSha256(page) {
@@ -291,10 +291,10 @@ async function checkGroom(page, backend, errors, out) {
   });
   const initial = await page.evaluate(() => globalThis.lab.stevie());
   check(initial.source === "assets/models/stevie/stevie.glb" && initial.triangles === 59847 && initial.joints === 30, `${backend}: wrong approved model: ${JSON.stringify(initial)}`);
-  // The loaded file is the web media built from c1: its bytes match web-media.json, whose source hash is c1's.
+  // The loaded file is the web media built from the approved model: its bytes match web-media.json, whose source hash is the approved model's.
   const webMedia = JSON.parse(await readFile(path.join(repo, "references/web-media/web-media.json"), "utf8")).files["stevie.glb"];
   const loaded = await loadedSha256(page);
-  check(webMedia.sourceSha256 === STEVIE_C1_SHA256 && loaded === webMedia.sha256 && initial.contentHash === STEVIE_C1_SHA256, `${backend}: loaded model is not c1's web media: ${JSON.stringify({ url: initial.url, loaded, webMedia: webMedia.sha256, contentHash: initial.contentHash })}`);
+  check(webMedia.sourceSha256 === STEVIE_SHA256 && loaded === webMedia.sha256 && initial.contentHash === STEVIE_SHA256, `${backend}: loaded model is not the approved model's web media: ${JSON.stringify({ url: initial.url, loaded, webMedia: webMedia.sha256, contentHash: initial.contentHash })}`);
   // The quantized media keeps its scale in the inverse bind matrices; the lab must find it, not assume metres.
   check(initial.metresPerUnit.every((m) => m > 0.2 && m < 0.6) && initial.metresPerUnit.every((m) => near(m, initial.metresPerUnit[0], 1e-3)), `${backend}: compressed media's bind scale not found: ${JSON.stringify(initial.metresPerUnit)}`);
   const download = await page.evaluate(async () => {
@@ -306,7 +306,7 @@ async function checkGroom(page, backend, errors, out) {
   check((await colours(page, await page.evaluate(() => globalThis.lab.frame()))) > 20, `${backend}: yard is blank`);
   await page.evaluate(() => globalThis.lab.setView("close"));
   const frames = {};
-  for (const [coat, furMode, maxLengthM] of [["summer", "groomed", 0.035], ["winter", "groomed", 0.082], ["summer", "uniform", 0.012]]) {
+  for (const [coat, furMode, maxLengthM] of [["summer", "groomed", 0.04], ["winter", "groomed", 0.08], ["summer", "uniform", 0.012]]) {
     await page.evaluate(async ({ coat, furMode }) => {
       await globalThis.lab.apply({ ...globalThis.lab.status().config, furShells: 8, furFins: true, coat, furMode });
       globalThis.lab.freeze(1);
@@ -380,11 +380,11 @@ async function groomJourney(args) {
     const sourceMetrics = await source.page.evaluate(() => globalThis.lab.stevie());
     check(sourceMetrics.triangles === 59847 && sourceMetrics.groom.length === "assets/models/stevie/stevie.groom.summer.length.png" && sourceMetrics.baseColor === "assets/models/stevie/stevie.baseColor.png", "source media did not retain the uncompressed model and maps");
     check((await colours(source.page, await source.page.evaluate(() => globalThis.lab.frame()))) > 20 && source.errors.length === 0, "source media failed to render");
-    check((await loadedSha256(source.page)) === STEVIE_C1_SHA256, "source media did not load c1's GLB");
+    check((await loadedSha256(source.page)) === STEVIE_SHA256, "source media did not load the approved GLB");
     // Both files are the same raccoon in metres: the source's units are metres, and the bind-pose sizes agree.
     check(sourceMetrics.metresPerUnit.every((m) => near(m, 1, 1e-3)), `source media is not in metres: ${JSON.stringify(sourceMetrics.metresPerUnit)}`);
     check(sourceMetrics.bindSizeM.every((m, i) => near(compressed.bindSizeM[i], m, 0.005)), `compressed and source bind sizes differ: ${JSON.stringify({ compressed: compressed.bindSizeM, source: sourceMetrics.bindSizeM })}`);
-    check(sourceMetrics.drawnMaxLengthM?.every((m) => near(m, 0.035, 1e-6)), `source summer fur is not drawn at 0.035 m: ${JSON.stringify(sourceMetrics.drawnMaxLengthM)}`);
+    check(sourceMetrics.drawnMaxLengthM?.every((m) => near(m, 0.04, 1e-6)), `source summer fur is not drawn at 0.04 m: ${JSON.stringify(sourceMetrics.drawnMaxLengthM)}`);
     await source.context.close();
     console.log(`lab groom: uncompressed source media renders; metres per unit ${compressed.metresPerUnit.map((m) => m.toFixed(4))} (web media) and ${sourceMetrics.metresPerUnit.map((m) => m.toFixed(4))} (source), bind size ${compressed.bindSizeM.map((m) => m.toFixed(3))} m and ${sourceMetrics.bindSizeM.map((m) => m.toFixed(3))} m`);
   } finally {
@@ -484,7 +484,7 @@ async function shots(args) {
     digitalSourceType: "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
     generationSpendUsd: 0,
     inputs: {
-      stevie: "assets/models/stevie/stevie.glb (#107, c1; see stevie.glb.provenance.json)",
+      stevie: "assets/models/stevie/stevie.glb (#107 c1, face #114; see stevie.glb.provenance.json)",
       props: "references/ceiling-3d/props (#34; CC BY 4.0, see references/ceiling-3d/provenance.json)",
     },
     records,

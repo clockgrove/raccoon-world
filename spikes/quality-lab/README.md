@@ -1,6 +1,6 @@
 # Quality lab (issue 45)
 
-The page and scripts behind [the report](../../docs/design/quality-lab.md). The page is the #34 ceiling's yard at dusk and night in rain, with Stevie (approved c1 look-dev pick, #107 / Assetforge f9dda1b) walking a loop. Every effect has its own switch, there are four presets, and two buttons run the measurements: **Run the sweep** and **Find the ceiling**. It uses Clockgrove's stack at the pinned version (three.js WebGPU with the WebGL2 fallback, three's own TSL add-ons only). Nothing here ships.
+The page and scripts behind [the report](../../docs/design/quality-lab.md). The page is the #34 ceiling's yard at dusk and night in rain, with Stevie (approved look-dev pick: c1 of #107 with the cleaner face of #114, Assetforge f7f31c0) walking a loop. Every effect has its own switch, there are four presets, and two buttons run the measurements: **Run the sweep** and **Find the ceiling**. It uses Clockgrove's stack at the pinned version (three.js WebGPU with the WebGL2 fallback, three's own TSL add-ons only). Nothing here ships.
 
 - `index.html`, `src/main.ts`: the renderer, the scene (reused from `spikes/ceiling-3d/src`), the effects' scene-side switches, measurement (frame intervals, plus WebGPU timestamp queries), screenshots, and `globalThis.lab`.
 - `src/config.ts`: the knobs and their levels, the presets, the sweep's steps, the ceiling's step-down and budgets, and the `LabHandle` type.

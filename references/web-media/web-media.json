@@ -7,22 +7,22 @@
   },
   "files": {
     "stevie.glb": {
-      "source": "assets/models/stevie/stevie.glb",
-      "sourceSha256": "2680c2c4f6d9c9ecf4210f7054a40bcb62a71047688161424edb35bd97840985",
-      "sha256": "99db5a7ec69b1fe84502202de7934c571ec5b3ff932b09389d8db83b44fb95cd",
-      "sourceBytes": 22711460,
-      "bytes": 4005544,
-      "triangles": 59847,
       "sourceDependencies": {
-        "assets/models/stevie/stevie.groom.summer.length.png": "69ccba1f87dbcfb57261af1abe44dc7a51361841b0ecafa21a3f9613d7b9e317",
+        "assets/models/stevie/stevie.groom.summer.length.png": "971a64b964ec7ad3a43722d034531c26898a07ecda7d81450c40fb5fe49c5866",
         "assets/models/stevie/stevie.groom.summer.direction.png": "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
-        "assets/models/stevie/stevie.groom.summer.density.png": "62959525a89857bbbf177dc57460be0c3c65b6d6c6c0c611fb4bc89ceaa1e916",
-        "assets/models/stevie/stevie.groom.winter.length.png": "4e36a45ff2b36d3230e74e36d60a86ac52f2d1d3e8f3ac671e52e1908a711d87",
+        "assets/models/stevie/stevie.groom.summer.density.png": "11b5d8dbdd4c48f64ad232f034e6a52b8ca9dd837300f234eedf150ce06bf037",
+        "assets/models/stevie/stevie.groom.winter.length.png": "f40e7d03512abc7d5aecd84811b8574c571afbd93f25c2b44594953e8ca368c3",
         "assets/models/stevie/stevie.groom.winter.direction.png": "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
-        "assets/models/stevie/stevie.groom.winter.density.png": "75c1124e35faa1154a1f2b2e8c20d8ddcffcacd224b6201a71c463f0adff3e9b",
-        "assets/models/stevie/stevie.tint.winter.png": "a596e4d61d5b130a7ce0359b9ac32610673979c66a26e5ec72af3120a3efe972",
-        "assets/models/stevie/stevie.eyes.mask.png": "9b405f8ec6b57f7ee0f22e41416df30ecb74e9ce5c2a79df1bdfaa6d5969f498"
-      }
+        "assets/models/stevie/stevie.groom.winter.density.png": "d8496c68f3fadbc8512be65b689d4b31cdaa73e64f8b37b0812a4aa881842ed4",
+        "assets/models/stevie/stevie.tint.winter.png": "f3c266b6f5d726e2366cfc6afbc285d1f449228c9b4d960dd1a7a5edb0bdf89b",
+        "assets/models/stevie/stevie.eyes.mask.png": "95e19e95b551b283b998ccf68006b8bf25c7c410452cffe24ae539ce2de01eb0"
+      },
+      "source": "assets/models/stevie/stevie.glb",
+      "sourceSha256": "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355",
+      "sha256": "b65ecf4920ea48d5de7818a58ee5056dabeb08900a800a8ce93832798758cc81",
+      "sourceBytes": 22658980,
+      "bytes": 4000020,
+      "triangles": 59847
     },
     "prop-bird-feeder.glb": {
       "source": "references/ceiling-3d/props/bird-feeder.glb",
@@ -90,34 +90,34 @@
     },
     "assets/models/stevie/stevie.baseColor.ktx2": {
       "source": "assets/models/stevie/stevie.baseColor.png",
-      "sourceSha256": "c3fca0843e94aceb7ad070fbf56cb85468c0ecf37615fd5e7890a97a9267d47a",
-      "sha256": "59c1a144ddd5d455ea7556ef4ed96d894004e2be82fcd2a3967a55a0758a05f1",
-      "sourceBytes": 13242032,
-      "bytes": 769593,
+      "sourceSha256": "736cc7d7b477d43aa4f0a77401b0fc287112f1dda6f948eb018263f8c13c0efc",
+      "sha256": "814e6b1239779571e055bcd295df7cfae68d7fdbcf83aaf786eac138a8c4cded",
+      "sourceBytes": 13188852,
+      "bytes": 763773,
       "colourSpace": "srgb"
     },
     "assets/models/stevie/stevie.tint.winter.ktx2": {
       "source": "assets/models/stevie/stevie.tint.winter.png",
-      "sourceSha256": "a596e4d61d5b130a7ce0359b9ac32610673979c66a26e5ec72af3120a3efe972",
-      "sha256": "b679c06b9de339ac11e3ae77b0bf45f08db358ea4d57477b590d28928e88855e",
-      "sourceBytes": 4092395,
-      "bytes": 188003,
+      "sourceSha256": "f3c266b6f5d726e2366cfc6afbc285d1f449228c9b4d960dd1a7a5edb0bdf89b",
+      "sha256": "f509e5d4a755f31c92f87d4de8ab3d83e712f4867e70877d80b140b4f77389f5",
+      "sourceBytes": 4093951,
+      "bytes": 179173,
       "colourSpace": "srgb"
     },
     "assets/models/stevie/stevie.eyes.mask.ktx2": {
       "source": "assets/models/stevie/stevie.eyes.mask.png",
-      "sourceSha256": "9b405f8ec6b57f7ee0f22e41416df30ecb74e9ce5c2a79df1bdfaa6d5969f498",
-      "sha256": "e5463f5d65bfd0581049f5df6302f562b75e25748f9f4b72906d16f6253e775a",
-      "sourceBytes": 2634771,
-      "bytes": 3771,
+      "sourceSha256": "95e19e95b551b283b998ccf68006b8bf25c7c410452cffe24ae539ce2de01eb0",
+      "sha256": "1584d84cf521fc3ff7fe15f2ebb45107ab2586886ab06b51de4c8dab478c9614",
+      "sourceBytes": 2633172,
+      "bytes": 5444,
       "colourSpace": "linear"
     },
     "assets/models/stevie/stevie.groom.summer.length.ktx2": {
       "source": "assets/models/stevie/stevie.groom.summer.length.png",
-      "sourceSha256": "69ccba1f87dbcfb57261af1abe44dc7a51361841b0ecafa21a3f9613d7b9e317",
-      "sha256": "2abfdf4d140ba0ca2ec4c38199747587d828229d02eebc07bb26da083b4a1fe7",
-      "sourceBytes": 7316765,
-      "bytes": 1254089,
+      "sourceSha256": "971a64b964ec7ad3a43722d034531c26898a07ecda7d81450c40fb5fe49c5866",
+      "sha256": "e96db1abc3d318de0335fd9f39735822e412e365deacf4b3310303a4b3af614d",
+      "sourceBytes": 7690833,
+      "bytes": 1233304,
       "colourSpace": "linear"
     },
     "assets/models/stevie/stevie.groom.summer.direction.ktx2": {
@@ -130,18 +130,18 @@
     },
     "assets/models/stevie/stevie.groom.summer.density.ktx2": {
       "source": "assets/models/stevie/stevie.groom.summer.density.png",
-      "sourceSha256": "62959525a89857bbbf177dc57460be0c3c65b6d6c6c0c611fb4bc89ceaa1e916",
-      "sha256": "601040e1610774dd7c754415f0b0c222cf2307b42e554122a99301255ea128c5",
-      "sourceBytes": 5767856,
-      "bytes": 593491,
+      "sourceSha256": "11b5d8dbdd4c48f64ad232f034e6a52b8ca9dd837300f234eedf150ce06bf037",
+      "sha256": "c10420a9ee7fd0090e5bc078491d3a8e1247e7baaa3458efe77a00200172e06e",
+      "sourceBytes": 5752215,
+      "bytes": 586961,
       "colourSpace": "linear"
     },
     "assets/models/stevie/stevie.groom.winter.length.ktx2": {
       "source": "assets/models/stevie/stevie.groom.winter.length.png",
-      "sourceSha256": "4e36a45ff2b36d3230e74e36d60a86ac52f2d1d3e8f3ac671e52e1908a711d87",
-      "sha256": "feeb237af2e3b16dfd883dfffcae98a4491799721924673421ef358d39abb363",
-      "sourceBytes": 8418183,
-      "bytes": 1408168,
+      "sourceSha256": "f40e7d03512abc7d5aecd84811b8574c571afbd93f25c2b44594953e8ca368c3",
+      "sha256": "65d993f4a3052c884eac17cfe2a0ae89c640394af401674d1a1bb91b61a0ac05",
+      "sourceBytes": 8144681,
+      "bytes": 1286058,
       "colourSpace": "linear"
     },
     "assets/models/stevie/stevie.groom.winter.direction.ktx2": {
@@ -154,17 +154,17 @@
     },
     "assets/models/stevie/stevie.groom.winter.density.ktx2": {
       "source": "assets/models/stevie/stevie.groom.winter.density.png",
-      "sourceSha256": "75c1124e35faa1154a1f2b2e8c20d8ddcffcacd224b6201a71c463f0adff3e9b",
-      "sha256": "727d3f5893f83914727978b071839f423df9f1acf0c6806e2a4caa2aa561eff8",
-      "sourceBytes": 5784794,
-      "bytes": 611950,
+      "sourceSha256": "d8496c68f3fadbc8512be65b689d4b31cdaa73e64f8b37b0812a4aa881842ed4",
+      "sha256": "e23e5d41e05f9e69901979c4bdc2a2dc473de8a73701e24bcaae37372a80a4e2",
+      "sourceBytes": 3361830,
+      "bytes": 588909,
       "colourSpace": "linear"
     },
     "assets/models/stevie/manifest.json": {
       "source": "assets/models/stevie/manifest.json",
-      "sourceSha256": "dc86cb67cefc1ad9a7f84b85357e06555a1034f866dcb6fb384bebf56b7898a0",
-      "sha256": "4ed7947629b406d2ba45224a35917ad527e1f9f81615cc5de552382e847b8724",
-      "bytes": 5379
+      "sourceSha256": "53abdf28a389824ac6c11a7bf8f8ac9b3883317f6033859be4140f1db8643120",
+      "sha256": "e8168b27df9df8f47b8bc0885889b15f71ff35fd18df0395331f05c43fdc1264",
+      "bytes": 5470
     }
   }
 }

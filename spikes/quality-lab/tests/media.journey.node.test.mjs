@@ -29,8 +29,8 @@ test("approved Stevie ships meshopt geometry and all nine compressed manifest ma
   const prefix = "assets/models/stevie";
   const manifest = JSON.parse(await readFile(files[`${prefix}/manifest.json`], "utf8"));
   const source = JSON.parse(await readFile(files[`${prefix}/source-manifest.json`], "utf8"));
-  assert.equal(manifest.model.groom.summer.length.maxLengthM, 0.035);
-  assert.equal(manifest.model.groom.winter.length.maxLengthM, 0.082);
+  assert.equal(manifest.model.groom.summer.length.maxLengthM, 0.04);
+  assert.equal(manifest.model.groom.winter.length.maxLengthM, 0.08);
   const maps = [
     manifest.model.textures.baseColor,
     manifest.model.textures.tint.winter,

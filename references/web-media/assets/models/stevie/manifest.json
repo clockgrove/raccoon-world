@@ -52,7 +52,7 @@
     "clips": [
       {
         "name": "walk",
-        "durationMs": 743,
+        "durationMs": 742.8571581840515,
         "loop": true,
         "generated": true,
         "speedMps": 0.267756
@@ -82,14 +82,14 @@
     ],
     "bounds": {
       "min": [
-        -0.19247,
-        0,
-        -0.382508
+        -0.19247037413960716,
+        -4.481159023931071e-11,
+        -0.3825080940034985
       ],
       "max": [
-        0.19247,
-        0.45,
-        0.382508
+        0.19247036661201566,
+        0.4499999887835499,
+        0.3825081050408661
       ]
     },
     "rig": {
@@ -99,9 +99,9 @@
     "groom": {
       "summer": {
         "length": {
-          "maxLengthM": 0.035,
+          "maxLengthM": 0.04,
           "path": "assets/models/stevie/stevie.groom.summer.length.ktx2",
-          "sha256": "2abfdf4d140ba0ca2ec4c38199747587d828229d02eebc07bb26da083b4a1fe7"
+          "sha256": "e96db1abc3d318de0335fd9f39735822e412e365deacf4b3310303a4b3af614d"
         },
         "direction": {
           "path": "assets/models/stevie/stevie.groom.summer.direction.ktx2",
@@ -109,14 +109,14 @@
         },
         "density": {
           "path": "assets/models/stevie/stevie.groom.summer.density.ktx2",
-          "sha256": "601040e1610774dd7c754415f0b0c222cf2307b42e554122a99301255ea128c5"
+          "sha256": "c10420a9ee7fd0090e5bc078491d3a8e1247e7baaa3458efe77a00200172e06e"
         }
       },
       "winter": {
         "length": {
-          "maxLengthM": 0.082,
+          "maxLengthM": 0.08,
           "path": "assets/models/stevie/stevie.groom.winter.length.ktx2",
-          "sha256": "feeb237af2e3b16dfd883dfffcae98a4491799721924673421ef358d39abb363"
+          "sha256": "65d993f4a3052c884eac17cfe2a0ae89c640394af401674d1a1bb91b61a0ac05"
         },
         "direction": {
           "path": "assets/models/stevie/stevie.groom.winter.direction.ktx2",
@@ -124,7 +124,7 @@
         },
         "density": {
           "path": "assets/models/stevie/stevie.groom.winter.density.ktx2",
-          "sha256": "727d3f5893f83914727978b071839f423df9f1acf0c6806e2a4caa2aa561eff8"
+          "sha256": "e23e5d41e05f9e69901979c4bdc2a2dc473de8a73701e24bcaae37372a80a4e2"
         }
       }
     },
@@ -132,24 +132,24 @@
       "tint": {
         "winter": {
           "path": "assets/models/stevie/stevie.tint.winter.ktx2",
-          "sha256": "b679c06b9de339ac11e3ae77b0bf45f08db358ea4d57477b590d28928e88855e"
+          "sha256": "f509e5d4a755f31c92f87d4de8ab3d83e712f4867e70877d80b140b4f77389f5"
         }
       },
       "baseColor": {
         "path": "assets/models/stevie/stevie.baseColor.ktx2",
-        "sha256": "59c1a144ddd5d455ea7556ef4ed96d894004e2be82fcd2a3967a55a0758a05f1"
+        "sha256": "814e6b1239779571e055bcd295df7cfae68d7fdbcf83aaf786eac138a8c4cded"
       }
     },
     "eyes": {
       "material": "eyes",
       "path": "assets/models/stevie/stevie.eyes.mask.ktx2",
-      "sha256": "e5463f5d65bfd0581049f5df6302f562b75e25748f9f4b72906d16f6253e775a"
+      "sha256": "1584d84cf521fc3ff7fe15f2ebb45107ab2586886ab06b51de4c8dab478c9614"
     }
   },
-  "contentHash": "2680c2c4f6d9c9ecf4210f7054a40bcb62a71047688161424edb35bd97840985",
+  "contentHash": "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355",
   "accessibilityLabel": "Stevie, a stocky grey-brown raccoon with a dark eye mask and a ringed tail",
   "webMedia": {
     "sourceManifest": "assets/models/stevie/source-manifest.json",
-    "sourceSha256": "dc86cb67cefc1ad9a7f84b85357e06555a1034f866dcb6fb384bebf56b7898a0"
+    "sourceSha256": "53abdf28a389824ac6c11a7bf8f8ac9b3883317f6033859be4140f1db8643120"
   }
 }
