@@ -18,8 +18,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 export const lab = fileURLToPath(new URL("..", import.meta.url));
 export const repo = path.resolve(lab, "../..");
 export const pinned = path.resolve(process.env.CLOCKGROVE_DIR ?? path.join(repo, ".clockgrove"));
-/** Stevie: Kirk's wave 0 pick c3, re-rigged on the shared raccoon rig with the generated walk (#54). */
-export const STEVIE_GLB = path.join(repo, "references/stevie/3d-wave0-candidates/c3-rigged/c3-rigged.glb");
+/** Stevie: Kirk's approved look-dev c1, Assetforge f9dda1b (#107). */
+export const STEVIE_GLB = path.join(repo, "assets/models/stevie/stevie.glb");
 /** The ceiling's generated props (#34), as references/ceiling-3d/provenance.json records them. */
 export const PROPS_DIR = path.join(repo, "references/ceiling-3d/props");
 
@@ -35,6 +35,8 @@ export async function pinnedVite() {
 }
 
 const isGlb = (bytes) => bytes && bytes.subarray(0, 4).toString() === "glTF";
+const isMedia = (key, bytes) => bytes && (key.endsWith(".glb") ? isGlb(bytes) : !bytes.subarray(0, 42).toString().startsWith("version https://git-lfs.github.com/spec/v1"));
+const mediaType = (key) => ({ ".glb": "model/gltf-binary", ".ktx2": "image/ktx2", ".png": "image/png", ".json": "application/json" })[path.extname(key)] ?? "application/octet-stream";
 
 /** The web media (spikes/stevie-3d/scripts/web-media.mjs): KTX2 textures and meshopt geometry, same triangles. */
 export const WEB_MEDIA = path.join(repo, "references/web-media");
@@ -45,11 +47,19 @@ async function webMedia(name, source) {
   const entry = manifest.files[`${name}.glb`];
   const bytes = await readFile(source).catch(() => null);
   if (!entry || !isGlb(bytes)) return null;
-  if (createHash("sha256").update(bytes).digest("hex") !== entry.sourceSha256) {
+  let stale = createHash("sha256").update(bytes).digest("hex") !== entry.sourceSha256;
+  for (const [dependency, expected] of Object.entries(entry.sourceDependencies ?? {})) {
+    const dependencyBytes = await readFile(path.join(repo, dependency)).catch(() => null);
+    if (!dependencyBytes || createHash("sha256").update(dependencyBytes).digest("hex") !== expected) stale = true;
+  }
+  if (stale) {
     console.warn(`quality-lab: references/web-media/${name}.glb is stale (its source changed); serving the source. Rerun web-media.mjs lab.`);
     return null;
   }
-  return path.join(WEB_MEDIA, `${name}.glb`);
+  const output = path.join(WEB_MEDIA, `${name}.glb`);
+  const shipped = await readFile(output).catch(() => null);
+  if (!isGlb(shipped) || createHash("sha256").update(shipped).digest("hex") !== entry.sha256) return null;
+  return output;
 }
 
 /**
@@ -65,6 +75,32 @@ export async function mediaFiles() {
     files[key] = (await webMedia(name, source)) ?? source;
     files[`source/${key}`] = source;
   }
+  const prefix = "assets/models/stevie";
+  const sourceManifest = path.join(repo, prefix, "manifest.json");
+  const model = JSON.parse(await readFile(sourceManifest, "utf8")).model;
+  const maps = [model.textures.baseColor, model.textures.tint.winter, model.eyes,
+    ...Object.values(model.groom).flatMap((coat) => Object.values(coat))];
+  const webManifest = JSON.parse(await readFile(path.join(WEB_MEDIA, "web-media.json"), "utf8"));
+  const manifestEntry = webManifest.files[`${prefix}/manifest.json`];
+  let compressed = manifestEntry?.sourceSha256 === createHash("sha256").update(await readFile(sourceManifest)).digest("hex");
+  for (const map of maps) {
+    const key = map.path.replace(/\.png$/u, ".ktx2");
+    const entry = webManifest.files[key];
+    const bytes = await readFile(path.join(repo, map.path));
+    const output = await readFile(path.join(WEB_MEDIA, key)).catch(() => null);
+    if (!entry || entry.sourceSha256 !== createHash("sha256").update(bytes).digest("hex") || !isMedia(key, output)
+      || createHash("sha256").update(output).digest("hex") !== entry.sha256) compressed = false;
+  }
+  for (const map of maps) {
+    const key = compressed ? map.path.replace(/\.png$/u, ".ktx2") : map.path;
+    files[key] = path.join(compressed ? WEB_MEDIA : repo, key);
+    // The original GLB has relative external image URIs, including in ?media=source mode.
+    files[`source/${path.basename(map.path)}`] = path.join(repo, map.path);
+    if (files["stevie.glb"] === STEVIE_GLB) files[path.basename(map.path)] = path.join(repo, map.path);
+  }
+  files[`${prefix}/manifest.json`] = compressed ? path.join(WEB_MEDIA, prefix, "manifest.json") : sourceManifest;
+  files[`${prefix}/source-manifest.json`] = sourceManifest;
+  files[`${prefix}/stevie.glb.provenance.json`] = `${STEVIE_GLB}.provenance.json`;
   return files;
 }
 
@@ -106,17 +142,17 @@ export function labConfig(outDir = SITE) {
               response.end(await readFile(path.join(pinnedThree(), "examples/jsm/libs/basis", basis)));
               return;
             }
-            const key = url.match(/^\/media\/((?:source\/)?(?:props\/)?[a-z0-9-]+\.glb)$/u)?.[1];
+            const key = url.startsWith("/media/") ? url.slice("/media/".length) : null;
             if (!key) return next();
             const file = (await mediaFiles())[key];
             const bytes = file ? await readFile(file).catch(() => null) : null;
-            if (!isGlb(bytes)) {
+            if (!isMedia(key, bytes)) {
               // Missing, or an un-smudged Git LFS pointer: a prop falls back to its procedural stand-in.
               response.statusCode = 404;
               response.end();
               return;
             }
-            response.setHeader("content-type", "model/gltf-binary");
+            response.setHeader("content-type", mediaType(key));
             response.end(bytes);
           });
         },
@@ -130,7 +166,7 @@ export async function mediaManifest() {
   const manifest = {};
   for (const [key, file] of Object.entries(await mediaFiles())) {
     const bytes = await readFile(file).catch(() => null);
-    if (isGlb(bytes)) manifest[key] = bytes.length;
+    if (isMedia(key, bytes)) manifest[key] = bytes.length;
   }
   return manifest;
 }
@@ -142,8 +178,8 @@ export async function buildSite(outDir = SITE) {
   const copied = [];
   for (const [key, file] of Object.entries(await mediaFiles())) {
     const bytes = await readFile(file).catch(() => null);
-    if (!isGlb(bytes)) {
-      if (key === "stevie.glb" || key === "source/stevie.glb") throw new Error(`${file} is not a glTF binary (is Git LFS fetched?)`);
+    if (!isMedia(key, bytes)) {
+      if (!key.includes("props/")) throw new Error(`${file} is missing or a Git LFS pointer (is Git LFS fetched?)`);
       continue;
     }
     const target = path.join(outDir, "media", key);

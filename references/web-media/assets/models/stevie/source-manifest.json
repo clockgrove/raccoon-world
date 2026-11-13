@@ -1,0 +1,151 @@
+{
+  "modelManifestVersion": 1,
+  "assetId": "stevie",
+  "kind": "character-3d",
+  "subject": "stevie",
+  "source": {
+    "kind": "generated",
+    "path": "assets/models/stevie/stevie.glb",
+    "mediaType": "model/gltf-binary",
+    "creator": "Clockgrove",
+    "tool": "assetforge"
+  },
+  "license": "MIT",
+  "provenance": {
+    "prompt": "A real-time 3D game character for the style bible version 1.\nSubject: stevie, Stevie, a lean, upright, long-bodied adult raccoon with a dark eye mask, cream muzzle and brows, rounded pale-rimmed ears and a full tail with five dark rings.\nGait: quadruped. Match the approved turnaround views exactly.\nMood: cosy, curious, calm, playful, rainy.",
+    "references": [
+      "a1883f9f3e0a5b293157e6b57c89bed9c880bc72f484cd38a9fd9d9e375b1609",
+      "2d0b8263e757d122fc2e8b48a510fcb723b8cb1f022e674df3d9bc6d265b6fa7",
+      "638757a486fac5adfa08a0c38b4f9c6b85bdf31308883756c1146f085643cfd0",
+      "46d1613454dc6dbe84ffc7b2bd4b6781872f37c79a7a8009111e1a7fb8bb07cc",
+      "6fba28c68a9957003cad483861352dd3bfc9ac63078875cf4be7d3d1f1191bba"
+    ],
+    "model": "tripo/v2.5-20250123",
+    "provider": "tripo",
+    "route": "tripo+vercel-ai-gateway:model3d:tripo/v2.5-20250123",
+    "providerTermsVersion": "Tripo API Terms of Service, paid credits (as of 2026-11-10)",
+    "outputGrant": {
+      "license": "LicenseRef-tripo-paid AND LicenseRef-perplexity-api AND LicenseRef-openai-api AND LicenseRef-google-api",
+      "plan": "paid + api",
+      "commercial": true,
+      "relabel": true
+    },
+    "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia"
+  },
+  "review": {
+    "status": "pending",
+    "reviewer": null,
+    "reviewedAt": null,
+    "notes": ""
+  },
+  "semantic": {
+    "role": "actor",
+    "entity": "grove.stevie"
+  },
+  "model": {
+    "extension": "glb",
+    "triangles": 59847,
+    "textureMaxPx": 2048,
+    "materials": 2,
+    "bones": 30,
+    "lods": 1,
+    "clips": [
+      {
+        "name": "walk",
+        "durationMs": 743,
+        "loop": true,
+        "generated": true,
+        "speedMps": 0.267756
+      }
+    ],
+    "missingClips": [
+      {
+        "family": "idle",
+        "why": "the target declares no gait profile for \"idle\" (model3d.gaits.idle)"
+      },
+      {
+        "family": "sniff",
+        "why": "the target declares no gait profile for \"sniff\" (model3d.gaits.sniff)"
+      },
+      {
+        "family": "eat",
+        "why": "the target declares no gait profile for \"eat\" (model3d.gaits.eat)"
+      },
+      {
+        "family": "play",
+        "why": "the target declares no gait profile for \"play\" (model3d.gaits.play)"
+      },
+      {
+        "family": "shelter",
+        "why": "the target declares no gait profile for \"shelter\" (model3d.gaits.shelter)"
+      }
+    ],
+    "bounds": {
+      "min": [
+        -0.19247,
+        0,
+        -0.382508
+      ],
+      "max": [
+        0.19247,
+        0.45,
+        0.382508
+      ]
+    },
+    "rig": {
+      "template": "rig/raccoon.json",
+      "sha256": "b2c031d2c65810526b61cd38c9d8b5a31d2199b607d503df3e1b5e87d517a0e9"
+    },
+    "groom": {
+      "summer": {
+        "length": {
+          "maxLengthM": 0.035,
+          "path": "assets/models/stevie/stevie.groom.summer.length.png",
+          "sha256": "69ccba1f87dbcfb57261af1abe44dc7a51361841b0ecafa21a3f9613d7b9e317"
+        },
+        "direction": {
+          "path": "assets/models/stevie/stevie.groom.summer.direction.png",
+          "sha256": "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff"
+        },
+        "density": {
+          "path": "assets/models/stevie/stevie.groom.summer.density.png",
+          "sha256": "62959525a89857bbbf177dc57460be0c3c65b6d6c6c0c611fb4bc89ceaa1e916"
+        }
+      },
+      "winter": {
+        "length": {
+          "maxLengthM": 0.082,
+          "path": "assets/models/stevie/stevie.groom.winter.length.png",
+          "sha256": "4e36a45ff2b36d3230e74e36d60a86ac52f2d1d3e8f3ac671e52e1908a711d87"
+        },
+        "direction": {
+          "path": "assets/models/stevie/stevie.groom.winter.direction.png",
+          "sha256": "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff"
+        },
+        "density": {
+          "path": "assets/models/stevie/stevie.groom.winter.density.png",
+          "sha256": "75c1124e35faa1154a1f2b2e8c20d8ddcffcacd224b6201a71c463f0adff3e9b"
+        }
+      }
+    },
+    "textures": {
+      "tint": {
+        "winter": {
+          "path": "assets/models/stevie/stevie.tint.winter.png",
+          "sha256": "a596e4d61d5b130a7ce0359b9ac32610673979c66a26e5ec72af3120a3efe972"
+        }
+      },
+      "baseColor": {
+        "path": "assets/models/stevie/stevie.baseColor.png",
+        "sha256": "c3fca0843e94aceb7ad070fbf56cb85468c0ecf37615fd5e7890a97a9267d47a"
+      }
+    },
+    "eyes": {
+      "material": "eyes",
+      "path": "assets/models/stevie/stevie.eyes.mask.png",
+      "sha256": "9b405f8ec6b57f7ee0f22e41416df30ecb74e9ce5c2a79df1bdfaa6d5969f498"
+    }
+  },
+  "contentHash": "2680c2c4f6d9c9ecf4210f7054a40bcb62a71047688161424edb35bd97840985",
+  "accessibilityLabel": "Stevie, a stocky grey-brown raccoon with a dark eye mask and a ringed tail"
+}

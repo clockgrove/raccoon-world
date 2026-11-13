@@ -7,12 +7,22 @@
   },
   "files": {
     "stevie.glb": {
-      "source": "references/stevie/3d-wave0-candidates/c3-rigged/c3-rigged.glb",
-      "sourceSha256": "b14eccfd99689d468c7694d59f854512ab11aba84b50af35ad13ea9b1602a676",
-      "sha256": "828b8469d2fd42359ce1535f62803edf2fb5fdca2f881e99a16c6745e591f705",
-      "sourceBytes": 7260580,
-      "bytes": 3903804,
-      "triangles": 59847
+      "source": "assets/models/stevie/stevie.glb",
+      "sourceSha256": "2680c2c4f6d9c9ecf4210f7054a40bcb62a71047688161424edb35bd97840985",
+      "sha256": "99db5a7ec69b1fe84502202de7934c571ec5b3ff932b09389d8db83b44fb95cd",
+      "sourceBytes": 22711460,
+      "bytes": 4005544,
+      "triangles": 59847,
+      "sourceDependencies": {
+        "assets/models/stevie/stevie.groom.summer.length.png": "69ccba1f87dbcfb57261af1abe44dc7a51361841b0ecafa21a3f9613d7b9e317",
+        "assets/models/stevie/stevie.groom.summer.direction.png": "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
+        "assets/models/stevie/stevie.groom.summer.density.png": "62959525a89857bbbf177dc57460be0c3c65b6d6c6c0c611fb4bc89ceaa1e916",
+        "assets/models/stevie/stevie.groom.winter.length.png": "4e36a45ff2b36d3230e74e36d60a86ac52f2d1d3e8f3ac671e52e1908a711d87",
+        "assets/models/stevie/stevie.groom.winter.direction.png": "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
+        "assets/models/stevie/stevie.groom.winter.density.png": "75c1124e35faa1154a1f2b2e8c20d8ddcffcacd224b6201a71c463f0adff3e9b",
+        "assets/models/stevie/stevie.tint.winter.png": "a596e4d61d5b130a7ce0359b9ac32610673979c66a26e5ec72af3120a3efe972",
+        "assets/models/stevie/stevie.eyes.mask.png": "9b405f8ec6b57f7ee0f22e41416df30ecb74e9ce5c2a79df1bdfaa6d5969f498"
+      }
     },
     "prop-bird-feeder.glb": {
       "source": "references/ceiling-3d/props/bird-feeder.glb",
@@ -77,6 +87,84 @@
       "sourceBytes": 2987624,
       "bytes": 757684,
       "triangles": 4570
+    },
+    "assets/models/stevie/stevie.baseColor.ktx2": {
+      "source": "assets/models/stevie/stevie.baseColor.png",
+      "sourceSha256": "c3fca0843e94aceb7ad070fbf56cb85468c0ecf37615fd5e7890a97a9267d47a",
+      "sha256": "59c1a144ddd5d455ea7556ef4ed96d894004e2be82fcd2a3967a55a0758a05f1",
+      "sourceBytes": 13242032,
+      "bytes": 769593,
+      "colourSpace": "srgb"
+    },
+    "assets/models/stevie/stevie.tint.winter.ktx2": {
+      "source": "assets/models/stevie/stevie.tint.winter.png",
+      "sourceSha256": "a596e4d61d5b130a7ce0359b9ac32610673979c66a26e5ec72af3120a3efe972",
+      "sha256": "b679c06b9de339ac11e3ae77b0bf45f08db358ea4d57477b590d28928e88855e",
+      "sourceBytes": 4092395,
+      "bytes": 188003,
+      "colourSpace": "srgb"
+    },
+    "assets/models/stevie/stevie.eyes.mask.ktx2": {
+      "source": "assets/models/stevie/stevie.eyes.mask.png",
+      "sourceSha256": "9b405f8ec6b57f7ee0f22e41416df30ecb74e9ce5c2a79df1bdfaa6d5969f498",
+      "sha256": "e5463f5d65bfd0581049f5df6302f562b75e25748f9f4b72906d16f6253e775a",
+      "sourceBytes": 2634771,
+      "bytes": 3771,
+      "colourSpace": "linear"
+    },
+    "assets/models/stevie/stevie.groom.summer.length.ktx2": {
+      "source": "assets/models/stevie/stevie.groom.summer.length.png",
+      "sourceSha256": "69ccba1f87dbcfb57261af1abe44dc7a51361841b0ecafa21a3f9613d7b9e317",
+      "sha256": "2abfdf4d140ba0ca2ec4c38199747587d828229d02eebc07bb26da083b4a1fe7",
+      "sourceBytes": 7316765,
+      "bytes": 1254089,
+      "colourSpace": "linear"
+    },
+    "assets/models/stevie/stevie.groom.summer.direction.ktx2": {
+      "source": "assets/models/stevie/stevie.groom.summer.direction.png",
+      "sourceSha256": "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
+      "sha256": "02471b7318429e927cfeb457ba435513b2001352d1b388dc3f67e598ce73956d",
+      "sourceBytes": 12837630,
+      "bytes": 4436187,
+      "colourSpace": "linear"
+    },
+    "assets/models/stevie/stevie.groom.summer.density.ktx2": {
+      "source": "assets/models/stevie/stevie.groom.summer.density.png",
+      "sourceSha256": "62959525a89857bbbf177dc57460be0c3c65b6d6c6c0c611fb4bc89ceaa1e916",
+      "sha256": "601040e1610774dd7c754415f0b0c222cf2307b42e554122a99301255ea128c5",
+      "sourceBytes": 5767856,
+      "bytes": 593491,
+      "colourSpace": "linear"
+    },
+    "assets/models/stevie/stevie.groom.winter.length.ktx2": {
+      "source": "assets/models/stevie/stevie.groom.winter.length.png",
+      "sourceSha256": "4e36a45ff2b36d3230e74e36d60a86ac52f2d1d3e8f3ac671e52e1908a711d87",
+      "sha256": "feeb237af2e3b16dfd883dfffcae98a4491799721924673421ef358d39abb363",
+      "sourceBytes": 8418183,
+      "bytes": 1408168,
+      "colourSpace": "linear"
+    },
+    "assets/models/stevie/stevie.groom.winter.direction.ktx2": {
+      "source": "assets/models/stevie/stevie.groom.winter.direction.png",
+      "sourceSha256": "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
+      "sha256": "02471b7318429e927cfeb457ba435513b2001352d1b388dc3f67e598ce73956d",
+      "sourceBytes": 12837630,
+      "bytes": 4436187,
+      "colourSpace": "linear"
+    },
+    "assets/models/stevie/stevie.groom.winter.density.ktx2": {
+      "source": "assets/models/stevie/stevie.groom.winter.density.png",
+      "sourceSha256": "75c1124e35faa1154a1f2b2e8c20d8ddcffcacd224b6201a71c463f0adff3e9b",
+      "sha256": "727d3f5893f83914727978b071839f423df9f1acf0c6806e2a4caa2aa561eff8",
+      "sourceBytes": 5784794,
+      "bytes": 611950,
+      "colourSpace": "linear"
+    },
+    "assets/models/stevie/manifest.json": {
+      "source": "assets/models/stevie/manifest.json",
+      "sourceSha256": "dc86cb67cefc1ad9a7f84b85357e06555a1034f866dcb6fb384bebf56b7898a0",
+      "sha256": "4ed7947629b406d2ba45224a35917ad527e1f9f81615cc5de552382e847b8724",
+      "bytes": 5379
     }
   }
 }
