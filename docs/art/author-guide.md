@@ -95,6 +95,12 @@ Then commit the strip, manifest and provenance. `.gitattributes` puts the PNG in
 
 **Pick into a clone with Git LFS set up.** A clone made where Git LFS isn't installed globally has no LFS filters, so its media are pointer files and `git add` would commit picked media as plain blobs. Run `git lfs install --local` and `git lfs pull` in the clone before the pick. `git diff --cached` then shows each picked file as a three-line pointer.
 
+**A new 3D model pick for Stevie** also changes what the quality lab ships. In the same PR:
+- run `node spikes/stevie-3d/scripts/web-media.mjs stevie` to rebuild `references/web-media/`;
+- move the lab's approved-model hash (`STEVIE_SHA256` in `spikes/quality-lab/scripts/lab.mjs`) and the coat lengths it checks to the new manifest's values.
+
+Otherwise CI's lab step loads the stale web media and fails.
+
 **A CC-BY-4.0 pick** needs its own REUSE annotation, in the same commit, the way `REUSE.toml` already does for the Meshy models. Add an `override` annotation for the strip and its provenance file, with the provider as copyright holder and the credit line Assetforge recorded:
 
 ```toml
