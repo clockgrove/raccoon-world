@@ -153,7 +153,10 @@
       "clips": "{{output.clips}}",
       "missingClips": "{{output.missingClips?}}",
       "bounds": "{{output.bounds}}",
-      "rig": "{{output.rig}}"
+      "rig": "{{output.rig}}",
+      "groom": "{{output.groom?}}",
+      "textures": "{{output.textures?}}",
+      "eyes": "{{output.eyes?}}"
     },
     "contentHash": "{{output.sha256}}",
     "accessibilityLabel": "{{spec.fields.accessibilityLabel?}}"
