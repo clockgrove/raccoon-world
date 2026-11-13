@@ -3,9 +3,9 @@
 // Desktop: a panel on the left. Phone: a bottom sheet that starts folded, so the yard is what you see first.
 
 import { KNOBS, KNOB_LABELS, LEVELS, PRESETS, PRESET_ORDER } from "./config.ts";
-import type { Knob, LabConfig, LabHandle, PresetName, StateName, ViewName } from "./config.ts";
-import { compactJson, findCastBudget, findCeiling, findTriangleBudget, runSoak, runSweep, slimJson } from "./runner.ts";
-import type { AnyReport, CastOptions, CeilingOptions, CeilingReport, RunOptions, SoakOptions, StepResult, SweepReport, TriangleOptions } from "./runner.ts";
+import type { Coat, FurMode, Knob, LabConfig, LabHandle, PresetName, StateName, ViewName } from "./config.ts";
+import { compactJson, compareFur, findCastBudget, findCeiling, findTriangleBudget, runSoak, runSweep, slimJson } from "./runner.ts";
+import type { AnyReport, CastOptions, CeilingOptions, CeilingReport, FurComparisonOptions, RunOptions, SoakOptions, StepResult, SweepReport, TriangleOptions } from "./runner.ts";
 
 const CSS = `
 .ql{--accent:#f5b453;--accent-ink:#1b1608;--line:rgba(255,255,255,.09);--fill:rgba(255,255,255,.06);--muted:rgba(236,235,230,.62);
@@ -116,7 +116,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLEl
 const ms = (v: number | null | undefined) => (v == null ? "n/a" : v.toFixed(1));
 
 function summarise(config: LabConfig): string {
-  return KNOBS.map((k) => `${KNOB_LABELS[k]}: ${String(config[k])}`).join(", ");
+  return [`Coat: ${config.coat}`, `Fur: ${config.furMode}`, ...KNOBS.map((k) => `${KNOB_LABELS[k]}: ${String(config[k])}`)].join(", ");
 }
 
 /** The knobs grouped by what they change, in the order a person reads them. Every knob is in exactly one group. */
@@ -191,7 +191,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   let applyError = "";
   let settledAt = performance.now();
   let sceneWanted: { view: ViewName; state: StateName } | null = null;
-  const pending = () => KNOBS.filter((k) => draft[k] !== lab.status().config[k]);
+  const pending = () => [...KNOBS, "coat", "furMode" as const].filter((k) => draft[k as keyof LabConfig] !== lab.status().config[k as keyof LabConfig]);
   const edit = (next: LabConfig) => {
     draft = { ...next };
     applyError = "";
@@ -274,7 +274,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   alertFix.addEventListener("click", () => {
     alertBox.hidden = true;
     slowWindows = 0;
-    edit({ ...PRESETS.low });
+    edit({ ...PRESETS.low, coat: draft.coat, furMode: draft.furMode });
     void applyDraft();
   });
   alertClose.addEventListener("click", () => {
@@ -319,7 +319,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     PRESET_ORDER.map((name) => [name, capital(name)] as [PresetName, string]),
     () => presetOf(draft),
     (name) => {
-      if (name) edit({ ...PRESETS[name] });
+      if (name) edit({ ...PRESETS[name], coat: draft.coat, furMode: draft.furMode });
     },
     true,
   );
@@ -370,7 +370,11 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     });
     effects.append(details);
   }
-  const controls = [...preset.buttons, ...knobControls];
+  const coat = segmented<Coat>("Coat", [["summer", "Summer"], ["winter", "Winter"]], () => draft.coat, (v) => edit({ ...draft, coat: v }));
+  const furMode = segmented<FurMode>("Fur material", [["groomed", "Groomed"], ["uniform", "Uniform shells"]], () => draft.furMode, (v) => edit({ ...draft, furMode: v }));
+  const coatSection = el("section", {}, el("h2", { textContent: "Coat" }), coat.row, furMode.row,
+    el("p", { class: "hint", textContent: "Summer and winter read Stevie’s groom maps. Uniform shells keep the earlier 12 mm material for comparison." }));
+  const controls = [...preset.buttons, ...knobControls, ...coat.buttons, ...furMode.buttons];
 
   // Runs: the action bar stays in reach at the bottom of the panel.
   const sweepBtn = el("button", { type: "button", class: "btn primary", textContent: "Run the sweep" });
@@ -378,6 +382,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   const trianglesBtn = el("button", { type: "button", class: "btn", textContent: "Triangle budget" });
   const castBtn = el("button", { type: "button", class: "btn", textContent: "Cast budget" });
   const soakBtn = el("button", { type: "button", class: "btn", textContent: "Soak (90 s)" });
+  const furBtn = el("button", { type: "button", class: "btn", textContent: "Compare fur" });
   const stopBtn = el("button", { type: "button", class: "btn stop", textContent: "Stop", hidden: true });
   const progress = el("p", {});
   progress.setAttribute("role", "status");
@@ -388,7 +393,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   applyBtn.addEventListener("click", () => void applyDraft());
   discardBtn.addEventListener("click", () => edit({ ...lab.status().config }));
   applyBtn.classList.add("apply");
-  actions.append(runBox, applyBtn, discardBtn, sweepBtn, ceilingBtn, trianglesBtn, castBtn, soakBtn, stopBtn);
+  actions.append(runBox, applyBtn, discardBtn, sweepBtn, ceilingBtn, trianglesBtn, castBtn, soakBtn, furBtn, stopBtn);
 
 // Results
   const results = el("div", { class: "tablewrap" });
@@ -398,7 +403,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   const outRow = el("div", { class: "out" }, copyBtn, downloadBtn, copyNote);
   const empty = el("p", { class: "empty", textContent: "Run the sweep to time each effect on this device. Find the ceiling: the richest set of effects that holds the frame budget. Triangle budget: keeps your effects and raises geometry detail until 60 fps breaks. Then copy the results." });
   const runAllBtn = el("button", { type: "button", class: "btn primary", textContent: "Run everything (about 20–25 min)" });
-  const runAllHint = el("p", { class: "hint", textContent: "Sweep (both framings), then ceiling, triangle budget, cast budget and a 90 s soak at the ceiling; then copy the results. Keep this page open and in front (on desktop, this tab visible; on a phone, unlocked). Landscape matches the game's framing." });
+  const runAllHint = el("p", { class: "hint", textContent: "Sweep (both framings), then ceiling, triangle budget, cast budget, paired fur comparison and a 90 s soak at the ceiling; then copy the results. Keep this page open and in front (on desktop, this tab visible; on a phone, unlocked). Landscape matches the game's framing." });
   const runAllBox = el("div", { class: "runall" }, runAllBtn, runAllHint);
   const resultsSection = el("section", {}, el("h2", { textContent: "Results" }), empty, runAllBox, outRow, results);
 
@@ -493,6 +498,19 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   const render = () => {
     results.replaceChildren();
     for (const rep of reports) {
+      if (rep.kind === "fur") {
+        results.append(el("h3", { textContent: `Fur comparison · ${rep.coat} · ${rep.view}: ${rep.backend}, ${rep.adapter}` }));
+        if (rep.software) results.append(el("p", { class: "sw", textContent: "software, not performance" }));
+        const table = el("table");
+        const body = el("tbody");
+        table.append(head("Config", "GPU p50 ms", "GPU p95 ms", "CPU p50 ms", "CPU p95 ms", "Shot"), body);
+        for (const step of rep.steps) body.append(row(step.error ? [step.label, step.error] : [step.label,
+          ms(step.measurement?.gpuMsP50), ms(step.measurement?.gpuMsP95), ms(step.measurement?.cpuMsP50), ms(step.measurement?.cpuMsP95), thumb(step)]));
+        results.append(table);
+        for (const cost of rep.costs) results.append(el("p", { textContent: `${capital(cost.preset)} groomed − uniform: ${ms(cost.gpuMsP50)} ms GPU, ${ms(cost.cpuMsP50)} ms CPU.` }));
+        for (const cast of rep.castBudgets) results.append(el("p", { textContent: `${cast.base.furMode} cast: ${cast.held ? `${cast.held.cast} held 60 fps` : "no measured budget held"}; each raccoon adds ${ms(cast.gpuMsPerRaccoon)} ms GPU, ${ms(cast.cpuMsPerRaccoon)} ms CPU.` }));
+        continue;
+      }
       if (rep.kind === "triangles") {
         renderTriangles(rep);
         continue;
@@ -538,8 +556,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
 
   const setRunning = (on: boolean) => {
     running = on;
-    sweepBtn.disabled = ceilingBtn.disabled = trianglesBtn.disabled = castBtn.disabled = soakBtn.disabled = runAllBtn.disabled = on;
-    sweepBtn.hidden = ceilingBtn.hidden = trianglesBtn.hidden = castBtn.hidden = soakBtn.hidden = on;
+    sweepBtn.disabled = ceilingBtn.disabled = trianglesBtn.disabled = castBtn.disabled = soakBtn.disabled = furBtn.disabled = runAllBtn.disabled = on;
+    sweepBtn.hidden = ceilingBtn.hidden = trianglesBtn.hidden = castBtn.hidden = soakBtn.hidden = furBtn.hidden = on;
     stopBtn.hidden = !on;
     panel.classList.toggle("running", on);
     if (!on) draft = { ...lab.status().config };
@@ -561,7 +579,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     const drafting = !running && (changed > 0 || applyingSince > 0);
     applyBtn.hidden = !drafting;
     discardBtn.hidden = !drafting || changed === 0;
-    sweepBtn.hidden = ceilingBtn.hidden = trianglesBtn.hidden = castBtn.hidden = soakBtn.hidden = drafting || running;
+    sweepBtn.hidden = ceilingBtn.hidden = trianglesBtn.hidden = castBtn.hidden = soakBtn.hidden = furBtn.hidden = drafting || running;
     runAllBtn.disabled = drafting || running;
     applyBtn.disabled = applyingSince > 0;
     applyBtn.textContent = applyingSince ? `Applying · ${waited}` : `Apply ${changed} change${changed === 1 ? "" : "s"}`;
@@ -571,6 +589,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     view.sync();
     state.sync();
     preset.sync();
+    coat.sync();
+    furMode.sync();
     for (const f of knobSyncs) f();
     paintHead();
     const name = presetOf(draft);
@@ -648,6 +668,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
       const best = ceiling?.held ? { ...ceiling.ceiling } : undefined;
       if (!abort?.signal.aborted) await doTriangles();
       if (!abort?.signal.aborted) await doCast(best ? { base: best } : {});
+      if (!abort?.signal.aborted) await doFur(best ? { base: best } : {});
       if (!abort?.signal.aborted) await doSoak(best ? { config: best } : {});
     } finally {
       chained = false;
@@ -672,7 +693,10 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     void doSoak(c ? { config: { ...c.ceiling } } : {}).catch((e) => (progress.textContent = String(e)));
   });
 
-  scroll.append(status, sceneSection, presetSection, effects, resultsSection);
+  const doFur = (o: FurComparisonOptions = {}) => track("Fur comparison", (opts) => compareFur(lab, { ...o, ...opts }), o);
+  furBtn.addEventListener("click", () => void doFur().catch((e) => (progress.textContent = String(e))));
+
+  scroll.append(status, sceneSection, presetSection, coatSection, effects, resultsSection);
   render();
   syncAll();
 
@@ -682,6 +706,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     findTriangleBudget: doTriangles,
     findCastBudget: doCast,
     runSoak: doSoak,
+    compareFur: doFur,
     reports: () => [...reports],
     /** Exactly what Copy results puts on the clipboard. */
     copied: () => slimJson(reports),

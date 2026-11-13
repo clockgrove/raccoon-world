@@ -15,7 +15,7 @@ These are SwiftShader (software GPU) renders of the High preset at 1280 × 720 a
 ## What the page draws
 
 - **The scene:** the #34 ceiling's yard (house corner, porch and lantern, tree, fences, stepping stones, puddles, foliage and the generated props), reused from `spikes/ceiling-3d/src`. It uses the ceiling's camera, lighting model, materials and grade, at **dusk in rain** and at **night in rain**.
-- **Stevie:** Kirk's wave 0 pick, c3, re-rigged on the shared raccoon rig ([`c3-rigged.glb`](../../references/stevie/3d-wave0-candidates/c3-rigged/README.md), #54: 0.45 m, 30 joints, one generated `walk` clip of 743 ms, played in place). He walks a 0.65 m-radius loop over the puddles and stepping stones in front of the porch steps. He moves at the clip's recorded 0.268 m/s, so his feet stay planted. The GLB doesn't store `speedMps` yet, so the page reads it when present and falls back to that recorded value.
+- **Stevie:** Kirk's approved c1 look-dev pick ([manifest](../../assets/models/stevie/manifest.json), #107, Assetforge f9dda1b: 59,847 triangles, 0.45 m, 30 joints, one generated `walk` clip of 743 ms, played in place). He walks a 0.65 m-radius loop over the puddles and stepping stones in front of the porch steps. He moves at the clip's recorded 0.268 m/s, so his feet stay planted. The page reads the manifest's recorded 0.267756 m/s speed, retaining the legacy fallback for older files.
 - **Two cameras:** the yard view (the ceiling's main frame) and a close-up that follows Stevie at the zoom where he fills about a third of the frame height, so his walk can be judged.
 - **Stack:** three.js r187 (the version the pinned Clockgrove locks), WebGPU with the WebGL2 fallback (`?backend=webgl2`), and only three's own TSL add-ons. There's no pmndrs postprocessing, N8AO or three-good-godrays.
 
@@ -25,7 +25,7 @@ Each effect is one switch (one knob in [`config.ts`](../../spikes/quality-lab/sr
 
 | Effect | Levels | three.js add-on or code | Ultra | High | Medium | Low |
 | --- | --- | --- | --- | --- | --- | --- |
-| Fur shells | 16, 8, 4, 0 | Skinned shells, ceiling `furShell` | 16 | 8 | 4 | 0 |
+| Fur shells | 16, 8, 4, 0 | Skinned shells reading manifest groom maps; uniform `furShell` comparison | 16 | 8 | 4 | 0 |
 | Fur fins | on, off | Spike code: skinned edge quads | on | on | off | off |
 | Volumetric haze | on, off | `VolumeNodeMaterial` ray-march, quarter-resolution pass, `gaussianBlur` | on | off | off | off |
 | Light shafts | on, off | `GodraysNode` from the porch lantern | on | off | off | off |
@@ -74,7 +74,7 @@ _Pending until both ceilings are measured._
 The required check's 3D step (`bash scripts/clockgrove.sh slice`) runs `node spikes/quality-lab/scripts/lab.mjs journey` on SwiftShader. It builds the static site that Pages would serve and serves it under a sub-path, which proves its URLs are relative. It then checks the following, recording no times:
 
 - the adapter is SwiftShader and the page flags itself as software;
-- Stevie is c3 on the 30-joint rig with the `walk` clip at 0.268 m/s;
+- Stevie is the approved c1 on the 30-joint rig with the `walk` clip at 0.267756 m/s;
 - on WebGPU, all 24 configs (every preset and every sweep config) draw a frame with no page error; on the WebGL2 fallback, Ultra and Low do;
 - Ultra and Low differ, the walk moves Stevie in the close-up, and night differs from dusk;
 - the runner's sweep and ceiling search run from the page's panel, report no frame times on the software GPU, and produce a send link.
@@ -102,6 +102,14 @@ The product renderer at the pinned Clockgrove commit (clockgrove/clockgrove#184 
 
 ## Media and licences
 
-- The page itself, Stevie's c3 model (Tripo, paid plan, MIT as Clockgrove work) and the screenshots' code are MIT.
+- The page itself, Stevie's approved c1 model (Tripo, paid plan, MIT as Clockgrove work) and the screenshots' code are MIT.
 - The yard's generated props are #34's text-to-3D models from Meshy and Tripo, under CC BY 4.0 with credit: "3D models generated with Meshy (meshy.ai) and Tripo (tripo3d.ai)". The page shows this credit, and `REUSE.toml` marks the three screenshots CC BY 4.0.
 - No generation spend: the lab only reuses models already in the repository.
+
+## Groomed coat measurements (issue 81)
+
+The lab defaults to **Summer / Groomed**. Its coat control selects summer or winter manifest maps; winter also applies the tint texture's alpha toward the tips. The eyes mask excludes eye pixels from fur. Both the yard and close-up use this same skinned coat. The source manifest, source-map hashes and full provenance accompany the compressed web media; generation and approval remain the source asset's records.
+
+**Compare fur** isolates the groom cost: each unchanged preset runs once with the earlier uniform 12 mm shells and once with groomed shells, on the same approved model, camera, shell count, fins and effects. The table shows GPU and CPU p50/p95 ms per step, followed by groomed-minus-uniform p50 costs. Two cast budget curves then hold the same effects and selected coat, measuring 1, 3, 10 and 20 raccoons for each material. They retain the budget result and GPU/CPU milliseconds per extra raccoon. Copy results and Download JSON include these results; software GPU timings remain null. Actual device costs are pending until Kirk runs the page on his devices.
+
+Run `node spikes/quality-lab/scripts/lab.mjs groom --backend both` for the focused static-site browser proof of c1 in the yard, distinct summer/winter/uniform coats at a fixed close-up pose, coat controls, paired measurements and exported results. The existing broader journey still checks all presets and effects.
