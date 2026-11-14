@@ -107,7 +107,7 @@
         "maxMovedBodyLengths": 0.04
       }
     },
-    "targetProfileSha256": "aab23a83682cb5ad69be4173a93886da3a3fe9d45805b0c954c7fca6ba464510",
+    "targetProfileSha256": "610262ff7b07a317c46b19c99a3adf58b76cc627e5f21eae776f196649932f8c",
     "rerig": {
       "sourceModel": "c3.glb",
       "sourceModelSha256": "209db8115d4de1ae0a8288f1e4a8e22767a39201c43e2875a37f0a938da226bb"
@@ -605,6 +605,56 @@
       ],
       "coverage": 0.8198,
       "costUsd": 0.415268
+    },
+    "lod": {
+      "source": "stevie.glb",
+      "sourceSha256": "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355",
+      "method": "meshoptimizer simplifyWithAttributes on index lists only (kept vertices copied byte for byte)",
+      "packaging": "files",
+      "silhouetteTolerance": 0.06,
+      "levels": [
+        {
+          "level": 0,
+          "triangleRatio": 1,
+          "minScreenHeight": 0.15,
+          "triangles": 59847,
+          "passed": true
+        },
+        {
+          "level": 1,
+          "triangleRatio": 0.33,
+          "minScreenHeight": 0.05,
+          "triangles": 19747,
+          "passed": true
+        },
+        {
+          "level": 2,
+          "triangleRatio": 0.1,
+          "minScreenHeight": 0,
+          "triangles": 5979,
+          "passed": true
+        }
+      ],
+      "tiers": [
+        {
+          "name": "desktop",
+          "fur": true,
+          "triangles": 60000,
+          "textureMaxPx": 2048,
+          "materials": 4,
+          "bones": 80,
+          "lods": 3
+        },
+        {
+          "name": "phone",
+          "fur": true,
+          "triangles": 20000,
+          "textureMaxPx": 1024,
+          "materials": 4,
+          "bones": 80,
+          "lods": 3
+        }
+      ]
     }
   },
   "requestIds": [
@@ -1653,6 +1703,78 @@
       ],
       "outputs": [
         "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355"
+      ]
+    },
+    {
+      "op": "embed-digital-source-type",
+      "params": {
+        "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia"
+      },
+      "engine": {
+        "name": "assetforge-xmp",
+        "version": "1"
+      },
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "op": "lod-chain",
+      "params": {
+        "method": "meshoptimizer simplifyWithAttributes on index lists only (kept vertices copied byte for byte)",
+        "packaging": "files",
+        "levels": [
+          {
+            "level": 0,
+            "triangleRatio": 1,
+            "minScreenHeight": 0.15,
+            "triangles": 59847,
+            "passed": true
+          },
+          {
+            "level": 1,
+            "triangleRatio": 0.33,
+            "minScreenHeight": 0.05,
+            "triangles": 19747,
+            "passed": true
+          },
+          {
+            "level": 2,
+            "triangleRatio": 0.1,
+            "minScreenHeight": 0,
+            "triangles": 5979,
+            "passed": true
+          }
+        ]
+      },
+      "engine": {
+        "name": "assetforge-lod",
+        "version": "1"
+      },
+      "inputs": [
+        "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355"
+      ],
+      "outputs": [
+        "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355",
+        "971a64b964ec7ad3a43722d034531c26898a07ecda7d81450c40fb5fe49c5866",
+        "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
+        "11b5d8dbdd4c48f64ad232f034e6a52b8ca9dd837300f234eedf150ce06bf037",
+        "f40e7d03512abc7d5aecd84811b8574c571afbd93f25c2b44594953e8ca368c3",
+        "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
+        "d8496c68f3fadbc8512be65b689d4b31cdaa73e64f8b37b0812a4aa881842ed4",
+        "f3c266b6f5d726e2366cfc6afbc285d1f449228c9b4d960dd1a7a5edb0bdf89b",
+        "95e19e95b551b283b998ccf68006b8bf25c7c410452cffe24ae539ce2de01eb0",
+        "cbd8bbcaed59670d694d65ff81ebdde2b0487635a964c45930339cece6a7ec22",
+        "6fe28c69080a85bd74f387944587bd8c1545dd6e21a5f0c6042d69c94c5f916f",
+        "29845d664f5bbe2432ee71a2ddd4b5c2ffc7ef567acde21c9f9413e045c50a60",
+        "2a32e0dbf4f609f7c275828c1ab289e972015b5e51f513148d085464fcec2071",
+        "a0c061f2d648ccb74954bf49ec653c4ef775ef282043f84fb5dbf3ebd4a5d8da",
+        "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26",
+        "85bfc74fda41a6c82b56e915b2e43fd67adc3989669b56f3179b99b062659eae",
+        "69bc47b29a3ad98f1b1dff1b1d763cfd709d51d782a20cbee0ee641d3e1b8f97",
+        "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26",
+        "5980e52f2efc390b5d88f475af717ada2ff931814788e55f318b7cd6a7dc2f12",
+        "9a04636bb2f84fe7e76335e1b0b01ca522fca878070a60e422fc6b3baf003d4b",
+        "795838b2134eeea92899af7a715740fbaf2d1b29de72a45643968e042c5ba41d"
       ]
     },
     {
