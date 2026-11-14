@@ -30,9 +30,11 @@
 //   refusals from this world's own checks
 //     format:texture-media-type, manifest:bounds, manifest:provenance:digitalSourceType, grant:license,
 //     rig:template, rig:joints, clip:not-generated:<family>
+//     manifest:levels (a level file or side map of a tier's chain that is missing, unreadable, changed,
+//       not a one-level GLB, or not the declared triangle count; see model3d-sidefiles.mjs)
 //   refusals from Clockgrove carry Clockgrove's codes
 //   flags (accepted, reported)
-//     tier:<tier>:<key> (a non-desktop tier's budget the model exceeds), clip-missing:<family>
+//     tier:<tier>:<key> (a level the tier draws is over that tier's budget, level by level), clip-missing:<family>
 //   profile problems (checkProfile)
 //     profile:format, profile:units, profile:budgets, profile:tiers, profile:lods,
 //     profile:handoff, profile:rig, profile:clip-sets, profile:groom
@@ -42,7 +44,7 @@ import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { ACCEPTED_MEDIA, BUDGET_KEYS, declaresSideFiles, imageBytes, parseGlb, sha256, sniffMediaType, validateSideFileModel } from "./model3d-sidefiles.mjs";
+import { ACCEPTED_MEDIA, BUDGET_KEYS, declaresSideFiles, imageBytes, parseGlb, sha256, sniffMediaType, tierLevelChecks, validateSideFileModel } from "./model3d-sidefiles.mjs";
 
 export { BUDGET_KEYS };
 
@@ -108,6 +110,10 @@ export function checkProfile(profile) {
       if (!(lods[i]?.triangleRatio < lods[i - 1]?.triangleRatio)) add("lods", `lods[${i}].triangleRatio must be below the previous level's`);
       if (!(lods[i]?.minScreenHeight < lods[i - 1]?.minScreenHeight)) add("lods", `lods[${i}].minScreenHeight must be below the previous level's`);
     }
+  }
+
+  if (m.handoff?.lods !== undefined && !["embedded", "files"].includes(m.handoff.lods)) {
+    add("handoff", `model3d.handoff.lods is ${JSON.stringify(m.handoff.lods)}, expected "embedded" or "files"`);
   }
 
   const media = m.handoff?.textureMediaTypes;
@@ -237,8 +243,8 @@ class UsageError extends Error {}
  * declares side files (Stevie's committed look-dev model) is refused by Clockgrove until
  * clockgrove/clockgrove#305, so it keeps this world's own checks (model3d-sidefiles.mjs) instead.
  */
-export function validateModel({ profile, manifest, glb, templateBytes, kind = "character" }) {
-  if (declaresSideFiles(manifest)) return { ...validateSideFileModel({ profile, manifest, glb, templateBytes, kind }), route: "world-side" };
+export function validateModel({ profile, manifest, glb, templateBytes, kind = "character", readBytes = () => undefined }) {
+  if (declaresSideFiles(manifest)) return { ...validateSideFileModel({ profile, manifest, glb, templateBytes, kind, readBytes }), route: "world-side" };
   const refusals = clockgroveRefusals({ profile, manifest, glb, kind });
   const flags = [];
   if (refusals.length > 0) return { accepted: false, refusals, flags, route: "clockgrove" };
@@ -295,18 +301,9 @@ export function validateModel({ profile, manifest, glb, templateBytes, kind = "c
     }
   }
 
-  for (const [tier, t] of Object.entries(m.tiers ?? {})) {
-    if (tier === "desktop" || !t?.[kind]) continue;
-    for (const key of BUDGET_KEYS) {
-      const value = manifest?.model?.[key];
-      if (value > t[kind][key]) {
-        flags.push({
-          code: `tier:${tier}:${key}`,
-          detail: `${key} ${value} over the ${tier} ${kind} budget of ${t[kind][key]}; the LOD chain must bring it within (${tier} status: ${t.status})`,
-        });
-      }
-    }
-  }
+  const levelChecks = tierLevelChecks({ profile, manifest, kind, measured: manifest?.model ?? {}, readBytes });
+  refusals.push(...levelChecks.refusals);
+  flags.push(...levelChecks.flags);
   for (const family of set.required) {
     if (!glbNames.includes(family)) flags.push({ code: `clip-missing:${family}`, detail: `no "${family}" clip in the model; never faked` });
   }
@@ -329,6 +326,14 @@ export function kindOf(manifest) {
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
+}
+
+function readBytes(path) {
+  try {
+    return new Uint8Array(readFileSync(path));
+  } catch {
+    return undefined;
+  }
 }
 
 function cli(argv) {
@@ -360,7 +365,7 @@ function cli(argv) {
     options.kind ??= kindOf(manifest);
     const glb = new Uint8Array(readFileSync(manifest?.source?.path ?? ""));
     const templateBytes = new Uint8Array(readFileSync(resolve(dirname(resolve(options.profile)), profile.model3d?.rig?.template ?? "")));
-    const result = validateModel({ profile, manifest, glb, templateBytes, kind: options.kind });
+    const result = validateModel({ profile, manifest, glb, templateBytes, kind: options.kind, readBytes });
     if (options.json) {
       console.log(JSON.stringify(result, null, 2));
     } else {

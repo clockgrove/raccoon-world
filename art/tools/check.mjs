@@ -405,7 +405,7 @@ async function proof() {
 async function checkModel3d() {
   const PROFILE = "art/target-profile-3d.json";
   const SPEC = "art/stevie/character-3d/spec.json";
-  const { checkProfile } = await import(pathToFileURL(join(root, "art/tools/model3d.mjs")).href);
+  const { checkProfile, validateModel } = await import(pathToFileURL(join(root, "art/tools/model3d.mjs")).href);
   const { characterSpec } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/profile.ts")).href);
   const { model3dSettings } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/profile.ts")).href);
   const { loadRig } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/rig/template.ts")).href);
@@ -456,6 +456,35 @@ async function checkModel3d() {
     if (source !== (generated ? "generated" : "library"))
       fail("model3d", `${SPEC}: clip ${clip} must come from ${generated ? "the generated gait" : "the provider's library"}`);
   }
+
+  // Stevie's committed chain (#113) is checked level by level against the tier that draws it.
+  const steviePath = "assets/models/stevie/manifest.json";
+  const stevieManifest = await json(steviePath);
+  const levelFiles = new Map();
+  for (const entry of [...Object.values(stevieManifest.model?.levels ?? {}), ...Object.values(stevieManifest.model?.tiers ?? {}).flatMap((t) => Object.values(t.levels ?? {}))])
+    levelFiles.set(entry.path, await readFile(join(root, entry.path)).catch(() => undefined));
+  const sideMaps = async (node) => {
+    if (node && typeof node === "object" && typeof node.path === "string") levelFiles.set(node.path, await readFile(join(root, node.path)).catch(() => undefined));
+    else for (const value of Object.values(node ?? {})) if (value && typeof value === "object") await sideMaps(value);
+  };
+  await sideMaps(stevieManifest.model);
+  const stevieInput = {
+    glb: new Uint8Array(await readFile(join(root, stevieManifest.source.path))),
+    templateBytes: new Uint8Array(await readFile(join(root, "art", m.rig.template))),
+    readBytes: (path) => (levelFiles.has(path) ? levelFiles.get(path) : undefined),
+  };
+  const chained = validateModel({ profile, manifest: stevieManifest, ...stevieInput });
+  if (!chained.accepted || chained.flags.some((f) => f.code.startsWith("tier:")))
+    fail("model3d", `Stevie's chain must be accepted with no tier flag: ${JSON.stringify([...chained.refusals, ...chained.flags.filter((f) => f.code.startsWith("tier:"))])}`);
+  const tight = structuredClone(profile);
+  tight.model3d.tiers.phone.character.triangles = 15000;
+  const tightened = validateModel({ profile: tight, manifest: stevieManifest, ...stevieInput });
+  if (!tightened.flags.some((f) => f.code === "tier:phone:triangles" && f.detail.includes("level 1")))
+    fail("model3d", "a phone triangle budget of 15000 must flag tier:phone:triangles naming level 1");
+  const tampered = structuredClone(stevieManifest);
+  tampered.model.tiers.phone.levels.lod1.sha256 = "0".repeat(64);
+  if (!validateModel({ profile, manifest: tampered, ...stevieInput }).refusals.some((r) => r.code === "manifest:levels"))
+    fail("model3d", "a phone level whose sha256 is wrong must be refused with manifest:levels");
 
   // Stevie's 3D run (up to 4 candidates) forecasts within its cap, offline, on the real routes.
   const settings = await json("art/stevie/character-3d/run.json");
