@@ -14,33 +14,37 @@
     "gait": "quadruped",
     "clips": [
       {
+        "family": "idle",
+        "generated": true,
+        "loop": true
+      },
+      {
         "family": "walk",
+        "generated": true,
+        "loop": true
+      },
+      {
+        "family": "sniff",
+        "generated": true,
+        "loop": false
+      },
+      {
+        "family": "eat",
+        "generated": true,
+        "loop": false
+      },
+      {
+        "family": "play",
+        "generated": true,
+        "loop": false
+      },
+      {
+        "family": "shelter",
         "generated": true,
         "loop": true
       }
     ],
-    "missingClips": [
-      {
-        "family": "idle",
-        "why": "the target declares no gait profile for \"idle\" (model3d.gaits.idle)"
-      },
-      {
-        "family": "sniff",
-        "why": "the target declares no gait profile for \"sniff\" (model3d.gaits.sniff)"
-      },
-      {
-        "family": "eat",
-        "why": "the target declares no gait profile for \"eat\" (model3d.gaits.eat)"
-      },
-      {
-        "family": "play",
-        "why": "the target declares no gait profile for \"play\" (model3d.gaits.play)"
-      },
-      {
-        "family": "shelter",
-        "why": "the target declares no gait profile for \"shelter\" (model3d.gaits.shelter)"
-      }
-    ],
+    "missingClips": [],
     "forward": "+z",
     "heightM": 0.45,
     "references": [
@@ -66,7 +70,7 @@
     "rig": {
       "kind": "raccoon",
       "template": "rig/raccoon.json",
-      "templateSha256": "b2c031d2c65810526b61cd38c9d8b5a31d2199b607d503df3e1b5e87d517a0e9",
+      "templateSha256": "94d93e1e34d82e49df4fdb640321be2d29a82fe6fc28de4f0bcd034a336ef73d",
       "gaits": {
         "walk": {
           "sha256": "2e36c769473672a52f6c277af3f95db67ec82442cd29c551078fd7ccb9fcf569",
@@ -94,7 +98,428 @@
           }
         }
       },
-      "sourceModelSha256": "209db8115d4de1ae0a8288f1e4a8e22767a39201c43e2875a37f0a938da226bb",
+      "motions": {
+        "idle": {
+          "sha256": "072fc4319d887ad1bac02f0a2c6d3e7a3b6b5de47c0b54e3263894e2b48bc59e",
+          "profile": {
+            "loop": true,
+            "durationS": 4,
+            "keys": [
+              {
+                "at": 0,
+                "pose": {
+                  "backArchDeg": 14,
+                  "headPitchDeg": 18,
+                  "tailPitchDeg": 14,
+                  "tailYawDeg": -6
+                }
+              },
+              {
+                "at": 0.5,
+                "pose": {
+                  "backArchDeg": 17,
+                  "headPitchDeg": 14,
+                  "headYawDeg": 8,
+                  "tailPitchDeg": 12,
+                  "tailYawDeg": 8,
+                  "joints": {
+                    "ear_l": {
+                      "x": -4
+                    },
+                    "ear_r": {
+                      "x": -4
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "sniff": {
+          "sha256": "a6a7b7bb27494e59c754158b54919ca0ff01fc6be6f4a8ad0a48aa87a0c56728",
+          "profile": {
+            "loop": false,
+            "idle": "idle",
+            "entryS": 0.5,
+            "durationS": 2,
+            "exitS": 0.6,
+            "keys": [
+              {
+                "at": 0,
+                "pose": {
+                  "backArchDeg": 10,
+                  "headPitchDeg": 52,
+                  "body": {
+                    "pitchDeg": 6
+                  },
+                  "tailPitchDeg": 10
+                }
+              },
+              {
+                "at": 0.3,
+                "pose": {
+                  "backArchDeg": 10,
+                  "headPitchDeg": 56,
+                  "headYawDeg": 12,
+                  "body": {
+                    "pitchDeg": 6
+                  },
+                  "tailPitchDeg": 10,
+                  "tailYawDeg": 6
+                }
+              },
+              {
+                "at": 0.65,
+                "pose": {
+                  "backArchDeg": 10,
+                  "headPitchDeg": 54,
+                  "headYawDeg": -12,
+                  "body": {
+                    "pitchDeg": 6
+                  },
+                  "tailPitchDeg": 10,
+                  "tailYawDeg": -6
+                }
+              },
+              {
+                "at": 1,
+                "pose": {
+                  "backArchDeg": 10,
+                  "headPitchDeg": 50,
+                  "body": {
+                    "pitchDeg": 5
+                  },
+                  "tailPitchDeg": 10
+                }
+              }
+            ]
+          }
+        },
+        "eat": {
+          "sha256": "8a67721afcf016b3f7af51edf2dded47c13aa7c0bdec75971e2274c624ad1e84",
+          "profile": {
+            "loop": false,
+            "idle": "idle",
+            "entryS": 0.5,
+            "durationS": 2.4,
+            "exitS": 0.6,
+            "keys": [
+              {
+                "at": 0,
+                "pose": {
+                  "backArchDeg": 12,
+                  "headPitchDeg": 55,
+                  "body": {
+                    "pitchDeg": 7
+                  },
+                  "tailPitchDeg": 12
+                }
+              },
+              {
+                "at": 0.25,
+                "pose": {
+                  "backArchDeg": 14,
+                  "headPitchDeg": 40,
+                  "body": {
+                    "pitchDeg": 3
+                  },
+                  "tailPitchDeg": 12,
+                  "feet": {
+                    "fore_r": {
+                      "liftBodyLengths": 0.06,
+                      "forwardBodyLengths": 0.02,
+                      "curlDeg": 40
+                    }
+                  }
+                }
+              },
+              {
+                "at": 0.45,
+                "pose": {
+                  "backArchDeg": 14,
+                  "headPitchDeg": 46,
+                  "body": {
+                    "pitchDeg": 3
+                  },
+                  "tailPitchDeg": 12,
+                  "feet": {
+                    "fore_r": {
+                      "liftBodyLengths": 0.06,
+                      "forwardBodyLengths": 0.02,
+                      "curlDeg": 40
+                    }
+                  }
+                }
+              },
+              {
+                "at": 0.65,
+                "pose": {
+                  "backArchDeg": 14,
+                  "headPitchDeg": 40,
+                  "body": {
+                    "pitchDeg": 3
+                  },
+                  "tailPitchDeg": 12,
+                  "feet": {
+                    "fore_r": {
+                      "liftBodyLengths": 0.06,
+                      "forwardBodyLengths": 0.02,
+                      "curlDeg": 40
+                    }
+                  }
+                }
+              },
+              {
+                "at": 0.85,
+                "pose": {
+                  "backArchDeg": 14,
+                  "headPitchDeg": 46,
+                  "body": {
+                    "pitchDeg": 3
+                  },
+                  "tailPitchDeg": 12,
+                  "feet": {
+                    "fore_r": {
+                      "liftBodyLengths": 0.06,
+                      "forwardBodyLengths": 0.02,
+                      "curlDeg": 40
+                    }
+                  }
+                }
+              },
+              {
+                "at": 1,
+                "pose": {
+                  "backArchDeg": 14,
+                  "headPitchDeg": 30,
+                  "tailPitchDeg": 14
+                }
+              }
+            ]
+          }
+        },
+        "play": {
+          "sha256": "b714f18a233bd941db3ab212bca58d2ec469032830eafcba606b011031b26006",
+          "profile": {
+            "loop": false,
+            "idle": "idle",
+            "entryS": 0.3,
+            "durationS": 1.6,
+            "exitS": 0.5,
+            "keys": [
+              {
+                "at": 0,
+                "pose": {
+                  "backArchDeg": 4,
+                  "headPitchDeg": 0,
+                  "body": {
+                    "pitchDeg": 14,
+                    "raiseBodyLengths": -0.025
+                  },
+                  "tailPitchDeg": -25,
+                  "tailYawDeg": 15
+                }
+              },
+              {
+                "at": 0.35,
+                "pose": {
+                  "backArchDeg": 4,
+                  "headPitchDeg": 0,
+                  "body": {
+                    "pitchDeg": 14,
+                    "raiseBodyLengths": -0.025
+                  },
+                  "tailPitchDeg": -25,
+                  "tailYawDeg": -15
+                }
+              },
+              {
+                "at": 0.55,
+                "pose": {
+                  "backArchDeg": 10,
+                  "headPitchDeg": 5,
+                  "body": {
+                    "pitchDeg": 0,
+                    "raiseBodyLengths": 0.035
+                  },
+                  "tailPitchDeg": -20,
+                  "feet": {
+                    "fore_l": {
+                      "liftBodyLengths": 0.03
+                    },
+                    "fore_r": {
+                      "liftBodyLengths": 0.03
+                    },
+                    "hind_l": {
+                      "liftBodyLengths": 0.03
+                    },
+                    "hind_r": {
+                      "liftBodyLengths": 0.03
+                    }
+                  }
+                }
+              },
+              {
+                "at": 0.75,
+                "pose": {
+                  "backArchDeg": 4,
+                  "headPitchDeg": 0,
+                  "body": {
+                    "pitchDeg": 14,
+                    "raiseBodyLengths": -0.025
+                  },
+                  "tailPitchDeg": -25,
+                  "tailYawDeg": 10
+                }
+              },
+              {
+                "at": 1,
+                "pose": {
+                  "backArchDeg": 8,
+                  "headPitchDeg": 8,
+                  "body": {
+                    "pitchDeg": 8
+                  },
+                  "tailPitchDeg": -15
+                }
+              }
+            ]
+          }
+        },
+        "shelter": {
+          "sha256": "fe105a8a9ffc1444b41f4ed947194b7662d006099f77c8c737afda26a019859f",
+          "profile": {
+            "loop": true,
+            "durationS": 2.4,
+            "keys": [
+              {
+                "at": 0,
+                "pose": {
+                  "backArchDeg": 30,
+                  "headPitchDeg": 34,
+                  "body": {
+                    "raiseBodyLengths": -0.03
+                  },
+                  "tailPitchDeg": 30,
+                  "tailYawDeg": 30,
+                  "joints": {
+                    "ear_l": {
+                      "x": 5
+                    },
+                    "ear_r": {
+                      "x": 5
+                    }
+                  }
+                }
+              },
+              {
+                "at": 0.45,
+                "pose": {
+                  "backArchDeg": 30,
+                  "headPitchDeg": 34,
+                  "body": {
+                    "raiseBodyLengths": -0.03
+                  },
+                  "tailPitchDeg": 30,
+                  "tailYawDeg": 30,
+                  "joints": {
+                    "ear_l": {
+                      "x": 5
+                    },
+                    "ear_r": {
+                      "x": 5
+                    }
+                  }
+                }
+              },
+              {
+                "at": 0.5,
+                "pose": {
+                  "backArchDeg": 31,
+                  "headPitchDeg": 34,
+                  "body": {
+                    "raiseBodyLengths": -0.03,
+                    "rollDeg": 2
+                  },
+                  "tailPitchDeg": 30,
+                  "tailYawDeg": 30,
+                  "joints": {
+                    "ear_l": {
+                      "x": 5
+                    },
+                    "ear_r": {
+                      "x": 5
+                    }
+                  }
+                }
+              },
+              {
+                "at": 0.55,
+                "pose": {
+                  "backArchDeg": 30,
+                  "headPitchDeg": 34,
+                  "body": {
+                    "raiseBodyLengths": -0.03,
+                    "rollDeg": -2
+                  },
+                  "tailPitchDeg": 30,
+                  "tailYawDeg": 30,
+                  "joints": {
+                    "ear_l": {
+                      "x": 5
+                    },
+                    "ear_r": {
+                      "x": 5
+                    }
+                  }
+                }
+              },
+              {
+                "at": 0.6,
+                "pose": {
+                  "backArchDeg": 31,
+                  "headPitchDeg": 34,
+                  "body": {
+                    "raiseBodyLengths": -0.03,
+                    "rollDeg": 1.5
+                  },
+                  "tailPitchDeg": 30,
+                  "tailYawDeg": 30,
+                  "joints": {
+                    "ear_l": {
+                      "x": 5
+                    },
+                    "ear_r": {
+                      "x": 5
+                    }
+                  }
+                }
+              },
+              {
+                "at": 0.65,
+                "pose": {
+                  "backArchDeg": 30,
+                  "headPitchDeg": 34,
+                  "body": {
+                    "raiseBodyLengths": -0.03
+                  },
+                  "tailPitchDeg": 30,
+                  "tailYawDeg": 30,
+                  "joints": {
+                    "ear_l": {
+                      "x": 5
+                    },
+                    "ear_r": {
+                      "x": 5
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "sourceModelSha256": "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355",
       "qa": {
         "contactBodyLengths": 0.01,
         "slideBodyLengths": 0.01,
@@ -107,10 +532,10 @@
         "maxMovedBodyLengths": 0.04
       }
     },
-    "targetProfileSha256": "610262ff7b07a317c46b19c99a3adf58b76cc627e5f21eae776f196649932f8c",
+    "targetProfileSha256": "8c907cd59590114f00939741299562115380bc26d66b3ee9a1b5789c20a230d9",
     "rerig": {
-      "sourceModel": "c3.glb",
-      "sourceModelSha256": "209db8115d4de1ae0a8288f1e4a8e22767a39201c43e2875a37f0a938da226bb"
+      "sourceModel": "stevie.glb",
+      "sourceModelSha256": "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355"
     },
     "lookdev": {
       "sourceModel": "stevie.glb",
@@ -608,7 +1033,7 @@
     },
     "lod": {
       "source": "stevie.glb",
-      "sourceSha256": "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355",
+      "sourceSha256": "c0345317a6d05f45fc6a8cb7b3ce378f9b3eb80356f5fc51d674f173770a73cb",
       "method": "meshoptimizer simplifyWithAttributes on index lists only (kept vertices copied byte for byte)",
       "packaging": "files",
       "silhouetteTolerance": 0.06,
@@ -631,7 +1056,7 @@
           "level": 2,
           "triangleRatio": 0.1,
           "minScreenHeight": 0,
-          "triangles": 5979,
+          "triangles": 5975,
           "passed": true
         }
       ],
@@ -1767,6 +2192,118 @@
         "6fe28c69080a85bd74f387944587bd8c1545dd6e21a5f0c6042d69c94c5f916f",
         "29845d664f5bbe2432ee71a2ddd4b5c2ffc7ef567acde21c9f9413e045c50a60",
         "2a32e0dbf4f609f7c275828c1ab289e972015b5e51f513148d085464fcec2071",
+        "a0c061f2d648ccb74954bf49ec653c4ef775ef282043f84fb5dbf3ebd4a5d8da",
+        "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26",
+        "85bfc74fda41a6c82b56e915b2e43fd67adc3989669b56f3179b99b062659eae",
+        "69bc47b29a3ad98f1b1dff1b1d763cfd709d51d782a20cbee0ee641d3e1b8f97",
+        "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26",
+        "5980e52f2efc390b5d88f475af717ada2ff931814788e55f318b7cd6a7dc2f12",
+        "9a04636bb2f84fe7e76335e1b0b01ca522fca878070a60e422fc6b3baf003d4b",
+        "795838b2134eeea92899af7a715740fbaf2d1b29de72a45643968e042c5ba41d"
+      ]
+    },
+    {
+      "op": "embed-digital-source-type",
+      "params": {
+        "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia"
+      },
+      "engine": {
+        "name": "assetforge-xmp",
+        "version": "1"
+      },
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "op": "rig-generated-gait",
+      "params": {
+        "template": "rig/raccoon.json",
+        "templateSha256": "94d93e1e34d82e49df4fdb640321be2d29a82fe6fc28de4f0bcd034a336ef73d",
+        "gaitSha256": {
+          "walk": "2e36c769473672a52f6c277af3f95db67ec82442cd29c551078fd7ccb9fcf569"
+        },
+        "motionSha256": {
+          "idle": "072fc4319d887ad1bac02f0a2c6d3e7a3b6b5de47c0b54e3263894e2b48bc59e",
+          "sniff": "a6a7b7bb27494e59c754158b54919ca0ff01fc6be6f4a8ad0a48aa87a0c56728",
+          "eat": "8a67721afcf016b3f7af51edf2dded47c13aa7c0bdec75971e2274c624ad1e84",
+          "play": "b714f18a233bd941db3ab212bca58d2ec469032830eafcba606b011031b26006",
+          "shelter": "fe105a8a9ffc1444b41f4ed947194b7662d006099f77c8c737afda26a019859f"
+        },
+        "targetProfileSha256": "8c907cd59590114f00939741299562115380bc26d66b3ee9a1b5789c20a230d9"
+      },
+      "engine": {
+        "name": "assetforge-rig",
+        "version": "1"
+      },
+      "inputs": [
+        "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355"
+      ],
+      "outputs": [
+        "cbf70448327a7d6e33253537ee84f681abda6c60a48f96913e83980debdac1f5"
+      ]
+    },
+    {
+      "op": "embed-digital-source-type",
+      "params": {
+        "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia"
+      },
+      "engine": {
+        "name": "assetforge-xmp",
+        "version": "1"
+      },
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "op": "lod-chain",
+      "params": {
+        "method": "meshoptimizer simplifyWithAttributes on index lists only (kept vertices copied byte for byte)",
+        "packaging": "files",
+        "levels": [
+          {
+            "level": 0,
+            "triangleRatio": 1,
+            "minScreenHeight": 0.15,
+            "triangles": 59847,
+            "passed": true
+          },
+          {
+            "level": 1,
+            "triangleRatio": 0.33,
+            "minScreenHeight": 0.05,
+            "triangles": 19747,
+            "passed": true
+          },
+          {
+            "level": 2,
+            "triangleRatio": 0.1,
+            "minScreenHeight": 0,
+            "triangles": 5975,
+            "passed": true
+          }
+        ]
+      },
+      "engine": {
+        "name": "assetforge-lod",
+        "version": "1"
+      },
+      "inputs": [
+        "c0345317a6d05f45fc6a8cb7b3ce378f9b3eb80356f5fc51d674f173770a73cb"
+      ],
+      "outputs": [
+        "c0345317a6d05f45fc6a8cb7b3ce378f9b3eb80356f5fc51d674f173770a73cb",
+        "971a64b964ec7ad3a43722d034531c26898a07ecda7d81450c40fb5fe49c5866",
+        "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
+        "11b5d8dbdd4c48f64ad232f034e6a52b8ca9dd837300f234eedf150ce06bf037",
+        "f40e7d03512abc7d5aecd84811b8574c571afbd93f25c2b44594953e8ca368c3",
+        "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
+        "d8496c68f3fadbc8512be65b689d4b31cdaa73e64f8b37b0812a4aa881842ed4",
+        "f3c266b6f5d726e2366cfc6afbc285d1f449228c9b4d960dd1a7a5edb0bdf89b",
+        "95e19e95b551b283b998ccf68006b8bf25c7c410452cffe24ae539ce2de01eb0",
+        "119dbcb416e5add90b2016f5e4348e1be8ba210bde7d2c74a099c9a503778900",
+        "bcf0e812b1371b3e9552286f703239572a7fdb82ad846794b425b739582f2a20",
+        "679d4f5d4801a57aead38c56af14c7175a1110f8144676bb108ce67f3a55d19c",
+        "de02a31c48a26114b1ee9cc2b5682d7f641680bfa0646e2a27fe4b191c9ccf1b",
         "a0c061f2d648ccb74954bf49ec653c4ef775ef282043f84fb5dbf3ebd4a5d8da",
         "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26",
         "85bfc74fda41a6c82b56e915b2e43fd67adc3989669b56f3179b99b062659eae",
