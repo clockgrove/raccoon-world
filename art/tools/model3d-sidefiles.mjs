@@ -206,9 +206,10 @@ function sideMapLeaves(node, out = []) {
  * model.tiers.<tier>.levels files when present, else the levels model.chain.tiers lists for it
  * (0 is the main file, n is model.levels.lod<n>), else just the main file. `measured` is the main
  * file's measures; `readBytes(path)` returns a repository-relative file's bytes or undefined.
- * Over budget flags tier:<tier>:<key>; a level or map that cannot be trusted is refused as manifest:levels.
+ * Over budget flags tier:<tier>:<key>; a level or map that cannot be trusted, or a level model.chain.tiers
+ * says a tier draws that its own files do not cover, is refused as manifest:levels. `tiers(name)` picks the tiers checked.
  */
-export function tierLevelChecks({ profile, manifest, kind = "character", measured, readBytes }) {
+export function tierLevelChecks({ profile, manifest, kind = "character", measured, readBytes, tiers = () => true }) {
   const refusals = [];
   const flags = [];
   const refuse = (detail) => {
@@ -257,14 +258,21 @@ export function tierLevelChecks({ profile, manifest, kind = "character", measure
 
   for (const [tier, t] of Object.entries(profile.model3d?.tiers ?? {})) {
     const budget = t?.[kind];
-    if (!budget) continue;
+    if (!budget || !tiers(tier)) continue;
     const own = model.tiers?.[tier];
     const mapPx = own && ["groom", "textures", "eyes"].some((k) => own[k]) ? maps(own) : mainMapPx;
     const levels = [];
     const main = { label: "level 0", measures: measured };
     const chainTier = model.chain?.tiers?.find((c) => c.name === tier);
     if (own?.levels && Object.keys(own.levels).length > 0) {
-      for (const entry of Object.values(own.levels)) levels.push(levelFile(entry, `level ${entry?.level}`));
+      const ownEntries = Object.values(own.levels);
+      for (const entry of ownEntries) levels.push(levelFile(entry, `level ${entry?.level}`));
+      if (Array.isArray(chainTier?.levels)) {
+        const covered = new Set(ownEntries.map((entry) => entry?.level));
+        for (const n of chainTier.levels) {
+          if (!covered.has(n)) refuse(`level ${n}, which model.chain.tiers says the ${tier} tier draws, has no file in model.tiers.${tier}.levels`);
+        }
+      }
     } else if (Array.isArray(chainTier?.levels)) {
       for (const n of chainTier.levels) {
         if (n === 0) levels.push(main);

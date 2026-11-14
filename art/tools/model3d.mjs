@@ -173,6 +173,17 @@ export function toClockgroveManifest(manifest) {
     bounds: model.bounds,
   };
   if (model.rig !== undefined) output.rig = model.rig;
+  const chain = chainLevels(manifest);
+  if (chain) {
+    // Level files declared beside the .glb (clockgrove/clockgrove#304): levels[0] is the main file,
+    // output.lods counts the files, and renditions name the chain levels each tier draws.
+    output.levels = chain;
+    output.lods = chain.length;
+    const renditions = Object.fromEntries(
+      (model.chain?.tiers ?? []).filter((t) => typeof t?.name === "string" && Array.isArray(t.levels) && !ownTierLevels(model, t.name)).map((t) => [t.name, t.levels]),
+    );
+    if (Object.keys(renditions).length > 0) output.renditions = renditions;
+  }
   const semantic = manifest?.semantic
     ? { role: manifest.semantic.role, entity: manifest.semantic.entity ?? null, archetype: manifest.semantic.archetype ?? null }
     : undefined;
@@ -192,18 +203,44 @@ export function toClockgroveManifest(manifest) {
   return mapped;
 }
 
-/** Clockgrove's model target for this world's desktop budget of a kind. */
-export function modelTarget(profile, kind) {
-  const budgets = profile.model3d?.tiers?.desktop?.[kind] ?? {};
-  return { version: 1, limits: Object.fromEntries(BUDGET_KEYS.map((k) => [k, budgets[k]])) };
+/** The manifest's level files as Clockgrove's output.levels (level 0 first), or undefined when it declares none. */
+function chainLevels(manifest) {
+  const model = manifest?.model ?? {};
+  const entries = Object.values(model.levels ?? {}).filter((l) => Number.isInteger(l?.level) && l.level > 0).sort((a, b) => a.level - b.level);
+  if (entries.length === 0) return undefined;
+  return [
+    { triangles: model.triangles, path: manifest?.source?.path, sha256: manifest?.contentHash },
+    ...entries.map((l) => ({ triangles: l.triangles, path: l.path, sha256: l.sha256 })),
+  ];
+}
+
+/** True when a tier draws its own level files (model.tiers.<tier>.levels), which Clockgrove's contract cannot express. */
+function ownTierLevels(model, tier) {
+  return Object.keys(model?.tiers?.[tier]?.levels ?? {}).length > 0;
+}
+
+/**
+ * Clockgrove's model target: this world's desktop budget of a kind as the default limits, and every
+ * tier's budget, except tiers the manifest gives their own level files (this world checks those).
+ */
+export function modelTarget(profile, kind, manifest) {
+  const pick = (budgets) => Object.fromEntries(BUDGET_KEYS.map((k) => [k, budgets?.[k]]));
+  const tiers = Object.fromEntries(
+    Object.entries(profile.model3d?.tiers ?? {}).filter(([tier, t]) => t?.[kind] && !ownTierLevels(manifest?.model, tier)).map(([tier, t]) => [tier, pick(t[kind])]),
+  );
+  return { version: 1, limits: pick(profile.model3d?.tiers?.desktop?.[kind]), ...(Object.keys(tiers).length > 0 ? { tiers } : {}) };
 }
 
 // --- Clockgrove's validation ---
 
 const ROOT = resolve(import.meta.dirname, "../..");
 
-/** Runs the pinned `clockgrove-assets validate` on a throwaway world; returns its problem lines. */
-function clockgroveRefusals({ profile, manifest, glb, kind }) {
+/**
+ * Runs the pinned `clockgrove-assets validate` on a throwaway world, with the level files beside the
+ * .glb. Returns its problem lines as refusals, except a tier budget Clockgrove finds exceeded on a tier
+ * whose status is not "measured": that is the tier:<tier>:<key> flag, pending the tier's measurement.
+ */
+function clockgroveRefusals({ profile, manifest, glb, kind, readBytes }) {
   const pin = readFileSync(join(ROOT, "CLOCKGROVE_COMMIT"), "utf8").trim();
   const dir = process.env.CLOCKGROVE_DIR ?? join(ROOT, ".clockgrove");
   const pinFile = join(dir, ".raccoon-world-pin");
@@ -218,17 +255,37 @@ function clockgroveRefusals({ profile, manifest, glb, kind }) {
     }
     mkdirSync(dirname(join(world, path)), { recursive: true });
     writeFileSync(join(world, path), glb);
+    for (const level of (chainLevels(manifest) ?? []).slice(1)) {
+      const bytes = typeof level.path === "string" && !isAbsolute(level.path) && !level.path.split(/[\\/]/).includes("..") ? readBytes(level.path) : undefined;
+      if (!bytes) continue; // Clockgrove refuses the missing file (MODEL_SOURCE_REQUIRED)
+      mkdirSync(dirname(join(world, level.path)), { recursive: true });
+      writeFileSync(join(world, level.path), bytes);
+    }
     mkdirSync(join(world, "reference"), { recursive: true });
-    writeFileSync(join(world, "reference/model-target.json"), JSON.stringify(modelTarget(profile, kind), null, 2));
+    writeFileSync(join(world, "reference/model-target.json"), JSON.stringify(modelTarget(profile, kind, manifest), null, 2));
     writeFileSync(join(world, "model.json"), JSON.stringify(toClockgroveManifest(manifest), null, 2));
     const run = spawnSync(process.execPath, [join(dir, "packages/assets/bin/clockgrove-assets.mjs"), "validate", join(world, "model.json"), "--world", world], {
       encoding: "utf8",
       env: { ...process.env, NODE_NO_WARNINGS: "1" },
     });
-    if (run.status === 0) return [];
+    if (run.status === 0) return { refusals: [], flags: [] };
     if (run.status !== 1) throw new UsageError(`clockgrove-assets exited ${run.status}: ${run.stderr || run.error?.message || ""}`.trim());
     const lines = run.stderr.split("\n").map((l) => l.trim()).filter(Boolean);
-    return lines.map((line) => ({ code: /\b([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)\b/.exec(line)?.[1] ?? "CLOCKGROVE_REFUSED", detail: line, platform: true }));
+    const refusals = [];
+    const flags = [];
+    for (const line of lines) {
+      const tier = /MODEL_BUDGET_EXCEEDED: ([A-Za-z0-9_-]+)\.([A-Za-z]+): (\d+) exceeds (\d+)( \(level (\d+)\))?/.exec(line);
+      const status = tier ? profile.model3d?.tiers?.[tier[1]]?.status : undefined;
+      if (tier && status !== undefined && status !== "measured") {
+        flags.push({
+          code: `tier:${tier[1]}:${tier[2]}`,
+          detail: `level ${tier[6] ?? 0}: ${tier[2]} ${tier[3]} over the ${tier[1]} ${kind} budget of ${tier[4]}; the LOD chain must bring it within (${tier[1]} status: ${status}; clockgrove-assets validate)`,
+        });
+      } else {
+        refusals.push({ code: /\b([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)\b/.exec(line)?.[1] ?? "CLOCKGROVE_REFUSED", detail: line, platform: true });
+      }
+    }
+    return { refusals, flags };
   } finally {
     rmSync(world, { recursive: true, force: true });
   }
@@ -245,8 +302,7 @@ class UsageError extends Error {}
  */
 export function validateModel({ profile, manifest, glb, templateBytes, kind = "character", readBytes = () => undefined }) {
   if (declaresSideFiles(manifest)) return { ...validateSideFileModel({ profile, manifest, glb, templateBytes, kind, readBytes }), route: "world-side" };
-  const refusals = clockgroveRefusals({ profile, manifest, glb, kind });
-  const flags = [];
+  const { refusals, flags } = clockgroveRefusals({ profile, manifest, glb, kind, readBytes });
   if (refusals.length > 0) return { accepted: false, refusals, flags, route: "clockgrove" };
   const refuse = (code, detail) => refusals.push({ code, detail });
   const m = profile.model3d ?? {};
@@ -301,7 +357,8 @@ export function validateModel({ profile, manifest, glb, templateBytes, kind = "c
     }
   }
 
-  const levelChecks = tierLevelChecks({ profile, manifest, kind, measured: manifest?.model ?? {}, readBytes });
+  // Clockgrove checked every tier's levels; this world checks only tiers that draw their own level files.
+  const levelChecks = tierLevelChecks({ profile, manifest, kind, measured: manifest?.model ?? {}, readBytes, tiers: (tier) => ownTierLevels(manifest?.model, tier) });
   refusals.push(...levelChecks.refusals);
   flags.push(...levelChecks.flags);
   for (const family of set.required) {
