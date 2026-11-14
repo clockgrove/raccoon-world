@@ -22,10 +22,12 @@
 //                 pinned Assetforge's character-3d reader accepts it, and her turnaround run forecasts within its $5 cap (issue 50).
 // 8. model3d:     the 3D target profile's shape (art/tools/model3d.mjs profile) and the pinned Assetforge
 //                 reads it, its rig and walk; Stevie's and Gracie's character-3d specs; Stevie's 3D run
-//                 forecasts within $5; a scripted stage and pick write a rigged .glb with the generated walk
-//                 into a throwaway copy and the profile's validator accepts it on the first try; the same
-//                 model is refused over a lower triangle budget (over-budget:triangles); a free-plan
-//                 grant is refused with exit 7 (issue 39).
+//                 forecasts within $5; a scripted stage and pick write a rigged .glb with a generated idle
+//                 (Assetforge's draft motion, throwaway copy only) and walk into a throwaway copy, and the
+//                 profile's validator, Clockgrove's `clockgrove-assets validate`, accepts it on the first try;
+//                 Clockgrove refuses the same model over lower budgets (MODEL_BUDGET_EXCEEDED); it renders
+//                 through the pinned renderer's world-content seam (art/tools/model3d-render.mjs); a
+//                 free-plan grant is refused with exit 7 (issues 39 and 82).
 //
 // ASSETFORGE_DIR and CLOCKGROVE_DIR name the pinned checkouts (defaults .assetforge-src, .clockgrove).
 import { execFile } from "node:child_process";
@@ -60,12 +62,12 @@ async function pinned(dir, pinFile, fetch) {
 }
 
 /** Runs the pinned Assetforge CLI with --json; resolves to { code, doc, stderr } whatever the exit. */
-async function assetforge(args, extraEnv = {}) {
+async function assetforge(args, extraEnv = {}, cwd = root) {
   try {
     const { stdout, stderr } = await run(
       process.execPath,
       [join(assetforgeDir, "src/cli.ts"), ...args, "--json"],
-      { cwd: root, env: { ...env, ...extraEnv }, maxBuffer: 64 << 20 },
+      { cwd, env: { ...env, ...extraEnv }, maxBuffer: 64 << 20 },
     );
     return { code: 0, doc: JSON.parse(stdout), stderr };
   } catch (error) {
@@ -397,8 +399,8 @@ async function proof() {
 /**
  * The 3D target profile (issue 39): its shape, Stevie's and Gracie's character-3d specs, Stevie's run
  * forecast, and the offline hand-off: a scripted `stage` and a `pick` through the profile into a
- * throwaway copy, accepted by the profile's own validator on the first try; an over-budget model
- * refused with its stable reason; a free-plan grant refused with exit 7.
+ * throwaway copy, accepted by Clockgrove's validation on the first try; an over-budget model refused
+ * with Clockgrove's code; the render through the world-content seam; a free-plan grant refused with exit 7.
  */
 async function checkModel3d() {
   const PROFILE = "art/target-profile-3d.json";
@@ -468,9 +470,17 @@ async function checkModel3d() {
     if (!(settings.candidates <= MAX_CANDIDATES && settings.capUsd <= MAX_RUN_USD))
       fail("model3d", `art/stevie/character-3d/run.json: at most ${MAX_CANDIDATES} candidates and $${MAX_RUN_USD}`);
 
-    // The hand-off: scripted stage, pick through the profile, the validator accepts on the first try.
+    // The hand-off Clockgrove takes (assetforge#137): Clockgrove's clip fields, look-dev maps embedded.
+    const clipFields = { name: "name", durationMs: "durationMs", loop: "loop", generated: "generated" };
+    if (m.motions?.idle?.loop !== true) fail("model3d", "model3d.motions.idle must declare the looping idle the hand-off generates");
+    if (JSON.stringify(m.handoff?.clipFields) !== JSON.stringify(clipFields) || m.handoff?.sideImages !== "embedded")
+      fail("model3d", `model3d.handoff must declare clipFields ${JSON.stringify(clipFields)} and sideImages "embedded" until clockgrove/clockgrove#305`);
+
+    // The hand-off: scripted stage and pick in the throwaway copy, through #39's committed profile. Its
+    // shared rig generates the idle (model3d.motions.idle) and the walk (model3d.gaits.walk). The
+    // profile's validator, Clockgrove's `clockgrove-assets validate`, accepts it on the first try.
     const scripted = [...base, "--provider-script", "art/proof/model3d-provider.mjs", "--candidates", "1"];
-    const staged = await assetforge(["stage", ...scripted, "--routes", "art/proof/model3d-routes.json"]);
+    const staged = await assetforge(["stage", ...scripted, "--routes", "art/proof/model3d-routes.json"], {}, target);
     if (staged.code !== 0) {
       const reasons = (staged.doc?.rejections ?? []).flatMap((c) => c.reasons ?? []).filter((r) => !r.passed);
       fail("model3d", `scripted stage failed (exit ${staged.code}): ${reasons.map((r) => `${r.check}: ${r.reason}`).join("; ") || staged.doc?.error?.message || staged.stderr}`);
@@ -486,10 +496,14 @@ async function checkModel3d() {
     const provenance = JSON.parse(await readFile(join(target, "assets/models/stevie/stevie.glb.provenance.json"), "utf8"));
     const p = manifest.provenance ?? {};
     const walkClip = manifest.model?.clips?.find((c) => c.name === "walk");
+    const idleClip = manifest.model?.clips?.find((c) => c.name === "idle");
     const expectations = [
       ["review pending", manifest.review?.status === "pending" && manifest.review?.reviewer === null],
       ["a rigged glb", manifest.source?.mediaType === "model/gltf-binary" && manifest.model?.bones > 0],
+      ["the generated idle", idleClip?.generated === true && idleClip?.loop === true && idleClip?.durationMs > 0],
       ["the generated walk", walkClip?.generated === true && walkClip?.loop === true && walkClip?.durationMs > 0],
+      ["only Clockgrove's clip fields", manifest.model?.clips?.every((c) => Object.keys(c).every((k) => k in clipFields))],
+      ["no side images", ["groom", "textures", "eyes"].every((k) => manifest.model?.[k] === undefined)],
       ["the raccoon rig template and its hash", manifest.model?.rig?.template === m.rig.template && /^[0-9a-f]{64}$/.test(manifest.model?.rig?.sha256 ?? "")],
       ["MIT as Clockgrove work", manifest.license === "MIT" && manifest.source?.creator === "Clockgrove"],
       ["provider, model, route and output grant", p.provider === "tripo" && ["model", "route", "providerTermsVersion"].every((k) => typeof p[k] === "string" && p[k].length > 0) && p.outputGrant?.relabel === true],
@@ -499,31 +513,39 @@ async function checkModel3d() {
     ];
     for (const [what, ok] of expectations) if (!ok) fail("model3d", `the written model lacks: ${what}`);
     const validator = picked.doc.validator.output;
-    for (const flag of ["clip-missing:idle", "tier:phone:triangles"])
+    for (const flag of ["clip-missing:sniff", "tier:phone:triangles"])
       if (!validator.includes(flag)) fail("model3d", `the validator should flag ${flag}:\n${validator}`);
+    if (validator.includes("clip-missing:idle")) fail("model3d", `the idle should not be missing:\n${validator}`);
     const { stdout: attr } = await run("git", ["check-attr", "filter", "--", manifest.source.path], { cwd: root });
     if (!attr.trim().endsWith(": lfs")) fail("model3d", `${manifest.source.path} is not stored in Git LFS by .gitattributes`);
 
-    // Over budget: the same model under a lower hand-off budget is refused with a stable reason.
+    // Over budget: Clockgrove refuses the same model against this world's lower budgets, with its own code.
+    const refusedBy = async (args, what) => {
+      try {
+        await run(process.execPath, ["art/tools/model3d.mjs", "validate", manifestPath, ...args], { cwd: target, env });
+        fail("model3d", `${what} was accepted`);
+      } catch (error) {
+        if (error.code !== 1 || !String(error.stdout).includes("MODEL_BUDGET_EXCEEDED"))
+          fail("model3d", `${what} must be refused by Clockgrove with MODEL_BUDGET_EXCEEDED (exit 1), got ${error.code}: ${error.stdout}${error.stderr}`);
+      }
+    };
     const lower = structuredClone(profile);
     lower.model3d.budgets.triangles = 50000;
     lower.model3d.tiers.desktop.character.triangles = 50000;
     await writeFile(join(target, "art/over-budget-3d.json"), JSON.stringify(lower));
-    try {
-      await run(process.execPath, ["art/tools/model3d.mjs", "validate", manifestPath, "--profile", "art/over-budget-3d.json"], { cwd: target, env });
-      fail("model3d", "a model over the hand-off triangle budget was accepted");
-    } catch (error) {
-      if (error.code !== 1 || !String(error.stdout).includes("refused over-budget:triangles"))
-        fail("model3d", `an over-budget model must be refused with over-budget:triangles (exit 1), got ${error.code}: ${error.stdout}${error.stderr}`);
-    }
-
+    await refusedBy(["--profile", "art/over-budget-3d.json"], "a model over the hand-off triangle budget");
     // The same model checked as a prop is refused against the desktop prop budget, not the character's.
+    await refusedBy(["--kind", "prop"], "a model over the desktop prop budget");
+
+    // It renders through the world-content seam (clockgrove/clockgrove#112) of the pinned renderer.
+    let rendered;
     try {
-      await run(process.execPath, ["art/tools/model3d.mjs", "validate", manifestPath, "--kind", "prop"], { cwd: target, env });
-      fail("model3d", "a model over the desktop prop budget was accepted as a prop");
+      const { stdout } = await run(process.execPath, [join(root, "art/tools/model3d-render.mjs"), target, manifestPath], {
+        cwd: root, env, maxBuffer: 16 << 20, timeout: 300_000,
+      });
+      rendered = JSON.parse(stdout.trim().split("\n").at(-1));
     } catch (error) {
-      if (error.code !== 1 || !String(error.stdout).includes("refused over-budget:"))
-        fail("model3d", `a model over the desktop prop budget must be refused with over-budget:<key> (exit 1), got ${error.code}: ${error.stdout}${error.stderr}`);
+      fail("model3d", `the handed-off model did not render through the world-content seam: ${error.stdout ?? ""}${error.stderr ?? error.message}`);
     }
 
     // A grant the profile can't accept (a free-plan CC BY model) is refused with exit 7, nothing written.
@@ -542,7 +564,7 @@ async function checkModel3d() {
     } finally {
       await rm(freeTarget, { recursive: true, force: true });
     }
-    return { validator, triangles: manifest.model.triangles, walkMs: walkClip?.durationMs };
+    return { validator, triangles: manifest.model.triangles, idleMs: idleClip?.durationMs, walkMs: walkClip?.durationMs, rendered };
   } finally {
     await rm(target, { recursive: true, force: true });
     await rm(runs, { recursive: true, force: true });

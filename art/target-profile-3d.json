@@ -1,5 +1,5 @@
 {
-  "$comment": "Raccoon World's 3D target profile (issue 39). The numbers and why: docs/art/3d-target-profile.md. Checked by art/tools/model3d.mjs and bash scripts/assetforge.sh check.",
+  "$comment": "Raccoon World's 3D target profile (issue 39). The numbers and why: docs/art/3d-target-profile.md. Checked by art/tools/model3d.mjs (Clockgrove's asset validation at the pinned commit, plus this world's own checks) and bash scripts/assetforge.sh check.",
   "name": "raccoon-world-3d",
   "license": "MIT",
   "acceptedLicenses": [],
@@ -25,7 +25,9 @@
       "container": "glb",
       "compression": "none required; EXT_meshopt_compression and KHR_draco_mesh_compression are not expected",
       "textureMediaTypes": ["image/png", "image/jpeg"],
-      "ktx2": "not required"
+      "ktx2": "not required",
+      "clipFields": { "name": "name", "durationMs": "durationMs", "loop": "loop", "generated": "generated" },
+      "sideImages": "embedded"
     },
     "shipped": {
       "container": "glb",
@@ -80,10 +82,30 @@
         "reference": "../references/stevie/gait-reference"
       }
     },
+    "motions": {
+      "idle": {
+        "loop": true,
+        "durationS": 4,
+        "keys": [
+          { "at": 0, "pose": { "backArchDeg": 14, "headPitchDeg": 18, "tailPitchDeg": 14, "tailYawDeg": -6 } },
+          {
+            "at": 0.5,
+            "pose": {
+              "backArchDeg": 17,
+              "headPitchDeg": 14,
+              "headYawDeg": 8,
+              "tailPitchDeg": 12,
+              "tailYawDeg": 8,
+              "joints": { "ear_l": { "x": -4 }, "ear_r": { "x": -4 } }
+            }
+          }
+        ]
+      }
+    },
     "clipSets": {
       "raccoon": {
         "required": ["idle", "walk", "sniff", "eat", "play", "shelter"],
-        "generated": ["walk"]
+        "generated": ["idle", "walk"]
       }
     },
     "groom": {

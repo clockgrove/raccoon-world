@@ -24,7 +24,7 @@ The 2D sprite profile, `art/target-profile.json`, is unchanged. It still describ
 | `model3d.clipSets.raccoon` | The clip set every raccoon needs, and which clips are generated. |
 | `model3d.groom` | The seasonal coats, their traits and which coat each season wears. |
 | `layout`, `manifest` | Where a pick is written (`assets/models/<assetId>/`) and the manifest written beside it, carrying provenance. |
-| `validator` | `node art/tools/model3d.mjs validate {{manifest}}`: the profile's own checks (below). |
+| `validator` | `node art/tools/model3d.mjs validate {{manifest}}`: Clockgrove's asset validation, then the profile's own checks (below). |
 
 ## Budgets per tier
 
@@ -126,9 +126,10 @@ The hand-off stays format-neutral (kirk-45, 2026-11-12). The validator never req
   - A deeper hunch fails stance wrist-yaw QA at ±15°.
 - **Clip set** (`model3d.clipSets.raccoon`): `idle`, `walk`, `sniff`, `eat`, `play` and `shelter`, the raccoon families.
   - **`walk`** is locomotion and is generated from the gait.
-  - **The other five** come from the provider's library only where nothing generated fits.
+  - **`idle`** is generated from `model3d.motions.idle`: Assetforge's draft idle (assetforge#135, `docs/examples/raccoon-motions/profile-fragment.json` at the pinned commit), a 4 s breathing loop on the shared rig, unchanged. #82's hand-off needs an idle, and a shared-rig run makes no library call, so the profile declares it. Like every number here it is a draft for Kirk to tune.
+  - **The other four** come from the provider's library only where nothing generated fits.
 
-  At the pinned Assetforge, a shared-rig run makes no library call. Those five come back as `missingClips` and are never faked, and the validator flags each as `clip-missing:<family>`. Library clips on the shared rig are Assetforge work, for #82.
+  At the pinned Assetforge, a shared-rig run makes no library call. Those four come back as `missingClips` and are never faked, and the validator flags each as `clip-missing:<family>`. Library clips on the shared rig are Assetforge work.
 
 ## Coats by season
 
@@ -170,18 +171,23 @@ The pinned Clockgrove's pack format has no coat field yet (clockgrove/clockgrove
 
 ## The profile's own checks
 
-`node art/tools/model3d.mjs validate <manifest>` reads the written `.glb` and its manifest and measures the model itself. It never trusts the manifest's numbers. It exits 0 when it accepts the model and 1 when it refuses it, and each reason has a stable code:
+`node art/tools/model3d.mjs validate <manifest>` routes a manifest that declares side files (`model.groom`, `model.textures` or `model.eyes`) to this world's own checks (below). Otherwise it maps the manifest to Clockgrove's model manifest (`node art/tools/model3d.mjs map <manifest>` prints it) and runs the pinned `clockgrove-assets validate` on a throwaway world. The model target is the desktop budget for the model's kind (`tiers.desktop.character`, which equals the flat hand-off `budgets`, or `tiers.desktop.prop`). The kind is `--kind character|prop`, else the manifest's `kind` (`character-3d` or `prop-3d`), else character. It needs the checkout from `bash scripts/clockgrove.sh fetch` and exits 2 without it. It exits 0 when it accepts the model and 1 when it refuses it.
 
-- **Refused:**
-  - `over-budget:<key>`: over the desktop tier's budget for the model's kind (`tiers.desktop.character`, which equals the flat hand-off `budgets`, or `tiers.desktop.prop`). The kind is `--kind character|prop`, else the manifest's `kind` (`character-3d` or `prop-3d`), else character;
-  - `format:container`, `format:texture-media-type` (a texture that is not PNG or JPEG) or `format:units`;
-  - `manifest:content-hash`, `manifest:mismatch:<key>`, `manifest:source`, `manifest:bounds` or `manifest:provenance:<field>`;
-  - `grant:license`, `grant:relabel` or `grant:non-commercial`;
+- **Refused by Clockgrove:** printed as `refused <code>: <line>` with Clockgrove's own codes, for example `MODEL_BUDGET_EXCEEDED` or `ASSET_MANIFEST_INVALID`. It then stops. The platform does the container, measures, budgets, content hash, bounds shape, provenance and grant checks, so the world codes that did those (`over-budget:*`, `format:container`, `format:units`, `manifest:content-hash`, `manifest:mismatch:*`, `manifest:source`, `manifest:provenance:<model|provider|route|outputGrant>`, `grant:relabel`, `grant:non-commercial`, `clip:mismatch`) are gone.
+- **Refused by this world** (after Clockgrove accepts):
+  - `format:texture-media-type`: a texture that is not PNG or JPEG;
+  - `manifest:bounds`: not standing on y=0, or not 0.05 to 5 m tall;
+  - `manifest:provenance:digitalSourceType`;
+  - `grant:license`: not the profile's licence or an accepted one;
   - `rig:template` or `rig:joints`: not the declared template, or not its joints in order;
-  - `clip:not-generated:<family>` (locomotion that is not the generated gait) or `clip:mismatch`.
+  - `clip:not-generated:<family>`: locomotion that is not the generated gait.
 - **Flagged** (accepted and reported):
   - `tier:<tier>:<key>`: over a lower tier's budget, which the LOD chain must bring within;
   - `clip-missing:<family>`: a required clip that is not there yet.
+
+The hand-off declares `clipFields` and `sideImages: "embedded"` as Assetforge's characters-3d.md describes. Clockgrove refuses side images until clockgrove/clockgrove#305.
+
+**Side files.** Clockgrove refuses maps beside the `.glb` until clockgrove/clockgrove#305. A manifest that declares them, today only Stevie's committed look-dev model (#107), keeps this world's own checks in `art/tools/model3d-sidefiles.mjs`, with their codes: the container, measures, budgets, content hash, source, bounds, provenance, grant, rig and clips, as before #82. The output says `platform: not run` for it. When #305 lands, that module goes and the model moves to Clockgrove's validator.
 
 `node art/tools/model3d.mjs profile` checks the profile's own shape:
 - the tiers;
@@ -190,18 +196,19 @@ The pinned Clockgrove's pack format has no coat field yet (clockgrove/clockgrove
 - the clip set covering the gaits;
 - seasons and a calendar that covers every month.
 
-Clockgrove-side validation of 3D models is clockgrove/clockgrove#281, and the first real pick, the repin and the render through the world-content seam (clockgrove/clockgrove#112) are #82.
+Clockgrove-side validation of 3D models is clockgrove/clockgrove#281 (now run by the validator above), and #82 proves it end to end (below). Stevie's committed look-dev model (#107) keeps its side-file maps, which #81's fur reads, and this world's own checks (above), and moves to Clockgrove's validator when clockgrove/clockgrove#305 accepts side images.
 
 ## The offline proof
 
-`bash scripts/assetforge.sh check` (check 8, `model3d`) runs the pinned Assetforge on a throwaway copy of this repository. It makes no paid call and needs no key:
+`bash scripts/assetforge.sh check` (check 8, `model3d`) runs the pinned Assetforge and Clockgrove on a throwaway copy of this repository. It makes no paid call and needs no key:
 
-1. `stage` runs Stevie's spec (`art/stevie/character-3d/spec.json`) against this profile and the bible. It uses the scripted provider `art/proof/model3d-provider.mjs`, which hands Assetforge c3's mesh in place of a Tripo call, and `art/proof/model3d-routes.json`.
-   - Assetforge fits the raccoon template and generates the walk.
+1. `stage` runs Stevie's spec (`art/stevie/character-3d/spec.json`) against the bible and this profile as committed. The run uses the scripted provider `art/proof/model3d-provider.mjs`, which hands Assetforge c3's mesh in place of a Tripo call, and `art/proof/model3d-routes.json`.
+   - Assetforge fits the raccoon template and generates the idle and the walk.
    - The candidate passes every QA check.
    - Assetforge's own scripted quadruped is not raccoon-shaped, and the raccoon template's joint-limit QA refuses it, so the proof uses a real raccoon body.
-2. `pick` writes the rigged `.glb`, its manifest and its provenance through the profile. The profile's validator accepts it on the first try, flagging the phone tier and the five library clips.
-3. The validator refuses the same model with `over-budget:triangles` under a profile whose hand-off budget is lower.
-4. A free-plan CC BY grant is refused with exit 7, and nothing is written.
+2. `pick` writes the rigged `.glb`, its manifest and its provenance through the profile, with Clockgrove's clip fields and no side images. The profile's validator accepts it on the first try, Clockgrove's `clockgrove-assets validate` at the pinned commit included. It flags the phone tier and the four clips still missing.
+3. Clockgrove refuses the same model with `MODEL_BUDGET_EXCEEDED` under a lower hand-off triangle budget, and again when it is checked against the desktop prop budget.
+4. The handed-off model renders through the pinned renderer's world-content seam (clockgrove/clockgrove#112): `art/tools/model3d-render.mjs` loads it through `context.loaders` on Clockgrove's fixture renderer page, plays its idle under a software GPU, and checks that it is skinned with the manifest's bones and that the picture changes when the model is hidden and when the idle moves.
+5. A free-plan CC BY grant is refused with exit 7, and nothing is written.
 
 Nothing the proof writes is committed.

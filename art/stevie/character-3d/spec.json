@@ -12,7 +12,7 @@
     "characterFamily": "raccoon",
     "clipSources": {
       "walk": "generated",
-      "idle": "library",
+      "idle": "generated",
       "sniff": "library",
       "eat": "library",
       "play": "library",
