@@ -5,6 +5,8 @@
 /** Fur shells drawn over Stevie's body (0 = none). */
 export type Coat = "summer" | "winter";
 export type FurMode = "groomed" | "uniform";
+/** Which of Stevie's files is drawn: today's single level 0, or the phone tier's levels chosen by his height on screen. */
+export type LevelMode = "single" | "phone";
 export type FurShells = 0 | 4 | 8 | 16;
 export type Antialias = "none" | "msaa" | "traa";
 /** Upscaling: the scene is drawn at RENDER_SCALE of the canvas and brought back up by TAAU or FSR 1. */
@@ -17,6 +19,8 @@ export type Upscale = "none" | "taau" | "fsr";
 export interface LabConfig {
   coat: Coat;
   furMode: FurMode;
+  /** Stevie's levels. Left out, the page's default for its platform: the phone levels on a phone, else level 0. */
+  levels?: LevelMode;
   /** Fur: shell count. */
   furShells: FurShells;
   /** Fur: silhouette fins. */
@@ -53,7 +57,7 @@ export interface LabConfig {
   cast: Cast;
 }
 
-export type Knob = Exclude<keyof LabConfig, "coat" | "furMode">;
+export type Knob = Exclude<keyof LabConfig, "coat" | "furMode" | "levels">;
 
 /** The scale the scene pass draws at when an upscaler is on. */
 export const RENDER_SCALE = 0.67;
@@ -343,6 +347,17 @@ export interface DeviceInfo {
   modelMb: number | null;
 }
 
+/** The Stevie file the page draws now, for the report and the journey. */
+export interface DrawnLevel {
+  mode: LevelMode;
+  level: number;
+  file: string;
+  triangles: number;
+  textureMaxPx: number;
+  /** His height as a fraction of the viewport height at the last frame (the level switch's input). */
+  screenHeight: number | null;
+}
+
 export interface LabStatus {
   ready: boolean;
   failure: string | null;
@@ -359,6 +374,8 @@ export interface LabStatus {
   /** Triangles in the visible scene now, and drawn by the GPU in the last frame (every pass). */
   triangles: number;
   drawnTriangles: number | null;
+  /** The level file Stevie is drawn from, with its triangle count; null before he loads. */
+  stevie: DrawnLevel | null;
   config: LabConfig;
   view: ViewName;
   state: StateName;
@@ -373,6 +390,8 @@ export interface LabHandle {
   apply(config: LabConfig): Promise<void>;
   setView(view: ViewName): Promise<void>;
   setState(state: StateName): Promise<void>;
+  /** Scales the camera's zoom (1 is the view as framed; below 1 draws everything smaller). */
+  setZoom?(scale: number): Promise<void>;
   /** Lets the animation run for warmupMs, then records frame intervals (and GPU time) for holdMs. */
   measure(options?: { warmupMs?: number; holdMs?: number }): Promise<Measurement>;
   /** The current frame as a JPEG data URL, at most maxWidth pixels wide. */

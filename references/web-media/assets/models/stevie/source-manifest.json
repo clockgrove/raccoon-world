@@ -144,6 +144,138 @@
       "material": "eyes",
       "path": "assets/models/stevie/stevie.eyes.mask.png",
       "sha256": "95e19e95b551b283b998ccf68006b8bf25c7c410452cffe24ae539ce2de01eb0"
+    },
+    "levels": {
+      "lod1": {
+        "level": 1,
+        "triangles": 19747,
+        "triangleRatio": 0.33,
+        "minScreenHeight": 0.05,
+        "path": "assets/models/stevie/stevie.lod1.glb",
+        "sha256": "cbd8bbcaed59670d694d65ff81ebdde2b0487635a964c45930339cece6a7ec22"
+      },
+      "lod2": {
+        "level": 2,
+        "triangles": 5979,
+        "triangleRatio": 0.1,
+        "minScreenHeight": 0,
+        "path": "assets/models/stevie/stevie.lod2.glb",
+        "sha256": "6fe28c69080a85bd74f387944587bd8c1545dd6e21a5f0c6042d69c94c5f916f"
+      }
+    },
+    "tiers": {
+      "phone": {
+        "levels": {
+          "lod1": {
+            "level": 1,
+            "triangles": 19747,
+            "triangleRatio": 0.33,
+            "minScreenHeight": 0.05,
+            "textureMaxPx": 1024,
+            "path": "assets/models/stevie/stevie.phone.lod1.glb",
+            "sha256": "29845d664f5bbe2432ee71a2ddd4b5c2ffc7ef567acde21c9f9413e045c50a60"
+          },
+          "lod2": {
+            "level": 2,
+            "triangles": 5979,
+            "triangleRatio": 0.1,
+            "minScreenHeight": 0,
+            "textureMaxPx": 1024,
+            "path": "assets/models/stevie/stevie.phone.lod2.glb",
+            "sha256": "2a32e0dbf4f609f7c275828c1ab289e972015b5e51f513148d085464fcec2071"
+          }
+        },
+        "groom": {
+          "summer": {
+            "length": {
+              "maxLengthM": 0.04,
+              "path": "assets/models/stevie/stevie.phone.groom.summer.length.png",
+              "sha256": "a0c061f2d648ccb74954bf49ec653c4ef775ef282043f84fb5dbf3ebd4a5d8da"
+            },
+            "direction": {
+              "path": "assets/models/stevie/stevie.phone.groom.summer.direction.png",
+              "sha256": "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26"
+            },
+            "density": {
+              "path": "assets/models/stevie/stevie.phone.groom.summer.density.png",
+              "sha256": "85bfc74fda41a6c82b56e915b2e43fd67adc3989669b56f3179b99b062659eae"
+            }
+          },
+          "winter": {
+            "length": {
+              "maxLengthM": 0.08,
+              "path": "assets/models/stevie/stevie.phone.groom.winter.length.png",
+              "sha256": "69bc47b29a3ad98f1b1dff1b1d763cfd709d51d782a20cbee0ee641d3e1b8f97"
+            },
+            "direction": {
+              "path": "assets/models/stevie/stevie.phone.groom.winter.direction.png",
+              "sha256": "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26"
+            },
+            "density": {
+              "path": "assets/models/stevie/stevie.phone.groom.winter.density.png",
+              "sha256": "5980e52f2efc390b5d88f475af717ada2ff931814788e55f318b7cd6a7dc2f12"
+            }
+          }
+        },
+        "textures": {
+          "tint": {
+            "winter": {
+              "path": "assets/models/stevie/stevie.phone.tint.winter.png",
+              "sha256": "9a04636bb2f84fe7e76335e1b0b01ca522fca878070a60e422fc6b3baf003d4b"
+            }
+          }
+        },
+        "eyes": {
+          "material": "eyes",
+          "path": "assets/models/stevie/stevie.phone.eyes.mask.png",
+          "sha256": "795838b2134eeea92899af7a715740fbaf2d1b29de72a45643968e042c5ba41d"
+        }
+      }
+    },
+    "chain": {
+      "packaging": "files",
+      "levels": [
+        {
+          "level": 0,
+          "triangleRatio": 1,
+          "minScreenHeight": 0.15,
+          "triangles": 59847,
+          "passed": true
+        },
+        {
+          "level": 1,
+          "triangleRatio": 0.33,
+          "minScreenHeight": 0.05,
+          "triangles": 19747,
+          "passed": true
+        },
+        {
+          "level": 2,
+          "triangleRatio": 0.1,
+          "minScreenHeight": 0,
+          "triangles": 5979,
+          "passed": true
+        }
+      ],
+      "tiers": [
+        {
+          "name": "desktop",
+          "levels": [
+            0,
+            1,
+            2
+          ],
+          "textureMaxPx": 2048
+        },
+        {
+          "name": "phone",
+          "levels": [
+            1,
+            2
+          ],
+          "textureMaxPx": 1024
+        }
+      ]
     }
   },
   "contentHash": "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355",

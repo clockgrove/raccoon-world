@@ -35,6 +35,7 @@ export interface GroomCoat {
   paths: { length: string; direction: string; density: string };
 }
 export interface GroomAsset {
+  /** The manifest's base colour; the phone tier has none of its own and takes the level file's embedded one. */
   baseColor: THREE.Texture;
   eyes: THREE.Texture;
   winterTint: THREE.Texture;
@@ -50,6 +51,7 @@ export async function loadGroom(
   modelUrl: string,
   loader: GLTFLoader,
   track?: TrackGroomDownload,
+  tier?: "phone",
 ): Promise<GroomAsset> {
   const sourceMedia = modelUrl.includes("/source/");
   const media = new URL(sourceMedia ? "../" : "./", modelUrl);
@@ -60,7 +62,8 @@ export async function loadGroom(
   const response = await fetch(manifestUrl);
   if (!response.ok) throw new Error(`Stevie groom manifest: HTTP ${response.status}`);
   const manifest = await response.json();
-  const model = manifest.model;
+  // The phone tier's side maps are the same coats at 1024 px, under model.tiers.phone; the glTF carries its base colour.
+  const model = tier ? { ...manifest.model, ...manifest.model.tiers[tier], textures: manifest.model.tiers[tier].textures } : manifest.model;
   const cache = new Map<string, Promise<THREE.Texture>>();
   const load = (entry: MapEntry, colour = false): Promise<THREE.Texture> => {
     const key = `${entry.path}:${colour}`;
@@ -109,13 +112,13 @@ export async function loadGroom(
     };
   };
   const [baseColor, eyes, winterTint, summer, winter] = await Promise.all([
-    load(model.textures.baseColor, true),
+    tier ? Promise.resolve(new THREE.Texture()) : load(model.textures.baseColor, true),
     load(model.eyes),
     load(model.textures.tint.winter, true),
     coat("summer"),
     coat("winter"),
   ]);
-  return { baseColor, eyes, winterTint, coats: { summer, winter }, manifest };
+  return { baseColor, eyes, winterTint, coats: { summer, winter }, manifest: tier ? { ...manifest, model } : manifest };
 }
 
 /** Displace the rest pose before Three skins it; positionNode would apply the model-space comb after skinning. */

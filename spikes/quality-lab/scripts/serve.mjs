@@ -67,7 +67,16 @@ async function webMedia(name, source) {
  * uncompressed sources beside them for `?media=source`. A missing or un-smudged prop is left out.
  */
 export async function mediaFiles() {
+  const prefix = "assets/models/stevie";
+  const sourceManifest = path.join(repo, prefix, "manifest.json");
+  const model = JSON.parse(await readFile(sourceManifest, "utf8")).model;
+  const phone = model.tiers.phone;
   const sources = { "stevie.glb": ["stevie", STEVIE_GLB] };
+  // The detail levels: the desktop's files, and the phone tier's with 1024 px textures.
+  for (const [key, level] of Object.entries(model.levels))
+    sources[`stevie.${key}.glb`] = [`stevie.${key}`, path.join(repo, level.path)];
+  for (const [key, level] of Object.entries(phone.levels))
+    sources[`stevie.phone.${key}.glb`] = [`stevie.phone.${key}`, path.join(repo, level.path)];
   for (const name of await readdir(PROPS_DIR).catch(() => []))
     if (name.endsWith(".glb")) sources[`props/${name}`] = [`prop-${name.slice(0, -4)}`, path.join(PROPS_DIR, name)];
   const files = {};
@@ -75,11 +84,9 @@ export async function mediaFiles() {
     files[key] = (await webMedia(name, source)) ?? source;
     files[`source/${key}`] = source;
   }
-  const prefix = "assets/models/stevie";
-  const sourceManifest = path.join(repo, prefix, "manifest.json");
-  const model = JSON.parse(await readFile(sourceManifest, "utf8")).model;
-  const maps = [model.textures.baseColor, model.textures.tint.winter, model.eyes,
-    ...Object.values(model.groom).flatMap((coat) => Object.values(coat))];
+  const sideMaps = (side) => [side.textures.baseColor, side.textures.tint.winter, side.eyes,
+    ...Object.values(side.groom).flatMap((coat) => Object.values(coat))].filter(Boolean);
+  const maps = [...sideMaps(model), ...sideMaps(phone)];
   const webManifest = JSON.parse(await readFile(path.join(WEB_MEDIA, "web-media.json"), "utf8"));
   const manifestEntry = webManifest.files[`${prefix}/manifest.json`];
   let compressed = manifestEntry?.sourceSha256 === createHash("sha256").update(await readFile(sourceManifest)).digest("hex");
@@ -91,12 +98,14 @@ export async function mediaFiles() {
     if (!entry || entry.sourceSha256 !== createHash("sha256").update(bytes).digest("hex") || !isMedia(key, output)
       || createHash("sha256").update(output).digest("hex") !== entry.sha256) compressed = false;
   }
+  // A level file served from its source keeps relative image URIs beside it.
+  const servesSource = Object.entries(files).some(([key, file]) => /^stevie(\.\w+)*\.glb$/u.test(key) && !file.startsWith(WEB_MEDIA));
   for (const map of maps) {
     const key = compressed ? map.path.replace(/\.png$/u, ".ktx2") : map.path;
     files[key] = path.join(compressed ? WEB_MEDIA : repo, key);
     // The original GLB has relative external image URIs, including in ?media=source mode.
     files[`source/${path.basename(map.path)}`] = path.join(repo, map.path);
-    if (files["stevie.glb"] === STEVIE_GLB) files[path.basename(map.path)] = path.join(repo, map.path);
+    if (servesSource) files[path.basename(map.path)] = path.join(repo, map.path);
   }
   files[`${prefix}/manifest.json`] = compressed ? path.join(WEB_MEDIA, prefix, "manifest.json") : sourceManifest;
   files[`${prefix}/source-manifest.json`] = sourceManifest;

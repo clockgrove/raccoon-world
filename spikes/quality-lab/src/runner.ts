@@ -2,7 +2,7 @@
 // no three.js, so the page UI, the CI journey and a node test can all drive it.
 
 import { BUDGET_SLACK, DEFAULT_COST_ORDER, KNOBS, KNOB_LABELS, LEVELS, PRESET_ORDER, PRESETS, budgetMs, stepDown, targetMs, sweepSteps } from "./config.ts";
-import type { Cast, DeviceInfo, Knob, LabConfig, LabHandle, LabStatus, Measurement, Platform, PresetName, StateName, ViewName } from "./config.ts";
+import type { Cast, DeviceInfo, DrawnLevel, Knob, LabConfig, LabHandle, LabStatus, Measurement, Platform, PresetName, StateName, ViewName } from "./config.ts";
 
 export interface StepResult {
   id: string;
@@ -19,6 +19,8 @@ export interface StepResult {
   /** Triangles in the visible scene during the step, and drawn by the GPU per frame: counts, kept on software GPUs too. */
   triangles?: number;
   drawnTriangles?: number | null;
+  /** The Stevie level file drawn at the end of the step, with its triangle count (kept on software GPUs too). */
+  stevie?: DrawnLevel | null;
   /** JPEG data URL. */
   screenshot: string;
   error?: string;
@@ -180,6 +182,7 @@ async function measureStep(
     result.canvas = status.canvas;
     result.triangles = status.triangles;
     result.drawnTriangles = status.drawnTriangles;
+    result.stevie = status.stevie;
     // Software GPUs never count as performance: their frame times are dropped, not kept.
     if (!status.software) result.measurement = m;
     result.screenshot = await lab.screenshot(320);
@@ -192,7 +195,7 @@ async function measureStep(
 export async function runSweep(lab: LabHandle, opts: RunOptions = {}): Promise<SweepReport> {
   const start = lab.status();
   const original = { ...start.config };
-  const steps = sweepSteps().slice(0, opts.maxSteps ?? Number.POSITIVE_INFINITY).map((s) => ({ ...s, config: { ...s.config, coat: original.coat, furMode: original.furMode } }));
+  const steps = sweepSteps().slice(0, opts.maxSteps ?? Number.POSITIVE_INFINITY).map((s) => ({ ...s, config: { ...s.config, coat: original.coat, furMode: original.furMode, levels: original.levels } }));
   const report: SweepReport = {
     kind: "sweep",
     startedAt: new Date().toISOString(),
@@ -210,7 +213,7 @@ export async function runSweep(lab: LabHandle, opts: RunOptions = {}): Promise<S
   };
   // The presets again at the close-up zoom (Stevie at about a third of the frame), the game's other framing. A short
   // run (maxSteps) skips them.
-  const close = opts.maxSteps === undefined ? PRESET_ORDER.map((name) => ({ id: `close:preset:${name}`, label: `Close-up ${name}`, config: { ...PRESETS[name], coat: original.coat, furMode: original.furMode } })) : [];
+  const close = opts.maxSteps === undefined ? PRESET_ORDER.map((name) => ({ id: `close:preset:${name}`, label: `Close-up ${name}`, config: { ...PRESETS[name], coat: original.coat, furMode: original.furMode, levels: original.levels } })) : [];
   const total = steps.length + close.length;
   try {
     for (let i = 0; i < steps.length; i++) {
@@ -288,7 +291,7 @@ export async function findCeiling(lab: LabHandle, opts: CeilingOptions = {}): Pr
     ceiling: original,
     steps: [],
   };
-  let config = { ...PRESETS.ultra, coat: original.coat, furMode: original.furMode };
+  let config = { ...PRESETS.ultra, coat: original.coat, furMode: original.furMode, levels: original.levels };
   let prev: StepResult | null = null;
   let removed: Removed | undefined;
   try {
@@ -677,7 +680,72 @@ export async function compareFur(lab: LabHandle, opts: FurComparisonOptions = {}
   return report;
 }
 
-export type AnyReport = SweepReport | CeilingReport | TriangleReport | CastReport | SoakReport | FurComparisonReport;
+export interface LevelsComparisonReport {
+  kind: "levels";
+  startedAt: string;
+  device?: DeviceInfo;
+  platform: Platform;
+  backend: LabStatus["backend"];
+  adapter: string;
+  software: boolean;
+  timestamps: boolean;
+  view: ViewName;
+  state: StateName;
+  coat: LabConfig["coat"];
+  /** Each preset twice, single level 0 then the phone levels, on the same camera, coat and effects. */
+  steps: StepResult[];
+  /** Phone levels minus single level 0, per preset. Null where a time is missing (software GPUs report none). */
+  costs: { preset: PresetName; frameMsP50: number | null; frameMsP95: number | null; gpuMsP50: number | null; gpuMsP95: number | null; cpuMsP50: number | null }[];
+}
+
+export interface LevelsComparisonOptions extends RunOptions {
+  /** Defaults to every preset; a short focused browser proof can select just Medium. */
+  presets?: readonly PresetName[];
+}
+
+/**
+ * Each preset once with today's single level 0 and once with the phone levels, from the current view (the close-up
+ * draws the phone's first level, the yard its last), so the report names what each step drew.
+ */
+export async function compareLevels(lab: LabHandle, opts: LevelsComparisonOptions = {}): Promise<LevelsComparisonReport> {
+  const start = lab.status();
+  const original = { ...start.config };
+  const presets = opts.presets ?? PRESET_ORDER;
+  const report: LevelsComparisonReport = {
+    kind: "levels", startedAt: new Date().toISOString(), device: start.device,
+    platform: start.platform, backend: start.backend, adapter: start.adapter,
+    software: start.software, timestamps: start.timestamps, view: start.view,
+    state: start.state, coat: original.coat ?? "summer", steps: [], costs: [],
+  };
+  const total = presets.length * 2;
+  try {
+    for (const preset of presets) {
+      if (opts.signal?.aborted) break;
+      const pair: StepResult[] = [];
+      for (const levels of ["single", "phone"] as const) {
+        if (opts.signal?.aborted) break;
+        const config = { ...PRESETS[preset], coat: report.coat, furMode: original.furMode, levels };
+        const r = await measureStep(lab, { id: `levels:${preset}:${levels}`, label: `${preset} · ${levels === "single" ? "level 0" : "phone levels"}`, config }, opts);
+        pair.push(r);
+        report.steps.push(r);
+        opts.onStep?.(r, report.steps.length - 1, total);
+      }
+      const [single, phone] = pair;
+      if (single && phone) report.costs.push({ preset,
+        frameMsP50: sub(phone.measurement?.frameMsP50, single.measurement?.frameMsP50),
+        frameMsP95: sub(phone.measurement?.frameMsP95, single.measurement?.frameMsP95),
+        gpuMsP50: sub(phone.measurement?.gpuMsP50, single.measurement?.gpuMsP50),
+        gpuMsP95: sub(phone.measurement?.gpuMsP95, single.measurement?.gpuMsP95),
+        cpuMsP50: sub(phone.measurement?.cpuMsP50, single.measurement?.cpuMsP50),
+      });
+    }
+  } finally {
+    await lab.apply(original).catch(() => {});
+  }
+  return report;
+}
+
+export type AnyReport = SweepReport | CeilingReport | TriangleReport | CastReport | SoakReport | FurComparisonReport | LevelsComparisonReport;
 
 const stripShots = <T extends { steps: { screenshot: string }[] }>(r: T): unknown => ({
   ...r,

@@ -7,7 +7,8 @@
 //
 //   node scripts/web-media.mjs <name>=<source.glb> ...   encode each source to references/web-media/<name>.glb
 //                                                        (cast-<name> or stevie: cast textures; anything else: set)
-//   node scripts/web-media.mjs stevie                    the approved Stevie model and nine manifest maps only
+//   node scripts/web-media.mjs stevie                    the approved Stevie model, his four detail-level files (the phone's at a
+//                                                        1024 px cap) and the manifest's nine maps plus the phone tier's eight at 1024 px
 //   node scripts/web-media.mjs lab                       the quality lab's media (Stevie and the ceiling's props)
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync } from "node:fs";
@@ -35,11 +36,23 @@ const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const rel = (file) => path.relative(repo, file).split(path.sep).join("/");
 
 const STEVIE = path.join(repo, "assets/models/stevie/stevie.glb");
+const STEVIE_MANIFEST = path.join(repo, "assets/models/stevie/manifest.json");
+/** Texture cap for Stevie's phone tier (manifest model.tiers.phone: textureMaxPx 1024). */
+const PHONE_TEXTURE = 1024;
+
+/** Stevie plus the level files his manifest declares: desktop levels (2048 px) and the phone tier's (1024 px). */
+async function stevieSources() {
+  const { model } = JSON.parse(await readFile(STEVIE_MANIFEST, "utf8"));
+  const sources = { stevie: STEVIE };
+  for (const [key, level] of Object.entries(model.levels ?? {})) sources[`stevie.${key}`] = path.join(repo, level.path);
+  for (const [key, level] of Object.entries(model.tiers?.phone?.levels ?? {})) sources[`stevie.phone.${key}`] = path.join(repo, level.path);
+  return sources;
+}
 
 /** The approved c1 Stevie and the ceiling's generated props. */
-function labSources() {
+async function labSources() {
   const props = path.join(repo, "references/ceiling-3d/props");
-  const sources = { stevie: STEVIE };
+  const sources = await stevieSources();
   for (const file of readdirSync(props)) if (file.endsWith(".glb")) sources[`prop-${file.slice(0, -4)}`] = path.join(props, file);
   return sources;
 }
@@ -71,25 +84,31 @@ const encodings = [
 const encodingsFor = (max) => encodings.map((options) => ktx2({ ...options, generateMipmap: true, imageDecoder: decoder(max) }));
 
 async function stevieMaps(manifest) {
-  const sourceFile = path.join(repo, "assets/models/stevie/manifest.json");
+  const sourceFile = STEVIE_MANIFEST;
   const source = JSON.parse(await readFile(sourceFile, "utf8"));
   const web = structuredClone(source);
   web.webMedia = { sourceManifest: "assets/models/stevie/source-manifest.json", sourceSha256: sha256(await readFile(sourceFile)) };
   const folder = path.join(OUT, "assets/models/stevie");
   await mkdir(folder, { recursive: true });
-  const maps = [
-    [web.model.textures.baseColor, true],
-    [web.model.textures.tint.winter, true],
-    [web.model.eyes, false],
-    ...Object.values(web.model.groom).flatMap((coat) => Object.values(coat).map((map) => [map, false])),
+  const sideMaps = (model) => [
+    [model.textures.baseColor, true],
+    [model.textures.tint.winter, true],
+    [model.eyes, false],
+    ...Object.values(model.groom).flatMap((coat) => Object.values(coat).map((map) => [map, false])),
   ];
-  for (const [map, colour] of maps) {
+  const phone = web.model.tiers.phone;
+  const maps = [
+    ...sideMaps(web.model).map(([map, colour]) => [map, colour, MAX_TEXTURE.cast]),
+    ...sideMaps({ textures: phone.textures, eyes: phone.eyes, groom: phone.groom }).filter(([map]) => map)
+      .map(([map, colour]) => [map, colour, PHONE_TEXTURE]),
+  ];
+  for (const [map, colour, cap] of maps) {
     const bytes = await readFile(path.join(repo, map.path));
     if (sha256(bytes) !== map.sha256) throw new Error(`${map.path}: source hash does not match manifest`);
     const key = map.path.replace(/\.png$/u, ".ktx2");
     // Data maps use UASTC to retain vector components and mask gradients; colours follow the lab's ETC1S standard.
     const options = { isUASTC: !colour, isPerceptual: colour, isSetKTX2SRGBTransferFunc: colour,
-      needSupercompression: !colour, generateMipmap: true, imageDecoder: decoder(MAX_TEXTURE.cast) };
+      needSupercompression: !colour, generateMipmap: true, imageDecoder: decoder(cap) };
     const output = await encodeToKTX2(new Uint8Array(bytes), options);
     await writeFile(path.join(OUT, key), output);
     manifest.files[key] = { source: map.path, sourceSha256: map.sha256, sha256: sha256(output),
@@ -108,7 +127,7 @@ async function stevieMaps(manifest) {
 
 async function main() {
   const args = process.argv.slice(2);
-  const sources = args[0] === "lab" ? labSources() : args[0] === "stevie" ? { stevie: STEVIE } : Object.fromEntries(args.map((a) => a.split("=")).map(([n, f]) => [n, path.resolve(f)]));
+  const sources = args[0] === "lab" ? await labSources() : args[0] === "stevie" ? await stevieSources() : Object.fromEntries(args.map((a) => a.split("=")).map(([n, f]) => [n, path.resolve(f)]));
   if (!Object.keys(sources).length) throw new Error("usage: web-media.mjs lab | <name>=<source.glb> ...");
   await Promise.all([MeshoptEncoder.ready, MeshoptDecoder.ready]);
   const io = new core.NodeIO()
@@ -119,15 +138,16 @@ async function main() {
   for (const [name, file] of Object.entries(sources)) {
     const bytes = new Uint8Array(await readFile(file));
     if (Buffer.from(bytes.subarray(0, 4)).toString() !== "glTF") throw new Error(`${rel(file)} is not a glTF binary (is Git LFS fetched?)`);
+    const isStevie = name === "stevie" || name.startsWith("stevie.");
     const started = performance.now();
     const document = await io.read(file);
     // The picked GLB declares external groom images outside material slots; ship those through the manifest below.
     for (const texture of document.getRoot().listTextures())
       if (texture.listParents().every((parent) => parent === document.getRoot())) texture.dispose();
-    await document.transform(...encodingsFor(name === "stevie" || name.startsWith("cast-") ? MAX_TEXTURE.cast : MAX_TEXTURE.set));
+    await document.transform(...encodingsFor(name.startsWith("stevie.phone.") ? PHONE_TEXTURE : isStevie || name.startsWith("cast-") ? MAX_TEXTURE.cast : MAX_TEXTURE.set));
     await document.transform(functions.meshopt({ encoder: MeshoptEncoder, level: "medium" }));
     const lookdev = document.getRoot().getAsset().extras?.lookdev;
-    if (name === "stevie" && lookdev?.images) {
+    if (isStevie && lookdev?.images) {
       for (const entry of Object.values(lookdev.images)) {
         delete entry.image;
         entry.uri = `assets/models/stevie/${entry.uri.replace(/\.png$/u, ".ktx2")}`;
