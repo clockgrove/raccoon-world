@@ -6,65 +6,46 @@
 //   node art/tools/model3d.mjs validate <manifest> [--profile <path>] [--kind character|prop] [--json]
 //
 // Without --kind the kind comes from the manifest's own `kind` (`character-3d` -> character,
-// `prop-3d` -> prop); a manifest with neither is checked as a character. Refusals use the desktop
-// tier's budget for that kind (model3d.tiers.desktop.<kind>; for a character it equals the flat
-// model3d.budgets that Assetforge reads), flags the other tiers'.
+// `prop-3d` -> prop); a manifest with neither is checked as a character.
+//   node art/tools/model3d.mjs map <manifest>      prints the manifest as Clockgrove's model manifest
 //   node art/tools/model3d.mjs profile [<path>]
 //
-// validate exits 0 accepted, 1 refused, 2 usage or unreadable input. profile exits 0 good, 1 problems.
+// validate first maps the manifest and runs the pinned `clockgrove-assets validate` (CLOCKGROVE_COMMIT,
+// checkout in .clockgrove or CLOCKGROVE_DIR) on a throwaway world whose model target is the desktop
+// tier's budget for the kind (model3d.tiers.desktop.<kind>). The platform's checks (container, measures,
+// budgets, content hash, bounds shape, provenance, grant) are not repeated here. If Clockgrove refuses,
+// its lines are printed as `refused <code>: <line>` with its own stable codes (MODEL_BUDGET_EXCEEDED,
+// ASSET_MANIFEST_INVALID, ...) and nothing else runs. If it accepts, only this world's checks run.
+//
+// validate exits 0 accepted, 1 refused, 2 usage, unreadable input or no Clockgrove checkout. profile
+// exits 0 good, 1 problems.
 //
 // The hand-off stays format-neutral: an uncompressed .glb with PNG or JPEG textures inside the pixel
 // limit. KTX2 and EXT_meshopt_compression are a target-side build step, never required here.
-// Over-budget assets are refused (or flagged) with a stable reason. The measures follow the pinned
-// Assetforge (src/model3d/scene.ts `measure`, `clips`) so they equal what it writes into the manifest.
 //
 // Stable codes (a contract of this repository; do not rename):
-//   refusals
-//     format:container, format:texture-media-type, format:units
-//     over-budget:triangles, over-budget:textureMaxPx, over-budget:materials, over-budget:bones,
-//       over-budget:lods
-//     manifest:content-hash, manifest:mismatch:<key> (the five budget keys), manifest:source,
-//       manifest:bounds, manifest:provenance:<model|provider|route|outputGrant|digitalSourceType>
-//     grant:license, grant:relabel, grant:non-commercial
-//     rig:template, rig:joints
-//     clip:not-generated:<family>, clip:mismatch
+//   refusals from this world's own checks
+//     format:texture-media-type, manifest:bounds, manifest:provenance:digitalSourceType, grant:license,
+//     rig:template, rig:joints, clip:not-generated:<family>
+//   refusals from Clockgrove carry Clockgrove's codes
 //   flags (accepted, reported)
 //     tier:<tier>:<key> (a non-desktop tier's budget the model exceeds), clip-missing:<family>
 //   profile problems (checkProfile)
 //     profile:format, profile:units, profile:budgets, profile:tiers, profile:lods,
 //     profile:handoff, profile:rig, profile:clip-sets, profile:groom
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const BUDGET_KEYS = ["triangles", "textureMaxPx", "materials", "bones", "lods"];
-const PROVENANCE_FIELDS = ["model", "provider", "route", "outputGrant", "digitalSourceType"];
 const ACCEPTED_MEDIA = ["image/png", "image/jpeg"];
 
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 // --- GLB measures ---
-
-function imageSize(bytes) {
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  if (bytes.length >= 24 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
-    return { width: view.getUint32(16), height: view.getUint32(20) };
-  }
-  if (bytes[0] === 0xff && bytes[1] === 0xd8) {
-    let at = 2;
-    while (at + 9 < bytes.length) {
-      if (bytes[at] !== 0xff) return undefined;
-      const marker = bytes[at + 1];
-      const length = view.getUint16(at + 2);
-      if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
-        return { height: view.getUint16(at + 5), width: view.getUint16(at + 7) };
-      }
-      at += 2 + length;
-    }
-  }
-  return undefined;
-}
 
 function sniffMediaType(bytes, declared) {
   if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
@@ -116,87 +97,6 @@ function imageBytes({ json, bin }, image) {
   const match = /^data:([^;,]*)(;base64)?,(.*)$/s.exec(image.uri ?? "");
   if (!match) return undefined;
   return new Uint8Array(match[2] ? Buffer.from(match[3], "base64") : Buffer.from(decodeURIComponent(match[3]), "latin1"));
-}
-
-function sceneRoots(json) {
-  const scene = json.scenes?.[json.scene ?? 0];
-  if (scene?.nodes) return scene.nodes;
-  const children = new Set((json.nodes ?? []).flatMap((n) => n.children ?? []));
-  return (json.nodes ?? []).map((_, i) => i).filter((i) => !children.has(i));
-}
-
-function accessorMax(glb, index) {
-  const accessor = glb.json.accessors?.[index];
-  if (!accessor) return 0;
-  if (accessor.max?.[0] !== undefined) return accessor.max[0];
-  const view = glb.json.bufferViews?.[accessor.bufferView];
-  if (!view || accessor.componentType !== 5126) return 0;
-  const data = new DataView(glb.bin.buffer, glb.bin.byteOffset, glb.bin.byteLength);
-  const start = (view.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
-  const stride = view.byteStride ?? 4;
-  let max = 0;
-  for (let i = 0; i < accessor.count; i++) max = Math.max(max, data.getFloat32(start + i * stride, true));
-  return max;
-}
-
-/** The numbers the manifest records, read the way the pinned Assetforge reads them. */
-export function measureGlb(bytes) {
-  const glb = parseGlb(bytes);
-  const { json } = glb;
-
-  let triangles = 0;
-  const seen = new Set();
-  const visit = (index, depth) => {
-    if (depth > 256 || seen.has(index)) return;
-    const node = json.nodes?.[index];
-    if (!node) return;
-    seen.add(index);
-    const mesh = node.mesh === undefined ? undefined : json.meshes?.[node.mesh];
-    for (const primitive of mesh?.primitives ?? []) {
-      const mode = primitive.mode ?? 4;
-      const count =
-        primitive.indices !== undefined
-          ? (json.accessors?.[primitive.indices]?.count ?? 0)
-          : (json.accessors?.[primitive.attributes?.POSITION ?? -1]?.count ?? 0);
-      if (mode === 4) triangles += Math.floor(count / 3);
-      else if (mode === 5 || mode === 6) triangles += Math.max(0, count - 2);
-    }
-    for (const child of node.children ?? []) visit(child, depth + 1);
-  };
-  for (const root of sceneRoots(json)) visit(root, 0);
-
-  let textureMaxPx = 0;
-  const textureMediaTypes = new Set();
-  for (const image of json.images ?? []) {
-    const data = imageBytes(glb, image);
-    textureMediaTypes.add(data ? sniffMediaType(data, image.mimeType) : (image.mimeType ?? "unknown"));
-    const size = data && imageSize(data);
-    if (size) textureMaxPx = Math.max(textureMaxPx, size.width, size.height);
-  }
-
-  let lods = 1;
-  for (const node of json.nodes ?? []) {
-    const ids = node.extensions?.MSFT_lod?.ids;
-    if (ids) lods = Math.max(lods, 1 + ids.length);
-  }
-
-  const skins = json.skins ?? [];
-  return {
-    triangles,
-    textureMaxPx,
-    textureMediaTypes: [...textureMediaTypes],
-    materials: json.materials?.length ?? 0,
-    bones: new Set(skins.flatMap((s) => s.joints)).size,
-    lods,
-    clips: (json.animations ?? []).map((animation, index) => {
-      let duration = 0;
-      for (const sampler of animation.samplers ?? []) duration = Math.max(duration, accessorMax(glb, sampler.input));
-      return { name: animation.name ?? `animation ${index}`, durationMs: Math.round(duration * 1000) };
-    }),
-    jointNames: (skins[0]?.joints ?? []).map((n) => json.nodes?.[n]?.name ?? `node ${n}`),
-    extensionsUsed: json.extensionsUsed ?? [],
-    extensionsRequired: json.extensionsRequired ?? [],
-  };
 }
 
 // --- the profile's shape ---
@@ -295,64 +195,129 @@ export function checkProfile(profile) {
   return problems;
 }
 
+// --- the world manifest as Clockgrove's model manifest ---
+
+/** Clockgrove's model manifest for a world manifest. Missing values stay missing so Clockgrove refuses them. */
+export function toClockgroveManifest(manifest) {
+  const { digitalSourceType, ...provenance } = manifest?.provenance ?? {};
+  const model = manifest?.model ?? {};
+  const clips = model.clips?.map((c) => {
+    const clip = { name: c?.name, durationMs: c?.durationMs, loop: c?.loop };
+    if (c?.generated !== undefined) clip.generated = c.generated;
+    return clip;
+  });
+  const output = {
+    path: manifest?.source?.path,
+    mediaType: manifest?.source?.mediaType,
+    extension: model.extension,
+    sha256: manifest?.contentHash,
+    triangles: model.triangles,
+    textureMaxPx: model.textureMaxPx,
+    materials: model.materials,
+    bones: model.bones,
+    lods: model.lods,
+    clips,
+    bounds: model.bounds,
+  };
+  if (model.rig !== undefined) output.rig = model.rig;
+  const semantic = manifest?.semantic
+    ? { role: manifest.semantic.role, entity: manifest.semantic.entity ?? null, archetype: manifest.semantic.archetype ?? null }
+    : undefined;
+  const mapped = {
+    kind: "model",
+    assetManifestVersion: 2,
+    assetId: manifest?.assetId,
+    source: { kind: manifest?.source?.kind, path: manifest?.source?.path, creator: manifest?.source?.creator, tool: manifest?.source?.tool },
+    license: manifest?.license,
+    provenance,
+    review: manifest?.review,
+    semantic,
+    accessibilityLabel: manifest?.accessibilityLabel,
+    output,
+  };
+  for (const key of Object.keys(mapped)) if (mapped[key] === undefined) delete mapped[key];
+  return mapped;
+}
+
+/** Clockgrove's model target for this world's desktop budget of a kind. */
+export function modelTarget(profile, kind) {
+  const budgets = profile.model3d?.tiers?.desktop?.[kind] ?? {};
+  return { version: 1, limits: Object.fromEntries(BUDGET_KEYS.map((k) => [k, budgets[k]])) };
+}
+
+// --- Clockgrove's validation ---
+
+const ROOT = resolve(import.meta.dirname, "../..");
+
+/** Runs the pinned `clockgrove-assets validate` on a throwaway world; returns its problem lines. */
+function clockgroveRefusals({ profile, manifest, glb, kind }) {
+  const pin = readFileSync(join(ROOT, "CLOCKGROVE_COMMIT"), "utf8").trim();
+  const dir = process.env.CLOCKGROVE_DIR ?? join(ROOT, ".clockgrove");
+  const pinFile = join(dir, ".raccoon-world-pin");
+  if (!existsSync(pinFile) || readFileSync(pinFile, "utf8").trim() !== pin) {
+    throw new UsageError(`no Clockgrove ${pin} checkout in ${dir}; run bash scripts/clockgrove.sh fetch`);
+  }
+  const world = mkdtempSync(join(tmpdir(), "model3d-"));
+  try {
+    const path = manifest?.source?.path;
+    if (typeof path !== "string" || path === "" || isAbsolute(path) || path.split(/[\\/]/).includes("..")) {
+      throw new UsageError(`source.path ${JSON.stringify(path)} is not a relative path inside the world`);
+    }
+    mkdirSync(dirname(join(world, path)), { recursive: true });
+    writeFileSync(join(world, path), glb);
+    mkdirSync(join(world, "reference"), { recursive: true });
+    writeFileSync(join(world, "reference/model-target.json"), JSON.stringify(modelTarget(profile, kind), null, 2));
+    writeFileSync(join(world, "model.json"), JSON.stringify(toClockgroveManifest(manifest), null, 2));
+    const run = spawnSync(process.execPath, [join(dir, "packages/assets/bin/clockgrove-assets.mjs"), "validate", join(world, "model.json"), "--world", world], {
+      encoding: "utf8",
+      env: { ...process.env, NODE_NO_WARNINGS: "1" },
+    });
+    if (run.status === 0) return [];
+    if (run.status !== 1) throw new UsageError(`clockgrove-assets exited ${run.status}: ${run.stderr || run.error?.message || ""}`.trim());
+    const lines = run.stderr.split("\n").map((l) => l.trim()).filter(Boolean);
+    return lines.map((line) => ({ code: /\b([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+)\b/.exec(line)?.[1] ?? "CLOCKGROVE_REFUSED", detail: line, platform: true }));
+  } finally {
+    rmSync(world, { recursive: true, force: true });
+  }
+}
+
+class UsageError extends Error {}
+
 // --- one model against the profile ---
 
-/** Validates a written model: refusals stop the hand-off, flags are accepted and reported. */
+/** Validates a written model: Clockgrove first, then the checks only this world makes. */
 export function validateModel({ profile, manifest, glb, templateBytes, kind = "character" }) {
-  const refusals = [];
+  const refusals = clockgroveRefusals({ profile, manifest, glb, kind });
   const flags = [];
+  if (refusals.length > 0) return { accepted: false, refusals, flags };
   const refuse = (code, detail) => refusals.push({ code, detail });
   const m = profile.model3d ?? {};
-  const budgets = m.tiers?.desktop?.[kind] ?? m.budgets ?? {};
 
-  if (m.units !== "m") refuse("format:units", `profile units are ${JSON.stringify(m.units)}, expected "m"`);
-
-  let measured;
+  let parsed;
   try {
-    measured = measureGlb(glb);
+    parsed = parseGlb(glb);
   } catch (error) {
-    refuse("format:container", error.message);
-    return { accepted: false, refusals, flags, measured: undefined };
+    throw new UsageError(error.message);
   }
-
-  for (const type of measured.textureMediaTypes) {
+  for (const image of parsed.json.images ?? []) {
+    const data = imageBytes(parsed, image);
+    const type = data ? sniffMediaType(data, image.mimeType) : (image.mimeType ?? "unknown");
     if (!ACCEPTED_MEDIA.includes(type)) refuse("format:texture-media-type", `texture media type ${type} is not image/png or image/jpeg; KTX2 is a target-side build step`);
   }
-  for (const key of BUDGET_KEYS) {
-    if (measured[key] > budgets[key]) refuse(`over-budget:${key}`, `${key} ${measured[key]} over the hand-off ${kind} budget of ${budgets[key]}`);
-  }
 
-  if (manifest?.contentHash !== sha256(glb)) refuse("manifest:content-hash", `manifest contentHash ${manifest?.contentHash} is not the sha256 of the model ${sha256(glb)}`);
-  for (const key of BUDGET_KEYS) {
-    if (manifest?.model?.[key] !== measured[key]) refuse(`manifest:mismatch:${key}`, `manifest model.${key} is ${manifest?.model?.[key]}, measured ${measured[key]}`);
-  }
-  if (manifest?.source?.mediaType !== "model/gltf-binary" || manifest?.source?.kind !== "generated") {
-    refuse("manifest:source", `source is ${manifest?.source?.kind} ${manifest?.source?.mediaType}, expected generated model/gltf-binary`);
-  }
   const bounds = manifest?.model?.bounds;
-  const finite = (v) => Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
-  if (!finite(bounds?.min) || !finite(bounds?.max)) {
-    refuse("manifest:bounds", "model.bounds is missing or not finite");
-  } else {
-    const height = bounds.max[1] - bounds.min[1];
-    if (Math.abs(bounds.min[1]) > 1e-3) refuse("manifest:bounds", `model stands at y ${bounds.min[1]}, expected 0 within 1e-3`);
-    if (!(height >= 0.05 && height <= 5)) refuse("manifest:bounds", `model height ${height} m is outside 0.05 to 5 m`);
-  }
+  const height = bounds?.max?.[1] - bounds?.min?.[1];
+  if (Math.abs(bounds?.min?.[1]) > 1e-3) refuse("manifest:bounds", `model stands at y ${bounds.min[1]}, expected 0 within 1e-3`);
+  if (!(height >= 0.05 && height <= 5)) refuse("manifest:bounds", `model height ${height} m is outside 0.05 to 5 m`);
+
   const provenance = manifest?.provenance ?? {};
-  for (const field of PROVENANCE_FIELDS) {
-    const v = provenance[field];
-    const empty = v === undefined || v === null || (typeof v === "string" && v.trim() === "") || (typeof v === "object" && Object.keys(v).length === 0);
-    if (empty) refuse(`manifest:provenance:${field}`, `provenance.${field} is missing or empty`);
-  }
+  const dst = provenance.digitalSourceType;
+  if (typeof dst !== "string" || dst.trim() === "") refuse("manifest:provenance:digitalSourceType", "provenance.digitalSourceType is missing or empty");
 
   const license = manifest?.license;
-  const grant = provenance.outputGrant;
   if (license !== profile.license && !(profile.acceptedLicenses ?? []).includes(license)) {
     refuse("grant:license", `license ${JSON.stringify(license)} is neither ${profile.license} nor an accepted licence`);
-  } else if (license === profile.license && grant?.relabel !== true) {
-    refuse("grant:relabel", `the output grant does not allow relabelling to ${profile.license}`);
   }
-  if (grant?.commercial !== true) refuse("grant:non-commercial", "the output grant does not allow commercial use");
 
   if (manifest?.model?.rig?.template !== m.rig?.template || manifest?.model?.rig?.sha256 !== sha256(templateBytes)) {
     refuse("rig:template", `manifest rig ${manifest?.model?.rig?.template} ${manifest?.model?.rig?.sha256} is not the profile's ${m.rig?.template} ${sha256(templateBytes)}`);
@@ -363,30 +328,29 @@ export function validateModel({ profile, manifest, glb, templateBytes, kind = "c
   } catch {
     refuse("rig:template", "the rig template is not readable JSON with joints");
   }
-  if (measured.jointNames.length !== expected.length || measured.jointNames.some((n, i) => n !== expected[i])) {
-    refuse("rig:joints", `model joints (${measured.jointNames.length}) are not the template's ${expected.length} joints in template order`);
+  const nodes = parsed.json.nodes ?? [];
+  const jointNames = (parsed.json.skins?.[0]?.joints ?? []).map((n) => nodes[n]?.name ?? `node ${n}`);
+  if (jointNames.length !== expected.length || jointNames.some((n, i) => n !== expected[i])) {
+    refuse("rig:joints", `model joints (${jointNames.length}) are not the template's ${expected.length} joints in template order`);
   }
 
   const set = m.clipSets?.[m.rig?.kind] ?? { required: [], generated: [] };
-  const glbNames = measured.clips.map((c) => c.name);
+  const glbNames = (parsed.json.animations ?? []).map((a, i) => a.name ?? `animation ${i}`);
   const manifestClips = manifest?.model?.clips ?? [];
   for (const family of set.generated ?? []) {
     if (glbNames.includes(family) && manifestClips.find((c) => c.name === family)?.generated !== true) {
       refuse(`clip:not-generated:${family}`, `"${family}" must be the generated gait but the manifest does not mark it generated`);
     }
   }
-  const sameNames = (a, b) => a.length === b.length && [...a].sort().every((n, i) => n === [...b].sort()[i]);
-  if (!sameNames(manifestClips.map((c) => c.name), glbNames)) {
-    refuse("clip:mismatch", `manifest clips [${manifestClips.map((c) => c.name)}] differ from the model's [${glbNames}]`);
-  }
 
   for (const [tier, t] of Object.entries(m.tiers ?? {})) {
     if (tier === "desktop" || !t?.[kind]) continue;
     for (const key of BUDGET_KEYS) {
-      if (measured[key] > t[kind][key]) {
+      const value = manifest?.model?.[key];
+      if (value > t[kind][key]) {
         flags.push({
           code: `tier:${tier}:${key}`,
-          detail: `${key} ${measured[key]} over the ${tier} ${kind} budget of ${t[kind][key]}; the LOD chain must bring it within (${tier} status: ${t.status})`,
+          detail: `${key} ${value} over the ${tier} ${kind} budget of ${t[kind][key]}; the LOD chain must bring it within (${tier} status: ${t.status})`,
         });
       }
     }
@@ -395,12 +359,13 @@ export function validateModel({ profile, manifest, glb, templateBytes, kind = "c
     if (!glbNames.includes(family)) flags.push({ code: `clip-missing:${family}`, detail: `no "${family}" clip in the model; never faked` });
   }
 
-  return { accepted: refusals.length === 0, refusals, flags, measured };
+  return { accepted: refusals.length === 0, refusals, flags };
 }
 
 // --- command line ---
 
 const USAGE = `usage: model3d.mjs validate <manifest> [--profile <path>] [--kind character|prop] [--json]
+       model3d.mjs map <manifest>
        model3d.mjs profile [<path>]`;
 const DEFAULT_PROFILE = "art/target-profile-3d.json";
 const MANIFEST_KINDS = { "character-3d": "character", "prop-3d": "prop" };
@@ -432,6 +397,10 @@ function cli(argv) {
       if (problems.length === 0) console.log(`profile ${path} is good`);
       return problems.length === 0 ? 0 : 1;
     }
+    if (command === "map" && positional.length === 1) {
+      console.log(JSON.stringify(toClockgroveManifest(readJson(positional[0])), null, 2));
+      return 0;
+    }
     if (command !== "validate" || positional.length !== 1) return usage();
     if ((options.kind !== undefined && !["character", "prop"].includes(options.kind)) || !options.profile) return usage("bad --kind or --profile");
     const profile = readJson(options.profile);
@@ -444,6 +413,7 @@ function cli(argv) {
       console.log(JSON.stringify(result, null, 2));
     } else {
       console.log(result.accepted ? "accepted" : "refused");
+      if (result.accepted || !result.refusals.some((r) => r.platform)) console.log(`platform: accepted by clockgrove-assets validate at ${readFileSync(join(ROOT, "CLOCKGROVE_COMMIT"), "utf8").trim()}`);
       for (const r of result.refusals) console.log(`refused ${r.code}: ${r.detail}`);
       for (const f of result.flags) console.log(`flag ${f.code}: ${f.detail}`);
     }

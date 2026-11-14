@@ -1,5 +1,5 @@
 {
-  "$comment": "Raccoon World's 3D target profile (issue 39). The numbers and why: docs/art/3d-target-profile.md. Checked by art/tools/model3d.mjs and bash scripts/assetforge.sh check.",
+  "$comment": "Raccoon World's 3D target profile (issue 39). The numbers and why: docs/art/3d-target-profile.md. Checked by art/tools/model3d.mjs (Clockgrove's asset validation at the pinned commit, plus this world's own checks) and bash scripts/assetforge.sh check.",
   "name": "raccoon-world-3d",
   "license": "MIT",
   "acceptedLicenses": [],
@@ -25,7 +25,9 @@
       "container": "glb",
       "compression": "none required; EXT_meshopt_compression and KHR_draco_mesh_compression are not expected",
       "textureMediaTypes": ["image/png", "image/jpeg"],
-      "ktx2": "not required"
+      "ktx2": "not required",
+      "clipFields": { "name": "name", "durationMs": "durationMs", "loop": "loop", "generated": "generated" },
+      "sideImages": "embedded"
     },
     "shipped": {
       "container": "glb",

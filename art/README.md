@@ -34,7 +34,7 @@ Raccoon World's art direction and Assetforge inputs. The author guide, [docs/art
 - Real-time 3D characters target this profile. [docs/art/3d-target-profile.md](../docs/art/3d-target-profile.md) has the budgets per tier, the measured numbers, the format-neutral hand-off next to the shipped format, the rig, the walk, the clip set and the seasonal coats.
 - `rig/raccoon.json` is the shared raccoon skeleton template.
 - `stevie/character-3d/` holds Stevie's `character-3d` spec and run settings.
-- `tools/model3d.mjs` is the profile's validator: it refuses or flags models with stable reasons.
+- `tools/model3d.mjs` is the 3D profile's validator: it maps the manifest and runs Clockgrove's pinned `clockgrove-assets validate` (platform refusals keep Clockgrove's codes), then this world's own checks, and flags the rest.
 - `proof/model3d-provider.mjs` and `proof/model3d-routes.json` are the 3D proof's scripted provider and its routes. They are test data, and nothing they make is committed.
 - The 2D `target-profile.json` below still describes the placeholder strips.
 
