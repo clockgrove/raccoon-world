@@ -1,6 +1,8 @@
 # Stevie's idle, sniff, eat, play and shelter: previews for Kirk's pick (#112)
 
-These five motions are now committed on Stevie's model, `assets/models/stevie/stevie.glb` (sha256 `c0345317…a73cb`), with `review.status: pending`. This folder is review material for **Kirk's pick**: keep each motion or send it back. Nothing here ships.
+These five motions are now committed on Stevie's model, `assets/models/stevie/stevie.glb` (sha256 `c0345317…a73cb`), with `review.status: pending`. This folder is the review material for **Kirk's pick**. Nothing here ships.
+
+- **Pick:** Kirk picked on 2026-11-13 at 10:32 PM Seattle time, after reviewing these previews. He keeps all five motions (idle, sniff, eat, play and shelter), and none goes back for a redo. The model's `review.status` stays `pending`, because approval is a separate step for Kirk.
 
 - **Run:** 2026-11-14, `assetforge rig` at the pinned Assetforge (f7f31c0) on the approved model (`ac9b439c…f355`, #113) with its look-dev maps beside it. The rig template was `art/rig/raccoon.json` as committed here (sha256 `94d93e1e…f73d`), and the motions were `model3d.motions` from `art/target-profile-3d.json`. No model was called and nothing was spent ($0).
 - **QA:** every check passed. Each of the six clips passed clip, contact, joint limits and skinning. The idle and the shelter also passed loop. Sniff, eat and play also passed `ends-<family>`: each starts and ends within 0.03° of the idle's first pose. The walk still passes its own QA.
