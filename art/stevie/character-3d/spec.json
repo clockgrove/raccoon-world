@@ -14,10 +14,10 @@
     "clipSources": {
       "walk": "generated",
       "idle": "generated",
-      "sniff": "library",
-      "eat": "library",
-      "play": "library",
-      "shelter": "library"
+      "sniff": "generated",
+      "eat": "generated",
+      "play": "generated",
+      "shelter": "generated"
     }
   }
 }

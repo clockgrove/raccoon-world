@@ -4,13 +4,17 @@
 //       CI check on SwiftShader: runs tests/media.journey.node.test.mjs (the shipped media), then builds the static site (the one GitHub Pages serves), serves it, and on each backend
 //       checks the renderer is the software GPU and reports itself so, then applies every preset and every sweep
 //       config and checks each one draws a frame without an error, that the walk moves Stevie, and that the runner's
-//       sweep and ceiling search run and report no times. It ends with the `levels` proof below on the same site.
+//       sweep and ceiling search run and report no times. It ends with the `levels` proof below and a short `motions` proof on the same site.
 //       Software-GPU times are never reported.
 //   node spikes/quality-lab/scripts/lab.mjs groom [--backend webgpu|webgl2|both]
 //       Focused proof of the groomed coat (#81): the approved Stevie, both coats, Compare fur and its export.
 //   node spikes/quality-lab/scripts/lab.mjs levels [--backend webgpu|webgl2|both]
 //       Focused proof of Stevie's detail levels (#113): ?platform=phone draws the 1024 px phone levels and switches
 //       between them from the close-up to the yard, Compare levels runs and exports with no times, desktop draws level 0.
+//   node spikes/quality-lab/scripts/lab.mjs motions [--backend webgpu|webgl2|both]
+//       Focused proof of Stevie's motions (#112): on each backend every one of the six clip families plays under its
+//       own name, draws with no page or console error, changes pose over time, and moves Stevie only for walk;
+//       `?motion=eat` starts on eat, the panel's "Stevie's motion" control applies, and a phone level switch keeps the motion.
 //   node spikes/quality-lab/scripts/lab.mjs shot <file> [--backend webgpu|webgl2] [--preset medium] [--view yard|close]
 //       [--state dusk|night] [--width 1280] [--height 720] [--t 2]   one frame, for working on the look
 //   node spikes/quality-lab/scripts/lab.mjs shots [--out references/quality-lab]   the report's images and provenance
@@ -33,7 +37,7 @@ const SWIFTSHADER_FLAGS = [
 ];
 
 const { chromium } = await import(pathToFileURL(path.join(pinned, "node_modules/playwright/index.mjs")).href);
-const { sweepSteps, PRESETS } = await import(pathToFileURL(path.join(repo, "spikes/quality-lab/src/config.ts")).href);
+const { sweepSteps, PRESETS, MOTIONS } = await import(pathToFileURL(path.join(repo, "spikes/quality-lab/src/config.ts")).href);
 
 function parseArgs(argv) {
   const args = { _: [] };
@@ -267,9 +271,10 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
   }
 }
 
-// Kirk's approved Stevie (c1 of #107 with the cleaner face of #114): the source GLB's sha256, as its manifest's
-// contentHash records it. Other candidates had the same triangle and joint counts, so the hash is what tells them apart.
-const STEVIE_SHA256 = "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355";
+// Kirk's approved Stevie (c1 of #107 with the cleaner face of #114, re-rigged with his six clips in #112): the source
+// GLB's sha256, as its manifest's contentHash records it. Other candidates had the same triangle and joint counts, so
+// the hash is what tells them apart.
+const STEVIE_SHA256 = "c0345317a6d05f45fc6a8cb7b3ce378f9b3eb80356f5fc51d674f173770a73cb";
 
 /** The sha256 of the model file the page loaded, fetched again from the URL Stevie reports. */
 async function loadedSha256(page) {
@@ -452,7 +457,7 @@ async function checkLevels(browser, siteUrl, backend, chain) {
     check(seen.mode === "phone" && seen.file === level.file && seen.level === level.level && seen.triangles === level.triangles, `${backend}: the ${view} draws ${JSON.stringify(seen)}, not ${level.file} with ${level.triangles} triangles`);
     check(seen.textureMaxPx === 1024, `${backend}: the ${view}'s level draws with ${seen.textureMaxPx} px textures, not 1024`);
   }
-  check([19747, 5979].includes(close.triangles) && [19747, 5979].includes(yard.triangles) && close.triangles !== yard.triangles, `${backend}: the levels' triangle counts are not 19747 and 5979`);
+  check([19747, 5975].includes(close.triangles) && [19747, 5975].includes(yard.triangles) && close.triangles !== yard.triangles, `${backend}: the levels' triangle counts are not 19747 and 5975`);
   check(close.screenHeight >= near.minScreenHeight && yard.screenHeight < near.minScreenHeight, `${backend}: Stevie's screen heights ${close.screenHeight} (close-up) and ${yard.screenHeight} (zoomed out) do not straddle ${near.minScreenHeight}`);
   // The loaded bytes are the web media built from the manifest's file, not the 59,847-triangle model.
   for (const [view, level] of [["close", near], ["far", far]]) {
@@ -548,6 +553,108 @@ async function checkLevelsOn(url, args) {
   }
 }
 
+const metresBetween = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+
+/**
+ * One frame at a frozen page time: the canvas, the clip playing and Stevie's place. Frozen times make the poses
+ * repeatable, so a difference between two times is the animation and nothing else.
+ */
+async function motionFrame(page, t) {
+  return page.evaluate((t) => {
+    globalThis.lab.freeze(t);
+    const frame = globalThis.lab.frame();
+    return { frame, ...globalThis.lab.status().stevie, config: globalThis.lab.status().config };
+  }, t);
+}
+
+async function checkMotions(browser, siteUrl, backend, { full }) {
+  // ---- ?motion=eat starts on eat; the six families one after another on the same page ----
+  const desktop = await open(browser, siteUrl, { backend, width: 640, height: 360, ui: true, extra: { t: "1", preset: "medium", idle: "1", view: "close", motion: "eat" } });
+  const { page, errors } = desktop;
+  const start = await page.evaluate(() => ({ stevie: globalThis.lab.status().stevie, motion: globalThis.lab.status().config.motion }));
+  check(start.motion === "eat" && start.stevie.clip === "eat" && start.stevie.motion === "eat", `${backend}: ?motion=eat did not start on eat: ${JSON.stringify(start)}`);
+  const clipSeconds = {};
+  for (const motion of MOTIONS) {
+    await page.evaluate((m) => globalThis.lab.setMotion(m), motion);
+    const a = await motionFrame(page, 1);
+    const b = await motionFrame(page, 1.35);
+    check(a.clip === motion && b.clip === motion && a.motion === motion && a.config.motion === motion, `${backend}: asking for ${motion} plays ${a.clip}`);
+    check(a.clipSeconds > 0 && Number.isFinite(a.clipSeconds), `${backend}: ${motion} reports no clip length`);
+    clipSeconds[motion] = a.clipSeconds;
+    check((await colours(page, a.frame)) > 20 && (await colours(page, b.frame)) > 20, `${backend}: ${motion} draws a blank frame`);
+    const changed = await differing(page, a.frame, b.frame);
+    check(changed > 0, `${backend}: the pose does not change over time in ${motion}`);
+    const moved = metresBetween(a.position, b.position);
+    if (motion === "walk") check(moved > 0.05, `${backend}: walk does not move Stevie (${moved} m)`);
+    else check(moved === 0, `${backend}: ${motion} moved Stevie ${moved} m; it plays in place`);
+    console.log(`lab motions (${backend}): ${motion} plays ${a.clip} (${a.clipSeconds} s), ${changed} pixels differ between two times, Stevie moved ${moved.toFixed(3)} m`);
+  }
+  // Walk, stop, walk on: he stands where he stopped and resumes from there.
+  await page.evaluate(() => globalThis.lab.setMotion("walk"));
+  const walking = await motionFrame(page, 20);
+  await page.evaluate(() => globalThis.lab.setMotion("sniff"));
+  const stopped = [await motionFrame(page, 20), await motionFrame(page, 23), await motionFrame(page, 27)];
+  check(stopped.every((s) => metresBetween(s.position, walking.position) < 0.002), `${backend}: Stevie did not stay where he stopped: ${JSON.stringify([walking, ...stopped].map((s) => s.position))}`);
+  await page.evaluate(() => globalThis.lab.setMotion("walk"));
+  const resumed = await motionFrame(page, 27);
+  const onwards = await motionFrame(page, 28);
+  check(metresBetween(resumed.position, walking.position) < 0.002 && metresBetween(onwards.position, resumed.position) > 0.1, `${backend}: the walk did not resume from where Stevie stopped`);
+  check(JSON.stringify(Object.keys(clipSeconds)) === JSON.stringify([...MOTIONS]), `${backend}: not every family was seen`);
+  if (full) {
+    // The panel's control: a draft, pending until Apply, then the clip plays.
+    if (await page.locator(".ql.collapsed").count()) await page.locator(".ql-head").click();
+    const group = page.getByRole("group", { name: "Stevie's motion", exact: true });
+    await group.getByRole("button", { name: "Shelter", exact: true }).click();
+    await page.waitForFunction(() => [...document.querySelectorAll('[aria-label="Stevie\'s motion"] button')].some((b) => b.textContent === "Shelter" && b.getAttribute("aria-pressed") === "true"));
+    check((await page.evaluate(() => globalThis.lab.status().config.motion)) === "walk", `${backend}: the motion control applied before Apply`);
+    await page.getByRole("button", { name: "Apply", exact: false }).first().click();
+    await page.waitForFunction(() => globalThis.lab.status().config.motion === "shelter" && !document.querySelector(".ql.busy"));
+    const applied = await motionFrame(page, 2);
+    check(applied.clip === "shelter" && applied.config.motion === "shelter", `${backend}: the panel's Apply did not play shelter: ${applied.clip}`);
+    console.log(`lab motions (${backend}): the panel's control applies shelter`);
+  }
+  check(errors.length === 0, `${backend}: page errors on the motions page: ${errors.join("; ")}`);
+  await desktop.context.close();
+  if (!full) return;
+  // ---- A phone page switches level with the camera and keeps the motion ----
+  const phone = await open(browser, siteUrl, { backend, width: 640, height: 360, extra: { t: "1", preset: "medium", idle: "1", platform: "phone", motion: "play" } });
+  const files = new Set();
+  for (const view of ["close", "far", "close"]) {
+    const seen = await phone.page.evaluate(async (view) => {
+      await globalThis.lab.setView(view);
+      globalThis.lab.frame();
+      return globalThis.lab.status().stevie;
+    }, view);
+    files.add(seen.file);
+    check(seen.clip === "play" && seen.motion === "play", `${backend}: the phone ${view} view drew ${seen.file} playing ${seen.clip}, not play`);
+  }
+  check(files.size === 2, `${backend}: the phone page did not switch level (${[...files]})`);
+  check(phone.errors.length === 0, `${backend}: page errors on the phone page: ${phone.errors.join("; ")}`);
+  console.log(`lab motions (${backend}): a phone level switch (${[...files].join(", ")}) keeps play`);
+  await phone.context.close();
+}
+
+async function checkMotionsOn(url, args, options) {
+  const browser = await chromium.launch({ headless: true, args: SWIFTSHADER_FLAGS });
+  try {
+    for (const backend of args.backend && args.backend !== "both" ? [args.backend] : ["webgpu", "webgl2"]) await checkMotions(browser, url, backend, options);
+  } finally {
+    await browser.close();
+  }
+}
+
+/** The issue 112 path: each motion's clip through the real page. */
+async function motionsJourney(args) {
+  ensureChromium();
+  await buildSite(SITE);
+  const site = await staticServer(SITE);
+  try {
+    await checkMotionsOn(site.url, args, { full: true });
+  } finally {
+    site.server.close();
+  }
+}
+
 /** The shipped media's own tests (#81): compressed model and maps, manifest and provenance, as the site serves them. */
 function mediaTests() {
   const result = spawnSync(process.execPath, ["--test", path.join(repo, "spikes/quality-lab/tests/media.journey.node.test.mjs")], { stdio: "inherit", env: process.env });
@@ -574,12 +681,20 @@ async function journey(args) {
     { name: "fallback", backend: "webgl2", start: "ultra", steps: byId("preset:ultra", "preset:low"), walk: true },
   ].filter((s) => !args.backend || args.backend === "both" || s.backend === args.backend);
   try {
-    const results = await Promise.allSettled(shards.map((s) => shard(site.url, s)));
+    const running = shards.map((s) => shard(site.url, s));
+    // Stevie's detail levels (#113: the phone levels, their switch, Compare levels and the desktop's level 0) and his
+    // motions (#112, short: every clip family on the desktop page) run in a fourth browser that starts when the first
+    // shard ends. At most three browsers draw at once, and the shards' long tail, when only one is still busy, is
+    // not followed by the whole of both proofs. Run after the shards, they pushed CI's job past its 35 minutes.
+    const firstDone = shards.length ? Promise.race(running.map((p) => p.then(() => {}, () => {}))) : Promise.resolve();
+    const tail = firstDone.then(async () => {
+      await checkLevelsOn(site.url, args);
+      await checkMotionsOn(site.url, args, { full: false });
+    });
+    const results = await Promise.allSettled([...running, tail]);
     const failed = results.filter((r) => r.status === "rejected");
     for (const r of failed) console.error(`lab journey: ${r.reason?.stack ?? r.reason}`);
-    if (failed.length) throw new Error(`${failed.length} of ${shards.length} shards failed`);
-    // Stevie's detail levels (#113): the phone levels, their switch, Compare levels and the desktop's level 0.
-    await checkLevelsOn(site.url, args);
+    if (failed.length) throw new Error(`${failed.length} of ${shards.length + 1} parts (the shards, then levels and motions) failed`);
   } finally {
     site.server.close();
   }
@@ -653,11 +768,12 @@ const args = parseArgs(process.argv.slice(2));
 const command = args._[0];
 if (command === "groom") await groomJourney(args);
 else if (command === "levels") await levelsJourney(args);
+else if (command === "motions") await motionsJourney(args);
 else if (command === "journey") await journey(args);
 else if (command === "shot") await shot(args);
 else if (command === "shots") await shots(args);
 else {
-  console.error("Usage: node spikes/quality-lab/scripts/lab.mjs groom | levels | journey | shot <file> | shots");
+  console.error("Usage: node spikes/quality-lab/scripts/lab.mjs groom | levels | motions | journey | shot <file> | shots");
   process.exit(2);
 }
 process.exit(0);

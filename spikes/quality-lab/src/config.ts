@@ -7,6 +7,10 @@ export type Coat = "summer" | "winter";
 export type FurMode = "groomed" | "uniform";
 /** Which of Stevie's files is drawn: today's single level 0, or the phone tier's levels chosen by his height on screen. */
 export type LevelMode = "single" | "phone";
+/** Stevie's motions: the families of his animation clips, each shown by the clip of the same name. */
+export const MOTIONS = ["idle", "walk", "sniff", "eat", "play", "shelter"] as const;
+export type Motion = (typeof MOTIONS)[number];
+export const isMotion = (name: unknown): name is Motion => (MOTIONS as readonly unknown[]).includes(name);
 export type FurShells = 0 | 4 | 8 | 16;
 export type Antialias = "none" | "msaa" | "traa";
 /** Upscaling: the scene is drawn at RENDER_SCALE of the canvas and brought back up by TAAU or FSR 1. */
@@ -21,6 +25,8 @@ export interface LabConfig {
   furMode: FurMode;
   /** Stevie's levels. Left out, the page's default for its platform: the phone levels on a phone, else level 0. */
   levels?: LevelMode;
+  /** Stevie's motion, on him and the cast. Left out, the page's own (`?motion=`, else walk). Only walk moves him along the loop. */
+  motion?: Motion;
   /** Fur: shell count. */
   furShells: FurShells;
   /** Fur: silhouette fins. */
@@ -57,7 +63,7 @@ export interface LabConfig {
   cast: Cast;
 }
 
-export type Knob = Exclude<keyof LabConfig, "coat" | "furMode" | "levels">;
+export type Knob = Exclude<keyof LabConfig, "coat" | "furMode" | "levels" | "motion">;
 
 /** The scale the scene pass draws at when an upscaler is on. */
 export const RENDER_SCALE = 0.67;
@@ -359,6 +365,11 @@ export interface DrawnLevel {
   file: string;
   triangles: number;
   textureMaxPx: number;
+  /** The motion asked for, the clip playing it, that clip's length, and where Stevie stands on the ground (x, y in metres). */
+  motion: Motion;
+  clip: string;
+  clipSeconds: number;
+  position: [number, number];
   /** His height as a fraction of the viewport height at the last frame (the level switch's input). */
   screenHeight: number | null;
 }
@@ -394,6 +405,8 @@ export interface LabHandle {
   /** Rebuilds the scene and post for the config, compiles it and draws it; resolves once a frame is on screen. */
   apply(config: LabConfig): Promise<void>;
   setView(view: ViewName): Promise<void>;
+  /** Switches Stevie and the cast to a motion without rebuilding the scene, and draws a frame. */
+  setMotion(motion: Motion): Promise<void>;
   setState(state: StateName): Promise<void>;
   /** Lets the animation run for warmupMs, then records frame intervals (and GPU time) for holdMs. */
   measure(options?: { warmupMs?: number; holdMs?: number }): Promise<Measurement>;

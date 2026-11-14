@@ -18,10 +18,10 @@
         "assets/models/stevie/stevie.eyes.mask.png": "95e19e95b551b283b998ccf68006b8bf25c7c410452cffe24ae539ce2de01eb0"
       },
       "source": "assets/models/stevie/stevie.glb",
-      "sourceSha256": "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355",
-      "sha256": "b65ecf4920ea48d5de7818a58ee5056dabeb08900a800a8ce93832798758cc81",
-      "sourceBytes": 22658980,
-      "bytes": 4000020,
+      "sourceSha256": "c0345317a6d05f45fc6a8cb7b3ce378f9b3eb80356f5fc51d674f173770a73cb",
+      "sha256": "b4979e4d870a19957bd319fd89ff281e43b22f6384f7ab50b886bd7b2c2f8996",
+      "sourceBytes": 24177508,
+      "bytes": 4084524,
       "triangles": 59847
     },
     "prop-bird-feeder.glb": {
@@ -162,9 +162,9 @@
     },
     "assets/models/stevie/manifest.json": {
       "source": "assets/models/stevie/manifest.json",
-      "sourceSha256": "f4f64ffba4511e7541f7c755784f7586b82c7287feffc795726f35dd08742f1d",
-      "sha256": "736e1021a678c06dc26b59e66db9e7d1eb68c453a783a0ed983805d9cf9df166",
-      "bytes": 9658
+      "sourceSha256": "e5a80bf1cc7926a4c675a85f96b6f1e1d2733a853dd6055578463a1aa8509a55",
+      "sha256": "a1aa1294f13bc806669bd0e0be1722224bc966d8cd9e1691d55b2ed95b4485b7",
+      "bytes": 9627
     },
     "stevie.lod1.glb": {
       "sourceDependencies": {
@@ -178,10 +178,10 @@
         "assets/models/stevie/stevie.eyes.mask.png": "95e19e95b551b283b998ccf68006b8bf25c7c410452cffe24ae539ce2de01eb0"
       },
       "source": "assets/models/stevie/stevie.lod1.glb",
-      "sourceSha256": "cbd8bbcaed59670d694d65ff81ebdde2b0487635a964c45930339cece6a7ec22",
-      "sha256": "bfd209ed6951c8f164310f55630bf6cbd6657f17ea2b43b3af21dbc6abfbc6a3",
-      "sourceBytes": 20132408,
-      "bytes": 3620968,
+      "sourceSha256": "119dbcb416e5add90b2016f5e4348e1be8ba210bde7d2c74a099c9a503778900",
+      "sha256": "9be845d0f19b906c5d883a8bda3c6c67f6ee818f173e3b8726f1a9046cba9d05",
+      "sourceBytes": 20399832,
+      "bytes": 3706144,
       "triangles": 19747
     },
     "stevie.lod2.glb": {
@@ -196,11 +196,11 @@
         "assets/models/stevie/stevie.eyes.mask.png": "95e19e95b551b283b998ccf68006b8bf25c7c410452cffe24ae539ce2de01eb0"
       },
       "source": "assets/models/stevie/stevie.lod2.glb",
-      "sourceSha256": "6fe28c69080a85bd74f387944587bd8c1545dd6e21a5f0c6042d69c94c5f916f",
-      "sha256": "bb83db842a6ab482e5c70fadfbe0989505a6eb89d227a80819c94484abcbca8b",
-      "sourceBytes": 19573792,
-      "bytes": 3463280,
-      "triangles": 5979
+      "sourceSha256": "bcf0e812b1371b3e9552286f703239572a7fdb82ad846794b425b739582f2a20",
+      "sha256": "6d58488c5b07572d13711e373771d6e4e7f96e5bc80a2958fe6a18d0d7163d5a",
+      "sourceBytes": 19840516,
+      "bytes": 3548088,
+      "triangles": 5975
     },
     "stevie.phone.lod1.glb": {
       "sourceDependencies": {
@@ -214,10 +214,10 @@
         "assets/models/stevie/stevie.phone.eyes.mask.png": "795838b2134eeea92899af7a715740fbaf2d1b29de72a45643968e042c5ba41d"
       },
       "source": "assets/models/stevie/stevie.phone.lod1.glb",
-      "sourceSha256": "29845d664f5bbe2432ee71a2ddd4b5c2ffc7ef567acde21c9f9413e045c50a60",
-      "sha256": "161f000e8e11743ccdcee050cddf3d620566e71a3718521708d1c7c9daacb4b1",
-      "sourceBytes": 8738200,
-      "bytes": 1295436,
+      "sourceSha256": "679d4f5d4801a57aead38c56af14c7175a1110f8144676bb108ce67f3a55d19c",
+      "sha256": "7b6158843bc490956c64db8265a6ecd2436271f32961bbb5927e2c0f737bcf73",
+      "sourceBytes": 9005244,
+      "bytes": 1380612,
       "triangles": 19747
     },
     "stevie.phone.lod2.glb": {
@@ -232,11 +232,11 @@
         "assets/models/stevie/stevie.phone.eyes.mask.png": "795838b2134eeea92899af7a715740fbaf2d1b29de72a45643968e042c5ba41d"
       },
       "source": "assets/models/stevie/stevie.phone.lod2.glb",
-      "sourceSha256": "2a32e0dbf4f609f7c275828c1ab289e972015b5e51f513148d085464fcec2071",
-      "sha256": "035d62e02a9bc7e8b046b56632493c7119b0f974e8f8941fc69a8216a22d6e29",
-      "sourceBytes": 8179580,
-      "bytes": 1137748,
-      "triangles": 5979
+      "sourceSha256": "de02a31c48a26114b1ee9cc2b5682d7f641680bfa0646e2a27fe4b191c9ccf1b",
+      "sha256": "e906101c324aa5a27098ce8e202ea0cb7bf9ed273ea47baa78bc4510be3c0a4a",
+      "sourceBytes": 8445916,
+      "bytes": 1222556,
+      "triangles": 5975
     },
     "assets/models/stevie/stevie.phone.tint.winter.ktx2": {
       "source": "assets/models/stevie/stevie.phone.tint.winter.png",

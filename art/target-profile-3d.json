@@ -26,7 +26,12 @@
       "compression": "none required; EXT_meshopt_compression and KHR_draco_mesh_compression are not expected",
       "textureMediaTypes": ["image/png", "image/jpeg"],
       "ktx2": "not required",
-      "clipFields": { "name": "name", "durationMs": "durationMs", "loop": "loop", "generated": "generated" },
+      "clipFields": {
+        "name": "name",
+        "durationMs": "durationMs",
+        "loop": "loop",
+        "generated": "generated"
+      },
       "sideImages": "embedded",
       "lods": "files"
     },
@@ -46,19 +51,55 @@
     "tiers": {
       "desktop": {
         "status": "measured",
-        "character": { "triangles": 60000, "textureMaxPx": 2048, "materials": 4, "bones": 80, "lods": 3 },
-        "prop": { "triangles": 30000, "textureMaxPx": 1024, "materials": 4, "bones": 8, "lods": 3 }
+        "character": {
+          "triangles": 60000,
+          "textureMaxPx": 2048,
+          "materials": 4,
+          "bones": 80,
+          "lods": 3
+        },
+        "prop": {
+          "triangles": 30000,
+          "textureMaxPx": 1024,
+          "materials": 4,
+          "bones": 8,
+          "lods": 3
+        }
       },
       "phone": {
         "status": "pending",
-        "character": { "triangles": 20000, "textureMaxPx": 1024, "materials": 4, "bones": 80, "lods": 3 },
-        "prop": { "triangles": 10000, "textureMaxPx": 512, "materials": 4, "bones": 8, "lods": 3 }
+        "character": {
+          "triangles": 20000,
+          "textureMaxPx": 1024,
+          "materials": 4,
+          "bones": 80,
+          "lods": 3
+        },
+        "prop": {
+          "triangles": 10000,
+          "textureMaxPx": 512,
+          "materials": 4,
+          "bones": 8,
+          "lods": 3
+        }
       }
     },
     "lods": [
-      { "level": 0, "triangleRatio": 1, "minScreenHeight": 0.15 },
-      { "level": 1, "triangleRatio": 0.33, "minScreenHeight": 0.05 },
-      { "level": 2, "triangleRatio": 0.1, "minScreenHeight": 0 }
+      {
+        "level": 0,
+        "triangleRatio": 1,
+        "minScreenHeight": 0.15
+      },
+      {
+        "level": 1,
+        "triangleRatio": 0.33,
+        "minScreenHeight": 0.05
+      },
+      {
+        "level": 2,
+        "triangleRatio": 0.1,
+        "minScreenHeight": 0
+      }
     ],
     "rig": {
       "template": "rig/raccoon.json",
@@ -88,7 +129,15 @@
         "loop": true,
         "durationS": 4,
         "keys": [
-          { "at": 0, "pose": { "backArchDeg": 14, "headPitchDeg": 18, "tailPitchDeg": 14, "tailYawDeg": -6 } },
+          {
+            "at": 0,
+            "pose": {
+              "backArchDeg": 14,
+              "headPitchDeg": 18,
+              "tailPitchDeg": 14,
+              "tailYawDeg": -6
+            }
+          },
           {
             "at": 0.5,
             "pose": {
@@ -97,7 +146,385 @@
               "headYawDeg": 8,
               "tailPitchDeg": 12,
               "tailYawDeg": 8,
-              "joints": { "ear_l": { "x": -4 }, "ear_r": { "x": -4 } }
+              "joints": {
+                "ear_l": {
+                  "x": -4
+                },
+                "ear_r": {
+                  "x": -4
+                }
+              }
+            }
+          }
+        ]
+      },
+      "sniff": {
+        "loop": false,
+        "idle": "idle",
+        "entryS": 0.5,
+        "durationS": 2,
+        "exitS": 0.6,
+        "keys": [
+          {
+            "at": 0,
+            "pose": {
+              "backArchDeg": 10,
+              "headPitchDeg": 52,
+              "body": {
+                "pitchDeg": 6
+              },
+              "tailPitchDeg": 10
+            }
+          },
+          {
+            "at": 0.3,
+            "pose": {
+              "backArchDeg": 10,
+              "headPitchDeg": 56,
+              "headYawDeg": 12,
+              "body": {
+                "pitchDeg": 6
+              },
+              "tailPitchDeg": 10,
+              "tailYawDeg": 6
+            }
+          },
+          {
+            "at": 0.65,
+            "pose": {
+              "backArchDeg": 10,
+              "headPitchDeg": 54,
+              "headYawDeg": -12,
+              "body": {
+                "pitchDeg": 6
+              },
+              "tailPitchDeg": 10,
+              "tailYawDeg": -6
+            }
+          },
+          {
+            "at": 1,
+            "pose": {
+              "backArchDeg": 10,
+              "headPitchDeg": 50,
+              "body": {
+                "pitchDeg": 5
+              },
+              "tailPitchDeg": 10
+            }
+          }
+        ]
+      },
+      "eat": {
+        "loop": false,
+        "idle": "idle",
+        "entryS": 0.5,
+        "durationS": 2.4,
+        "exitS": 0.6,
+        "keys": [
+          {
+            "at": 0,
+            "pose": {
+              "backArchDeg": 12,
+              "headPitchDeg": 55,
+              "body": {
+                "pitchDeg": 7
+              },
+              "tailPitchDeg": 12
+            }
+          },
+          {
+            "at": 0.25,
+            "pose": {
+              "backArchDeg": 14,
+              "headPitchDeg": 40,
+              "body": {
+                "pitchDeg": 3
+              },
+              "tailPitchDeg": 12,
+              "feet": {
+                "fore_r": {
+                  "liftBodyLengths": 0.06,
+                  "forwardBodyLengths": 0.02,
+                  "curlDeg": 40.0
+                }
+              }
+            }
+          },
+          {
+            "at": 0.45,
+            "pose": {
+              "backArchDeg": 14,
+              "headPitchDeg": 46,
+              "body": {
+                "pitchDeg": 3
+              },
+              "tailPitchDeg": 12,
+              "feet": {
+                "fore_r": {
+                  "liftBodyLengths": 0.06,
+                  "forwardBodyLengths": 0.02,
+                  "curlDeg": 40.0
+                }
+              }
+            }
+          },
+          {
+            "at": 0.65,
+            "pose": {
+              "backArchDeg": 14,
+              "headPitchDeg": 40,
+              "body": {
+                "pitchDeg": 3
+              },
+              "tailPitchDeg": 12,
+              "feet": {
+                "fore_r": {
+                  "liftBodyLengths": 0.06,
+                  "forwardBodyLengths": 0.02,
+                  "curlDeg": 40.0
+                }
+              }
+            }
+          },
+          {
+            "at": 0.85,
+            "pose": {
+              "backArchDeg": 14,
+              "headPitchDeg": 46,
+              "body": {
+                "pitchDeg": 3
+              },
+              "tailPitchDeg": 12,
+              "feet": {
+                "fore_r": {
+                  "liftBodyLengths": 0.06,
+                  "forwardBodyLengths": 0.02,
+                  "curlDeg": 40.0
+                }
+              }
+            }
+          },
+          {
+            "at": 1,
+            "pose": {
+              "backArchDeg": 14,
+              "headPitchDeg": 30,
+              "tailPitchDeg": 14
+            }
+          }
+        ]
+      },
+      "play": {
+        "loop": false,
+        "idle": "idle",
+        "entryS": 0.3,
+        "durationS": 1.6,
+        "exitS": 0.5,
+        "keys": [
+          {
+            "at": 0,
+            "pose": {
+              "backArchDeg": 4,
+              "headPitchDeg": 0,
+              "body": {
+                "pitchDeg": 14.0,
+                "raiseBodyLengths": -0.025
+              },
+              "tailPitchDeg": -25,
+              "tailYawDeg": 15
+            }
+          },
+          {
+            "at": 0.35,
+            "pose": {
+              "backArchDeg": 4,
+              "headPitchDeg": 0,
+              "body": {
+                "pitchDeg": 14.0,
+                "raiseBodyLengths": -0.025
+              },
+              "tailPitchDeg": -25,
+              "tailYawDeg": -15
+            }
+          },
+          {
+            "at": 0.55,
+            "pose": {
+              "backArchDeg": 10,
+              "headPitchDeg": 5,
+              "body": {
+                "pitchDeg": 0,
+                "raiseBodyLengths": 0.035
+              },
+              "tailPitchDeg": -20,
+              "feet": {
+                "fore_l": {
+                  "liftBodyLengths": 0.03
+                },
+                "fore_r": {
+                  "liftBodyLengths": 0.03
+                },
+                "hind_l": {
+                  "liftBodyLengths": 0.03
+                },
+                "hind_r": {
+                  "liftBodyLengths": 0.03
+                }
+              }
+            }
+          },
+          {
+            "at": 0.75,
+            "pose": {
+              "backArchDeg": 4,
+              "headPitchDeg": 0,
+              "body": {
+                "pitchDeg": 14.0,
+                "raiseBodyLengths": -0.025
+              },
+              "tailPitchDeg": -25,
+              "tailYawDeg": 10
+            }
+          },
+          {
+            "at": 1,
+            "pose": {
+              "backArchDeg": 8,
+              "headPitchDeg": 8,
+              "body": {
+                "pitchDeg": 8
+              },
+              "tailPitchDeg": -15
+            }
+          }
+        ]
+      },
+      "shelter": {
+        "loop": true,
+        "durationS": 2.4,
+        "keys": [
+          {
+            "at": 0,
+            "pose": {
+              "backArchDeg": 30,
+              "headPitchDeg": 34,
+              "body": {
+                "raiseBodyLengths": -0.03
+              },
+              "tailPitchDeg": 30,
+              "tailYawDeg": 30,
+              "joints": {
+                "ear_l": {
+                  "x": 5
+                },
+                "ear_r": {
+                  "x": 5
+                }
+              }
+            }
+          },
+          {
+            "at": 0.45,
+            "pose": {
+              "backArchDeg": 30,
+              "headPitchDeg": 34,
+              "body": {
+                "raiseBodyLengths": -0.03
+              },
+              "tailPitchDeg": 30,
+              "tailYawDeg": 30,
+              "joints": {
+                "ear_l": {
+                  "x": 5
+                },
+                "ear_r": {
+                  "x": 5
+                }
+              }
+            }
+          },
+          {
+            "at": 0.5,
+            "pose": {
+              "backArchDeg": 31,
+              "headPitchDeg": 34,
+              "body": {
+                "raiseBodyLengths": -0.03,
+                "rollDeg": 2
+              },
+              "tailPitchDeg": 30,
+              "tailYawDeg": 30,
+              "joints": {
+                "ear_l": {
+                  "x": 5
+                },
+                "ear_r": {
+                  "x": 5
+                }
+              }
+            }
+          },
+          {
+            "at": 0.55,
+            "pose": {
+              "backArchDeg": 30,
+              "headPitchDeg": 34,
+              "body": {
+                "raiseBodyLengths": -0.03,
+                "rollDeg": -2
+              },
+              "tailPitchDeg": 30,
+              "tailYawDeg": 30,
+              "joints": {
+                "ear_l": {
+                  "x": 5
+                },
+                "ear_r": {
+                  "x": 5
+                }
+              }
+            }
+          },
+          {
+            "at": 0.6,
+            "pose": {
+              "backArchDeg": 31,
+              "headPitchDeg": 34,
+              "body": {
+                "raiseBodyLengths": -0.03,
+                "rollDeg": 1.5
+              },
+              "tailPitchDeg": 30,
+              "tailYawDeg": 30,
+              "joints": {
+                "ear_l": {
+                  "x": 5
+                },
+                "ear_r": {
+                  "x": 5
+                }
+              }
+            }
+          },
+          {
+            "at": 0.65,
+            "pose": {
+              "backArchDeg": 30,
+              "headPitchDeg": 34,
+              "body": {
+                "raiseBodyLengths": -0.03
+              },
+              "tailPitchDeg": 30,
+              "tailYawDeg": 30,
+              "joints": {
+                "ear_l": {
+                  "x": 5
+                },
+                "ear_r": {
+                  "x": 5
+                }
+              }
             }
           }
         ]
@@ -106,7 +533,7 @@
     "clipSets": {
       "raccoon": {
         "required": ["idle", "walk", "sniff", "eat", "play", "shelter"],
-        "generated": ["idle", "walk"]
+        "generated": ["idle", "walk", "sniff", "eat", "play", "shelter"]
       }
     },
     "groom": {

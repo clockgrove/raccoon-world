@@ -51,50 +51,59 @@
     "lods": 1,
     "clips": [
       {
+        "name": "idle",
+        "durationMs": 4000,
+        "loop": true,
+        "generated": true
+      },
+      {
         "name": "walk",
         "durationMs": 742.8571581840515,
         "loop": true,
         "generated": true,
         "speedMps": 0.267756
+      },
+      {
+        "name": "sniff",
+        "durationMs": 3099.9999046325684,
+        "loop": false,
+        "generated": true
+      },
+      {
+        "name": "eat",
+        "durationMs": 3500,
+        "loop": false,
+        "generated": true
+      },
+      {
+        "name": "play",
+        "durationMs": 2400.0000953674316,
+        "loop": false,
+        "generated": true
+      },
+      {
+        "name": "shelter",
+        "durationMs": 2400.0000953674316,
+        "loop": true,
+        "generated": true
       }
     ],
-    "missingClips": [
-      {
-        "family": "idle",
-        "why": "the target declares no gait profile for \"idle\" (model3d.gaits.idle)"
-      },
-      {
-        "family": "sniff",
-        "why": "the target declares no gait profile for \"sniff\" (model3d.gaits.sniff)"
-      },
-      {
-        "family": "eat",
-        "why": "the target declares no gait profile for \"eat\" (model3d.gaits.eat)"
-      },
-      {
-        "family": "play",
-        "why": "the target declares no gait profile for \"play\" (model3d.gaits.play)"
-      },
-      {
-        "family": "shelter",
-        "why": "the target declares no gait profile for \"shelter\" (model3d.gaits.shelter)"
-      }
-    ],
+    "missingClips": [],
     "bounds": {
       "min": [
-        -0.19247037413960716,
-        -4.481159023931071e-11,
-        -0.3825080940034985
+        -0.1924703740113513,
+        -5.546978687593488e-10,
+        -0.3825080930524024
       ],
       "max": [
-        0.19247036661201566,
-        0.4499999887835499,
-        0.3825081050408661
+        0.19247036859300806,
+        0.4499999879985408,
+        0.3825080969297465
       ]
     },
     "rig": {
       "template": "rig/raccoon.json",
-      "sha256": "b2c031d2c65810526b61cd38c9d8b5a31d2199b607d503df3e1b5e87d517a0e9"
+      "sha256": "94d93e1e34d82e49df4fdb640321be2d29a82fe6fc28de4f0bcd034a336ef73d"
     },
     "groom": {
       "summer": {
@@ -152,15 +161,15 @@
         "triangleRatio": 0.33,
         "minScreenHeight": 0.05,
         "path": "assets/models/stevie/stevie.lod1.glb",
-        "sha256": "cbd8bbcaed59670d694d65ff81ebdde2b0487635a964c45930339cece6a7ec22"
+        "sha256": "119dbcb416e5add90b2016f5e4348e1be8ba210bde7d2c74a099c9a503778900"
       },
       "lod2": {
         "level": 2,
-        "triangles": 5979,
+        "triangles": 5975,
         "triangleRatio": 0.1,
         "minScreenHeight": 0,
         "path": "assets/models/stevie/stevie.lod2.glb",
-        "sha256": "6fe28c69080a85bd74f387944587bd8c1545dd6e21a5f0c6042d69c94c5f916f"
+        "sha256": "bcf0e812b1371b3e9552286f703239572a7fdb82ad846794b425b739582f2a20"
       }
     },
     "tiers": {
@@ -173,16 +182,16 @@
             "minScreenHeight": 0.05,
             "textureMaxPx": 1024,
             "path": "assets/models/stevie/stevie.phone.lod1.glb",
-            "sha256": "29845d664f5bbe2432ee71a2ddd4b5c2ffc7ef567acde21c9f9413e045c50a60"
+            "sha256": "679d4f5d4801a57aead38c56af14c7175a1110f8144676bb108ce67f3a55d19c"
           },
           "lod2": {
             "level": 2,
-            "triangles": 5979,
+            "triangles": 5975,
             "triangleRatio": 0.1,
             "minScreenHeight": 0,
             "textureMaxPx": 1024,
             "path": "assets/models/stevie/stevie.phone.lod2.glb",
-            "sha256": "2a32e0dbf4f609f7c275828c1ab289e972015b5e51f513148d085464fcec2071"
+            "sha256": "de02a31c48a26114b1ee9cc2b5682d7f641680bfa0646e2a27fe4b191c9ccf1b"
           }
         },
         "groom": {
@@ -253,7 +262,7 @@
           "level": 2,
           "triangleRatio": 0.1,
           "minScreenHeight": 0,
-          "triangles": 5979,
+          "triangles": 5975,
           "passed": true
         }
       ],
@@ -278,6 +287,6 @@
       ]
     }
   },
-  "contentHash": "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355",
+  "contentHash": "c0345317a6d05f45fc6a8cb7b3ce378f9b3eb80356f5fc51d674f173770a73cb",
   "accessibilityLabel": "Stevie, a stocky grey-brown raccoon with a dark eye mask and a ringed tail"
 }
