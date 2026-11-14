@@ -49,7 +49,7 @@
       "kind": "generated",
       "path": "{{output.path}}",
       "creator": "{{profile.creator}}",
-      "tool": "assetforge"
+      "tool": "assetgrove"
     },
     "license": "{{provenance.license}}",
     "provenance": {

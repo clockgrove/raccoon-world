@@ -96,7 +96,7 @@ anchors:
     - path: ../references/stevie/77-3d/preview-tripo-provider-render.png
       role: unapproved 3D spike render; not the look
     - path: ../references/jimothy/assetforge-38-proof/fix/idle.png
-      role: unapproved Assetforge proof output; not a pick
+      role: unapproved Assetgrove proof output; not a pick
     - path: ../references/stevie/comparison-candidates/idle/strip.png
       role: comparison-only strip; not a pick
     - path: ../references/stevie/comparison-candidates/walk/strip.png
@@ -219,7 +219,7 @@ subjects:
 ---
 # Raccoon World art direction
 
-This is the one statement of Raccoon World's look. Assetforge reads it as the world's constitution: briefs, specs and run settings can steer mood and pose but never override it. `art/style-bible.json` is derived from this file by `node art/tools/derive-bible.mjs`; never edit it by hand.
+This is the one statement of Raccoon World's look. Assetgrove reads it as the world's constitution: briefs, specs and run settings can steer mood and pose but never override it. `art/style-bible.json` is derived from this file by `node art/tools/derive-bible.mjs`; never edit it by hand.
 
 ## The look
 
@@ -237,16 +237,16 @@ The front matter's `looks` carry the split: `character` and `environment` each s
 
 ## Perspective
 
-Every asset is drawn for the mockup's camera: a high three-quarter isometric view from above. Assetforge's vision QA uses the mockup as its perspective sample and judges perspective there (owner decision 2026-11-08; no separate decision-model perspective check). Characters on a sheet face along the ground plane's diagonals as the mockup's raccoons do.
+Every asset is drawn for the mockup's camera: a high three-quarter isometric view from above. Assetgrove's vision QA uses the mockup as its perspective sample and judges perspective there (owner decision 2026-11-08; no separate decision-model perspective check). Characters on a sheet face along the ground plane's diagonals as the mockup's raccoons do.
 
 ## Characters and identity locks
 
-Each identity lock's written text must agree with its own approved references: Assetforge's `identity-check` verifies it, and a record that disagrees is never used to filter.
+Each identity lock's written text must agree with its own approved references: Assetgrove's `identity-check` verifies it, and a record that disagrees is never used to filter.
 
-- **Stevie:** the approved three-quarter turnaround view, `references/stevie/turnaround-three-quarter.png` (clockgrove/clockgrove#77 pass 1), plus the approved front, side and back views as references. One view alone rejects his other angles (Assetforge's identity lock bar, assetforge#92).
-- **Jimothy:** cell 3 of the 57-frame contact sheet (`references/jimothy/sheet-cell-03.png`, cut from `docs/design/reference/jimothy-sprite-sheet.png` by Assetforge's slicer) plus his painted portrait.
+- **Stevie:** the approved three-quarter turnaround view, `references/stevie/turnaround-three-quarter.png` (clockgrove/clockgrove#77 pass 1), plus the approved front, side and back views as references. One view alone rejects his other angles (Assetgrove's identity lock bar, assetgrove#92).
+- **Jimothy:** cell 3 of the 57-frame contact sheet (`references/jimothy/sheet-cell-03.png`, cut from `docs/design/reference/jimothy-sprite-sheet.png` by Assetgrove's slicer) plus his painted portrait.
 
-- **Gracie:** the three-quarter view of her approved turnaround, `references/gracie/turnaround-three-quarter.png` (candidate c1, picked by Kirk on 2026-11-11), plus its approved front, side and back views as references, as Stevie's lock takes his four approved views. Kirk's photos of her stay subject anchors (likeness only) and are not part of her lock. The 0.68 threshold was measured on Stevie's and Jimothy's locks, not hers, so her score is a record only, like everyone's in shadow mode. Her lock has not yet been run through `identity-check`: that is an owner step (`bash scripts/assetforge.sh run identity-check --bible art/style-bible.md`, a paid call with the AI Gateway key, outside a Factory run).
+- **Gracie:** the three-quarter view of her approved turnaround, `references/gracie/turnaround-three-quarter.png` (candidate c1, picked by Kirk on 2026-11-11), plus its approved front, side and back views as references, as Stevie's lock takes his four approved views. Kirk's photos of her stay subject anchors (likeness only) and are not part of her lock. The 0.68 threshold was measured on Stevie's and Jimothy's locks, not hers, so her score is a record only, like everyone's in shadow mode. Her lock has not yet been run through `identity-check`: that is an owner step (`bash scripts/assetgrove.sh run identity-check --bible art/style-bible.md`, a paid call with the AI Gateway key, outside a Factory run).
 
 Identity scoring runs in shadow mode at 0.68 (`art/target-profile.json`): it records a score beside QA and filters nothing. Bump a lock's `version` when it changes.
 
@@ -273,7 +273,7 @@ Characters are real-time 3D models drawn by Clockgrove's renderer (Kirk, 2026-11
 
 His `character-3d` spec is `art/stevie/character-3d/spec.json`, with run settings in `run.json` beside it (up to 4 candidates for $5).
 
-- **Reference:** his approved turnaround. That is the three-quarter view, which is his identity lock, plus the front, side and back views. Assetforge builds the model from these views and scores its renders against the lock in shadow mode.
+- **Reference:** his approved turnaround. That is the three-quarter view, which is his identity lock, plus the front, side and back views. Assetgrove builds the model from these views and scores its renders against the lock in shadow mode.
 - **Identity locks carried over** from the 2D bible, unchanged. He is stocky and rounded on short legs, with a gently arched back. His coat is grey-brown with a darker, streaked back and a warm tan underside. He has a dark brown-black eye mask with cream brows and a cream muzzle, rounded pale-rimmed ears, a full ringed tail with a dark tip, and dark lower legs and hand-like paws. His coat is sleeker than Jimothy's.
 - **Size and facing:** 0.45 m tall, facing +z, on the shared raccoon rig (`art/rig/raccoon.json`).
 - **Clips:** `idle`, `walk`, `sniff`, `eat`, `play` and `shelter`.
@@ -291,7 +291,7 @@ Every raccoon has a summer and a winter coat (Kirk, 2026-11-10). Both are grooms
 
 ## Anchors
 
-Positive anchors are approved material only: the mockup, Stevie's approved turnaround (the character look anchor) and its views, Jimothy's painted portrait (environment brushwork) and Jimothy's sheet cell 3, Gracie's approved turnaround views and Kirk's photos of Gracie (likeness references scoped to her subject, not style anchors). Unapproved material is listed as negative anchors and is never a positive one: the 3D spike outputs (`references/stevie/77-3d`), the Assetforge #38 proof outputs (`references/jimothy/assetforge-38-proof`) and the Stevie idle and walk strips made for the 3D comparison (`references/stevie/comparison-candidates`).
+Positive anchors are approved material only: the mockup, Stevie's approved turnaround (the character look anchor) and its views, Jimothy's painted portrait (environment brushwork) and Jimothy's sheet cell 3, Gracie's approved turnaround views and Kirk's photos of Gracie (likeness references scoped to her subject, not style anchors). Unapproved material is listed as negative anchors and is never a positive one: the 3D spike outputs (`references/stevie/77-3d`), the Assetgrove #38 proof outputs (`references/jimothy/assetforge-38-proof`) and the Stevie idle and walk strips made for the 3D comparison (`references/stevie/comparison-candidates`).
 
 ## Palette and lighting tokens
 

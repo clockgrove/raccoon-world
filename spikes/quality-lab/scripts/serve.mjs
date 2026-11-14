@@ -18,7 +18,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 export const lab = fileURLToPath(new URL("..", import.meta.url));
 export const repo = path.resolve(lab, "../..");
 export const pinned = path.resolve(process.env.CLOCKGROVE_DIR ?? path.join(repo, ".clockgrove"));
-/** Stevie: Kirk's approved look-dev c1, Assetforge f9dda1b (#107). */
+/** Stevie: Kirk's approved look-dev c1, Assetgrove f9dda1b (#107). */
 export const STEVIE_GLB = path.join(repo, "assets/models/stevie/stevie.glb");
 /** The ceiling's generated props (#34), as references/ceiling-3d/provenance.json records them. */
 export const PROPS_DIR = path.join(repo, "references/ceiling-3d/props");

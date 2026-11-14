@@ -32,7 +32,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const RELAYED = Boolean(process.env.FACTORY_GATEWAY_URL) && !process.env.AI_GATEWAY_URL;
 const GATEWAY = process.env.AI_GATEWAY_URL ?? (RELAYED ? `${process.env.FACTORY_GATEWAY_URL}/v1` : "https://ai-gateway.vercel.sh/v1");
 
-/** The route. Its terms and output grant are those Assetforge records for openai/gpt-image-2 (src/routes.ts). */
+/** The route. Its terms and output grant are those Assetgrove records for openai/gpt-image-2 (src/routes.ts). */
 export const ROUTE = {
   provider: "vercel-ai-gateway",
   model: "openai/gpt-image-2",

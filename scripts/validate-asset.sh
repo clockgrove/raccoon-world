@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Validates one written asset with Clockgrove's asset validation at the commit pinned in
 # CLOCKGROVE_COMMIT: the target profile's validator command (art/target-profile.json), which
-# Assetforge runs in the target directory after it writes a strip.
+# Assetgrove runs in the target directory after it writes a strip.
 #
 # Usage: bash scripts/validate-asset.sh assets/manifests/<assetId>/<family>.json
 #

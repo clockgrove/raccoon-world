@@ -245,7 +245,7 @@ function arm2d(sheetUrl: string): Arm & { cut(): CutSheet | null } {
     cut: () => cut,
     stepMs,
     notes: [
-      `frames: plain crop of the identity sheet's ${SHEET.cellWidth}x${SHEET.cellHeight} grid (Assetforge sheet import not available in the sandbox)`,
+      `frames: plain crop of the identity sheet's ${SHEET.cellWidth}x${SHEET.cellHeight} grid (Assetgrove sheet import not available in the sandbox)`,
       "maps: alpha keyed from the cell corner colour; normal from Sobel of (0.75 blurred alpha dome + 0.25 luminance); 1-px dark edge",
       "lit with MeshStandardMaterial as #67's sprites; the painting's own baked rim light (orange fringe) and shading remain under the scene light",
       "headings: the sheet has three-quarter front-right, side right and side left; 'back' and 'front' show the nearest frame",

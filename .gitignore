@@ -6,6 +6,6 @@ coverage/
 .wrangler/
 /worlds/*/goldens/*.actual.json
 /.clockgrove/
-/.assetforge-src/
-/.assetforge/
+/.assetgrove-src/
+/.assetgrove/
 .vite/

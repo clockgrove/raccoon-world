@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Raccoon World's art checks, run by `bash scripts/assetforge.sh check`. No paid model call, no key:
-// Assetforge and Clockgrove run for real from their pinned checkouts; only the model provider is
+// Raccoon World's art checks, run by `bash scripts/assetgrove.sh check`. No paid model call, no key:
+// Assetgrove and Clockgrove run for real from their pinned checkouts; only the model provider is
 // scripted (art/proof/provider.mjs).
 //
 // 1. bible:       art/style-bible.json is exactly what art/tools/derive-bible.mjs derives from the
@@ -11,7 +11,7 @@
 //                 (up to 4 candidates) forecasts at no more than $5 in an offline dry run.
 // 4. placeholders: Clockgrove's asset check accepts the approved placeholder set, its atlas, its
 //                 licence report and its approved golden scene (in a throwaway copy).
-// 5. proof:       an offline Assetforge run writes Stevie's shelter strip into a throwaway copy of
+// 5. proof:       an offline Assetgrove run writes Stevie's shelter strip into a throwaway copy of
 //                 this repository and Clockgrove's validator accepts it on the first try, with
 //                 review pending and complete provenance; a short sheet is refused, never padded.
 // 6. licences:    every committed manifest's licence is the licence REUSE.toml gives its source file,
@@ -19,17 +19,17 @@
 // 7. gracie:      Gracie's bible subject leads with her signature fur, her photos and approved views
 //                 are her subject's references, her approved turnaround is Kirk's pick (c1) with its
 //                 hashes and output grant, her character-3d spec names her subject and gait and the
-//                 pinned Assetforge's character-3d reader accepts it, and her turnaround run forecasts within its $5 cap (issue 50).
-// 8. model3d:     the 3D target profile's shape (art/tools/model3d.mjs profile) and the pinned Assetforge
+//                 pinned Assetgrove's character-3d reader accepts it, and her turnaround run forecasts within its $5 cap (issue 50).
+// 8. model3d:     the 3D target profile's shape (art/tools/model3d.mjs profile) and the pinned Assetgrove
 //                 reads it, its rig and walk; Stevie's and Gracie's character-3d specs; Stevie's 3D run
 //                 forecasts within $5; a scripted stage and pick write a rigged .glb with a generated idle
-//                 (Assetforge's draft motion, throwaway copy only) and walk into a throwaway copy, and the
+//                 (Assetgrove's draft motion, throwaway copy only) and walk into a throwaway copy, and the
 //                 profile's validator, Clockgrove's `clockgrove-assets validate`, accepts it on the first try;
 //                 Clockgrove refuses the same model over lower budgets (MODEL_BUDGET_EXCEEDED); it renders
 //                 through the pinned renderer's world-content seam (art/tools/model3d-render.mjs); a
 //                 free-plan grant is refused with exit 7 (issues 39 and 82).
 //
-// ASSETFORGE_DIR and CLOCKGROVE_DIR name the pinned checkouts (defaults .assetforge-src, .clockgrove).
+// ASSETGROVE_DIR and CLOCKGROVE_DIR name the pinned checkouts (defaults .assetgrove-src, .clockgrove).
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { cp, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
@@ -42,7 +42,7 @@ import { forecast, loadRun, pending, ROUTE, VIEWS } from "./turnaround.mjs";
 
 const run = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const assetforgeDir = resolve(process.env.ASSETFORGE_DIR ?? join(root, ".assetforge-src"));
+const assetgroveDir = resolve(process.env.ASSETGROVE_DIR ?? join(root, ".assetgrove-src"));
 const clockgroveDir = resolve(process.env.CLOCKGROVE_DIR ?? join(root, ".clockgrove"));
 export const FAMILIES = ["idle", "walk", "sniff", "eat", "play", "shelter"];
 const MAX_RUN_USD = 5;
@@ -61,12 +61,12 @@ async function pinned(dir, pinFile, fetch) {
   if (marker.trim() !== pin) throw new Error(`no ${pinFile} ${pin} checkout in ${dir}; run ${fetch}`);
 }
 
-/** Runs the pinned Assetforge CLI with --json; resolves to { code, doc, stderr } whatever the exit. */
-async function assetforge(args, extraEnv = {}, cwd = root) {
+/** Runs the pinned Assetgrove CLI with --json; resolves to { code, doc, stderr } whatever the exit. */
+async function assetgrove(args, extraEnv = {}, cwd = root) {
   try {
     const { stdout, stderr } = await run(
       process.execPath,
-      [join(assetforgeDir, "src/cli.ts"), ...args, "--json"],
+      [join(assetgroveDir, "src/cli.ts"), ...args, "--json"],
       { cwd, env: { ...env, ...extraEnv }, maxBuffer: 64 << 20 },
     );
     return { code: 0, doc: JSON.parse(stdout), stderr };
@@ -97,13 +97,13 @@ async function throwawayCopy(label) {
 }
 
 async function checkBible() {
-  const fresh = await deriveBible(assetforgeDir);
+  const fresh = await deriveBible(assetgroveDir);
   const committed = await readFile(DERIVED, "utf8").catch(() => "");
   if (committed !== fresh)
     fail("bible", "art/style-bible.json differs from art/style-bible.md; run node art/tools/derive-bible.mjs");
-  const described = await assetforge(["bible", "describe", "--bible", "art/style-bible.md"]);
+  const described = await assetgrove(["bible", "describe", "--bible", "art/style-bible.md"]);
   if (described.code !== 0) {
-    fail("bible", `Assetforge refused art/style-bible.md: ${described.doc?.error?.message ?? described.stderr}`);
+    fail("bible", `Assetgrove refused art/style-bible.md: ${described.doc?.error?.message ?? described.stderr}`);
     return;
   }
   const bible = described.doc;
@@ -179,12 +179,12 @@ async function checkGracie() {
   const spec = await json("art/gracie/character-3d/spec.json");
   if (spec.kind !== "character-3d" || spec.subject !== "gracie" || spec.gait !== "quadruped")
     fail("gracie", "art/gracie/character-3d/spec.json must be kind character-3d, subject gracie, gait quadruped");
-  // The pinned Assetforge's own character-3d reader must accept the spec (gait, clips, height).
-  const { characterSpec } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/profile.ts")).href);
+  // The pinned Assetgrove's own character-3d reader must accept the spec (gait, clips, height).
+  const { characterSpec } = await import(pathToFileURL(join(assetgroveDir, "src/model3d/profile.ts")).href);
   try {
     characterSpec(spec);
   } catch (error) {
-    fail("gracie", `Assetforge's character-3d reader refuses art/gracie/character-3d/spec.json: ${error.message}`);
+    fail("gracie", `Assetgrove's character-3d reader refuses art/gracie/character-3d/spec.json: ${error.message}`);
   }
   const turnaround = await loadRun("gracie");
   if (turnaround.capUsd !== MAX_RUN_USD) fail("gracie", `the turnaround run's cap must be $${MAX_RUN_USD}`);
@@ -241,7 +241,7 @@ async function checkInputs(qaPerCandidateUsd) {
     if (!(settings.candidates >= 1 && settings.candidates <= MAX_CANDIDATES) || !(settings.capUsd <= MAX_RUN_USD))
       fail("inputs", `${dir}/run.json: at most ${MAX_CANDIDATES} candidates and $${MAX_RUN_USD}`);
     const perCandidateCap = settings.capUsd / settings.candidates;
-    const dry = await assetforge([
+    const dry = await assetgrove([
       "generate-sheet", "--spec", `${dir}/spec.json`, "--bible", "art/style-bible.json",
       "--profile", "art/target-profile.json", "--lock-bible", "art/style-bible.md",
       "--cap", String(perCandidateCap), "--dry-run",
@@ -330,18 +330,18 @@ async function proof() {
   ];
   try {
     // A short sheet is refused loudly (exit 5) and nothing reaches the target.
-    const short = await assetforge(sheetArgs, { PROOF_SHEET_FIGURES: "3" });
+    const short = await assetgrove(sheetArgs, { PROOF_SHEET_FIGURES: "3" });
     if (short.code !== 5 || short.doc?.error?.code !== "qa_found_nothing")
       fail("proof", `a 3-figure sheet for a 4-frame spec must be refused with exit 5, got ${short.code}`);
 
-    const sheet = await assetforge(sheetArgs);
+    const sheet = await assetgrove(sheetArgs);
     if (sheet.code !== 0) {
       fail("proof", `generate-sheet failed: ${sheet.doc?.error?.message ?? sheet.stderr}`);
       return;
     }
     const importDir = sheet.doc.importDir;
-    if (sheet.doc.grouping?.status !== "proposed") fail("proof", "Assetforge must only propose a grouping");
-    const written = await assetforge([
+    if (sheet.doc.grouping?.status !== "proposed") fail("proof", "Assetgrove must only propose a grouping");
+    const written = await assetgrove([
       "write-families", "--import", importDir, "--grouping", "art/proof/grouping.json", "--target", target,
     ]);
     const family = written.doc?.families?.[0];
@@ -384,7 +384,7 @@ async function proof() {
       fail("proof", "REUSE.toml no longer covers generated assets as MIT");
     for (const problem of licenceMismatches([manifest], reuse)) fail("proof", problem);
     // Agent QA's vision checks for one candidate, forecast offline on the written strip.
-    const qa = await assetforge([
+    const qa = await assetgrove([
       "animation-qa", "--strip", join(target, manifest.source.path), "--profile", "art/target-profile.json",
       "--family", "shelter", "--spec", "art/stevie/shelter/spec.json", "--out", join(imports, "qa"), "--dry-run",
     ]);
@@ -406,17 +406,17 @@ async function checkModel3d() {
   const PROFILE = "art/target-profile-3d.json";
   const SPEC = "art/stevie/character-3d/spec.json";
   const { checkProfile, validateModel } = await import(pathToFileURL(join(root, "art/tools/model3d.mjs")).href);
-  const { characterSpec } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/profile.ts")).href);
-  const { model3dSettings } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/profile.ts")).href);
-  const { loadRig } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/rig/template.ts")).href);
+  const { characterSpec } = await import(pathToFileURL(join(assetgroveDir, "src/model3d/profile.ts")).href);
+  const { model3dSettings } = await import(pathToFileURL(join(assetgroveDir, "src/model3d/profile.ts")).href);
+  const { loadRig } = await import(pathToFileURL(join(assetgroveDir, "src/model3d/rig/template.ts")).href);
   const profile = await json(PROFILE);
   for (const problem of checkProfile(profile)) fail("model3d", `${PROFILE}: ${problem.code}: ${problem.detail}`);
-  // The pinned Assetforge reads the profile, its rig template and its gaits.
+  // The pinned Assetgrove reads the profile, its rig template and its gaits.
   try {
     model3dSettings(profile);
     await loadRig(profile, join(root, "art"));
   } catch (error) {
-    fail("model3d", `Assetforge refuses ${PROFILE}: ${error.message}`);
+    fail("model3d", `Assetgrove refuses ${PROFILE}: ${error.message}`);
   }
   const m = profile.model3d;
   const walk = m.gaits?.walk ?? {};
@@ -440,7 +440,7 @@ async function checkModel3d() {
     try {
       characterSpec(spec);
     } catch (error) {
-      fail("model3d", `Assetforge's character-3d reader refuses ${path}: ${error.message}`);
+      fail("model3d", `Assetgrove's character-3d reader refuses ${path}: ${error.message}`);
     }
     for (const clip of spec.clips ?? [])
       if (!required.includes(clip)) fail("model3d", `${path}: clip ${clip} is not in the raccoon clip set`);
@@ -514,14 +514,14 @@ async function checkModel3d() {
   const target = await throwawayCopy("model3d");
   const base = ["--spec", SPEC, "--bible", "art/style-bible.json", "--profile", PROFILE, "--runs", runs];
   try {
-    const dry = await assetforge([
+    const dry = await assetgrove([
       "stage", ...base, "--candidates", String(settings.candidates), "--cap", String(settings.capUsd), "--dry-run",
     ]);
     if (dry.code !== 0) fail("model3d", `Stevie's 3D run does not fit its $${settings.capUsd} cap: ${dry.doc?.error?.message ?? dry.stderr}`);
     if (!(settings.candidates <= MAX_CANDIDATES && settings.capUsd <= MAX_RUN_USD))
       fail("model3d", `art/stevie/character-3d/run.json: at most ${MAX_CANDIDATES} candidates and $${MAX_RUN_USD}`);
 
-    // The hand-off Clockgrove takes (assetforge#137): Clockgrove's clip fields, look-dev maps embedded.
+    // The hand-off Clockgrove takes (assetgrove#137): Clockgrove's clip fields, look-dev maps embedded.
     const clipFields = { name: "name", durationMs: "durationMs", loop: "loop", generated: "generated" };
     if (m.motions?.idle?.loop !== true) fail("model3d", "model3d.motions.idle must declare the looping idle the hand-off generates");
     if (JSON.stringify(m.handoff?.clipFields) !== JSON.stringify(clipFields) || m.handoff?.sideImages !== "embedded")
@@ -531,13 +531,13 @@ async function checkModel3d() {
     // shared rig generates the walk (model3d.gaits.walk) and the idle, sniff, eat, play and shelter
     // (model3d.motions, #112). The profile's validator, Clockgrove's `clockgrove-assets validate`, accepts it on the first try.
     const scripted = [...base, "--provider-script", "art/proof/model3d-provider.mjs", "--candidates", "1"];
-    const staged = await assetforge(["stage", ...scripted, "--routes", "art/proof/model3d-routes.json"], {}, target);
+    const staged = await assetgrove(["stage", ...scripted, "--routes", "art/proof/model3d-routes.json"], {}, target);
     if (staged.code !== 0) {
       const reasons = (staged.doc?.rejections ?? []).flatMap((c) => c.reasons ?? []).filter((r) => !r.passed);
       fail("model3d", `scripted stage failed (exit ${staged.code}): ${reasons.map((r) => `${r.check}: ${r.reason}`).join("; ") || staged.doc?.error?.message || staged.stderr}`);
       return;
     }
-    const picked = await assetforge(["pick", "--run", staged.doc.runDir, "--candidate", "c1", "--target", target]);
+    const picked = await assetgrove(["pick", "--run", staged.doc.runDir, "--candidate", "c1", "--target", target]);
     if (picked.code !== 0 || picked.doc?.validator?.accepted !== true) {
       fail("model3d", `the profile's validator did not accept the pick on the first try (exit ${picked.code}):\n${picked.doc?.validator?.output ?? picked.doc?.error?.message ?? picked.stderr}`);
       return;
@@ -633,11 +633,11 @@ async function checkModel3d() {
     const routes = join(runs, "free-plan-routes.json");
     const freePlan = { license: "CC-BY-4.0", plan: "free", commercial: true, relabel: false, attribution: "3D model generated with Meshy (meshy.ai)" };
     await writeFile(routes, JSON.stringify({ model3d: { forward: "+z", outputGrant: freePlan } }));
-    const free = await assetforge(["stage", ...scripted, "--routes", routes]);
+    const free = await assetgrove(["stage", ...scripted, "--routes", routes]);
     const freeTarget = await mkdtemp(join(tmpdir(), "raccoon-world-free-"));
     try {
       const refused = free.code === 0
-        ? await assetforge(["pick", "--run", free.doc.runDir, "--candidate", "c1", "--target", freeTarget])
+        ? await assetgrove(["pick", "--run", free.doc.runDir, "--candidate", "c1", "--target", freeTarget])
         : free;
       if (refused.code !== 7 || refused.doc?.error?.code !== "license_refused")
         fail("model3d", `a free-plan CC BY grant must be refused with exit 7, got ${refused.code}`);
@@ -653,7 +653,7 @@ async function checkModel3d() {
 }
 
 try {
-  await pinned(assetforgeDir, "ASSETFORGE_COMMIT", "bash scripts/assetforge.sh fetch");
+  await pinned(assetgroveDir, "ASSETGROVE_COMMIT", "bash scripts/assetgrove.sh fetch");
   await pinned(clockgroveDir, "CLOCKGROVE_COMMIT", "bash scripts/clockgrove.sh fetch");
   await checkBible();
   await checkStyle();
