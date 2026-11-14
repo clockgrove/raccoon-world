@@ -10,7 +10,7 @@ import { anchor, placeCamera, STATES, VIEWS } from "../../ceiling-3d/src/look.ts
 import { ground, puddleSky, rippleStrength, wetness } from "../../ceiling-3d/src/materials.ts";
 import { loadProps } from "../../ceiling-3d/src/props.ts";
 import { buildSet, lampStrength, rain } from "../../ceiling-3d/src/set.ts";
-import { type LabConfig, type LabHandle, type LevelMode, type LabStatus, type Measurement, type Platform, PRESETS, type PresetName, type StateName, type ViewName } from "./config.ts";
+import { FAR_ZOOM, type LabConfig, type LabHandle, type LevelMode, type LabStatus, type Measurement, type Platform, PRESETS, type PresetName, type StateName, type ViewName } from "./config.ts";
 import { buildPipeline, grade, type Pipeline } from "./pipeline.ts";
 import { GeometryDetail, sceneTriangles } from "./detail.ts";
 import { webMediaLoader } from "./loader.ts";
@@ -195,7 +195,7 @@ const footPoint = new THREE.Vector3();
 const headPoint = new THREE.Vector3();
 let screenHeight: number | null = null;
 function projectedHeight(at: THREE.Vector3): number {
-  const heightM = kit?.single.bind.sizeM.y ?? 0.45;
+  const heightM = kit?.any.bind.sizeM.y ?? 0.45;
   footPoint.set(at.x, at.y, 0).project(camera);
   headPoint.set(at.x, at.y, heightM).project(camera);
   return Math.abs(headPoint.y - footPoint.y) / 2;
@@ -211,7 +211,7 @@ function selectLevels() {
 
 // ---- State ----
 let config: LabConfig = { ...(PRESETS[(query.get("preset") as PresetName) ?? "medium"] ?? PRESETS.medium) };
-let view: ViewName = query.get("view") === "close" ? "close" : "yard";
+let view: ViewName = query.get("view") === "close" ? "close" : query.get("view") === "far" ? "far" : "yard";
 let state: StateName = query.get("state") === "night" ? "night" : "dusk";
 let current: Pipeline | null = null;
 let ready = false;
@@ -228,9 +228,6 @@ let measuring = false;
 /** The close-up's zoom: Stevie (0.45 m standing) at about a third of the frame height. */
 const CLOSE_ZOOM = 3.4;
 
-/** A multiplier on the view's zoom (below 1 draws Stevie smaller): the journey uses it to reach his smallest level. */
-let zoomScale = 1;
-
 function placeView() {
   const [width, height] = viewSize();
   const aspect = width / height;
@@ -238,8 +235,9 @@ function placeView() {
     const focus = stevie.position.clone().setZ(0.2);
     placeCamera(camera, { label: "close-up", zoom: CLOSE_ZOOM, focus: () => focus }, aspect);
   } else placeCamera(camera, VIEWS.hero, aspect);
-  if (zoomScale !== 1) {
-    camera.zoom *= zoomScale;
+  if (view === "far") {
+    // The yard zoomed out: Stevie below his phone level 1's minimum height, so the phone draws its coarsest level.
+    camera.zoom *= FAR_ZOOM;
     camera.updateProjectionMatrix();
   }
 }
@@ -333,6 +331,8 @@ async function applyConfig(next: LabConfig) {
       renderer.setPixelRatio(config.dpr);
       renderer.setSize(...viewSize(), false);
     }
+    // A level set the page has not loaded (the other mode, from the panel or Compare levels) loads now, once.
+    await kit?.ensure(config.levels);
     setCast(config.cast);
     for (const raccoon of [...(stevie ? [stevie] : []), ...castExtras]) raccoon.setMode(config.levels);
     stevie?.setFur(config.furShells, config.furFins, config.coat ?? "summer", config.furMode ?? "groomed");
@@ -489,17 +489,13 @@ const lab: LabHandle & Record<string, unknown> = {
         screen: [Math.round(screen.width * devicePixelRatio), Math.round(screen.height * devicePixelRatio)],
         loadS: { ...loadS },
         modelMb,
+        levelsMb: levelsMb(),
       },
     };
   },
   apply: applyConfig,
   async setView(next) {
     view = next;
-    render();
-    await nextFrame();
-  },
-  async setZoom(scale) {
-    zoomScale = scale;
     render();
     await nextFrame();
   },
@@ -685,6 +681,8 @@ const watchdog = setInterval(() => {
 // Download progress against the build's manifest of model sizes (the server gzips, so its lengths are compressed).
 const downloads = new Map<string, { loaded: number; total: number; done: boolean }>();
 function paintDownloads() {
+  // A level set loaded after the page is ready (the panel or Compare levels) is reported in levelsMb, not the load screen.
+  if (ready) return;
   let loaded = 0;
   let total = 0;
   let done = 0;
@@ -702,6 +700,20 @@ function paintDownloads() {
   if (bar) bar.style.width = `${Math.round(fraction * 100)}%`;
   loadBar?.setAttribute("aria-valuenow", String(Math.round(fraction * 100)));
 }
+/** Each of Stevie's level sets' downloads, by key, so each set's bytes are reported on their own. */
+const levelDownloads: Record<LevelMode, Set<string>> = { single: new Set(), phone: new Set() };
+function trackedLevel(key: string, mode: LevelMode, size: number | undefined) {
+  levelDownloads[mode].add(key);
+  return tracked(key, size);
+}
+const levelsMb = (): Record<LevelMode, number | null> => {
+  const mb = (mode: LevelMode) => {
+    const keys = [...levelDownloads[mode]];
+    if (keys.length === 0 || keys.some((key) => !downloads.get(key)?.done)) return null;
+    return Math.round(keys.reduce((sum, key) => sum + (downloads.get(key)!.total || downloads.get(key)!.loaded), 0) / 1e5) / 10;
+  };
+  return { single: mb("single"), phone: mb("phone") };
+};
 function tracked(key: string, size: number | undefined) {
   const entry = { loaded: 0, total: size ?? 0, done: false };
   downloads.set(key, entry);
@@ -737,7 +749,7 @@ async function init() {
   const propDownloads = Object.fromEntries(Object.keys(set.slots).map((name) => [name, tracked(`props/${name}.glb`, manifest[model(`props/${name}.glb`)])]));
   paintDownloads();
   const [loaded] = await Promise.all([
-    loadStevieKit((file) => media(model(file)), (file) => tracked(file, manifest[model(file)]), gltf, (key) => tracked(key, manifest[key])),
+    loadStevieKit((file) => media(model(file)), (file, mode) => trackedLevel(file, mode, manifest[model(file)]), gltf, (key, mode) => trackedLevel(key, mode, manifest[key]), defaultLevels),
     loadProps(set.slots, set.groups.props as THREE.Object3D, media(model("props/")), {
       onProgress: (name, event) => propDownloads[name]?.onProgress(event),
       onDone: (name) => propDownloads[name]?.finish(),

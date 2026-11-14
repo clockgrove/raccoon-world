@@ -689,13 +689,18 @@ export interface LevelsComparisonReport {
   adapter: string;
   software: boolean;
   timestamps: boolean;
+  /** The view the run started from (restored after it). */
   view: ViewName;
+  /** The framings measured: the start view as framed (phone level 1) and the zoomed-out yard (phone level 2). */
+  views: ViewName[];
   state: StateName;
   coat: LabConfig["coat"];
-  /** Each preset twice, single level 0 then the phone levels, on the same camera, coat and effects. */
+  /** Each preset in each framing twice, single level 0 then the phone levels, on the same camera, coat and effects. */
   steps: StepResult[];
-  /** Phone levels minus single level 0, per preset. Null where a time is missing (software GPUs report none). */
-  costs: { preset: PresetName; frameMsP50: number | null; frameMsP95: number | null; gpuMsP50: number | null; gpuMsP95: number | null; cpuMsP50: number | null }[];
+  /** Phone levels minus single level 0, per preset and framing, naming the phone level drawn. Null where a time is missing (software GPUs report none). */
+  costs: { preset: PresetName; view: ViewName; level: number | null; frameMsP50: number | null; frameMsP95: number | null; gpuMsP50: number | null; gpuMsP95: number | null; cpuMsP50: number | null }[];
+  /** Each level set's download (model files and maps), measured on its own; null for a set that did not load. */
+  downloadMb: DeviceInfo["levelsMb"];
 }
 
 export interface LevelsComparisonOptions extends RunOptions {
@@ -704,42 +709,51 @@ export interface LevelsComparisonOptions extends RunOptions {
 }
 
 /**
- * Each preset once with today's single level 0 and once with the phone levels, from the current view (the close-up
- * draws the phone's first level, the yard its last), so the report names what each step drew.
+ * Each preset once with today's single level 0 and once with the phone levels, in two framings: the start view as
+ * framed (the yard and the close-up both draw the phone's first level) and the zoomed-out yard (its last), so every
+ * phone level is measured against level 0 and the report names what each step drew.
  */
 export async function compareLevels(lab: LabHandle, opts: LevelsComparisonOptions = {}): Promise<LevelsComparisonReport> {
   const start = lab.status();
   const original = { ...start.config };
   const presets = opts.presets ?? PRESET_ORDER;
+  const views: ViewName[] = [start.view === "far" ? "yard" : start.view, "far"];
   const report: LevelsComparisonReport = {
     kind: "levels", startedAt: new Date().toISOString(), device: start.device,
     platform: start.platform, backend: start.backend, adapter: start.adapter,
-    software: start.software, timestamps: start.timestamps, view: start.view,
+    software: start.software, timestamps: start.timestamps, view: start.view, views,
     state: start.state, coat: original.coat ?? "summer", steps: [], costs: [],
+    downloadMb: { single: null, phone: null },
   };
-  const total = presets.length * 2;
+  const total = presets.length * views.length * 2;
   try {
-    for (const preset of presets) {
+    for (const view of views) {
       if (opts.signal?.aborted) break;
-      const pair: StepResult[] = [];
-      for (const levels of ["single", "phone"] as const) {
+      await lab.setView(view);
+      for (const preset of presets) {
         if (opts.signal?.aborted) break;
-        const config = { ...PRESETS[preset], coat: report.coat, furMode: original.furMode, levels };
-        const r = await measureStep(lab, { id: `levels:${preset}:${levels}`, label: `${preset} · ${levels === "single" ? "level 0" : "phone levels"}`, config }, opts);
-        pair.push(r);
-        report.steps.push(r);
-        opts.onStep?.(r, report.steps.length - 1, total);
+        const pair: StepResult[] = [];
+        for (const levels of ["single", "phone"] as const) {
+          if (opts.signal?.aborted) break;
+          const config = { ...PRESETS[preset], coat: report.coat, furMode: original.furMode, levels };
+          const r = await measureStep(lab, { id: `levels:${view}:${preset}:${levels}`, label: `${preset} · ${view} · ${levels === "single" ? "level 0" : "phone levels"}`, config }, opts);
+          pair.push(r);
+          report.steps.push(r);
+          opts.onStep?.(r, report.steps.length - 1, total);
+        }
+        const [single, phone] = pair;
+        if (single && phone) report.costs.push({ preset, view, level: phone.stevie?.level ?? null,
+          frameMsP50: sub(phone.measurement?.frameMsP50, single.measurement?.frameMsP50),
+          frameMsP95: sub(phone.measurement?.frameMsP95, single.measurement?.frameMsP95),
+          gpuMsP50: sub(phone.measurement?.gpuMsP50, single.measurement?.gpuMsP50),
+          gpuMsP95: sub(phone.measurement?.gpuMsP95, single.measurement?.gpuMsP95),
+          cpuMsP50: sub(phone.measurement?.cpuMsP50, single.measurement?.cpuMsP50),
+        });
       }
-      const [single, phone] = pair;
-      if (single && phone) report.costs.push({ preset,
-        frameMsP50: sub(phone.measurement?.frameMsP50, single.measurement?.frameMsP50),
-        frameMsP95: sub(phone.measurement?.frameMsP95, single.measurement?.frameMsP95),
-        gpuMsP50: sub(phone.measurement?.gpuMsP50, single.measurement?.gpuMsP50),
-        gpuMsP95: sub(phone.measurement?.gpuMsP95, single.measurement?.gpuMsP95),
-        cpuMsP50: sub(phone.measurement?.cpuMsP50, single.measurement?.cpuMsP50),
-      });
     }
   } finally {
+    report.downloadMb = { ...lab.status().device.levelsMb };
+    await lab.setView(start.view).catch(() => {});
     await lab.apply(original).catch(() => {});
   }
   return report;

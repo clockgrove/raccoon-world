@@ -386,13 +386,21 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
 }
 
 
-/** The loaded files for every raccoon: level 0, and the phone tier's levels (finest first) with their switch heights. */
+/**
+ * Stevie's files, loaded one level set at a time: today's single level 0, or the phone tier's levels (finest first) with
+ * their switch heights. A page loads only its own mode's set; the other loads when the panel or Compare levels asks.
+ */
 export interface StevieKit {
-  single: StevieAsset;
-  phone: { asset: StevieAsset; minScreenHeight: number }[];
+  single: StevieAsset | null;
+  phone: { asset: StevieAsset; minScreenHeight: number }[] | null;
+  /** Loads a mode's files once (later calls share the first load); resolves when they are ready. */
+  ensure(mode: LevelMode): Promise<void>;
+  /** A loaded asset of either set, for the body's height and walk speed (the levels share both). */
+  readonly any: StevieAsset;
 }
 
 export interface LevelledStevie extends LabStevie {
+  /** Switches to a mode whose files the kit has loaded (await kit.ensure(mode) first). */
   setMode(mode: LevelMode): void;
   /** Picks the level for this fraction of the viewport height (the finest whose minScreenHeight it reaches). */
   selectLevel(screenHeight: number): void;
@@ -400,40 +408,55 @@ export interface LevelledStevie extends LabStevie {
   prepare(all: boolean): void;
 }
 
+type Level = { stevie: LabStevie; minScreenHeight: number };
+
 /**
- * One raccoon made from every level file. Only the mode's drawn level is visible; each level keeps its own skeleton,
- * shells and fins, built when its mode is first used, so a switch while walking is a visibility change.
+ * One raccoon made from the kit's level files. Only the mode's drawn level is visible; each level keeps its own
+ * skeleton, shells and fins, built when its mode is first used, so a switch while walking is a visibility change.
  */
 export function createLevelled(kit: StevieKit, loop: WalkLoop, options: { clone?: boolean; phase?: number } = {}, mode: LevelMode = "single"): LevelledStevie {
-  const single = { stevie: createStevie(kit.single, loop, options), minScreenHeight: 0 };
-  const phone = kit.phone.map(({ asset, minScreenHeight }) => ({ stevie: createStevie(asset, loop, options), minScreenHeight }));
-  const all = [single, ...phone];
   const root = new THREE.Group();
   root.name = options.clone ? "raccoon" : "stevie";
-  for (const entry of all) root.add(entry.stevie.root);
-  const position = new THREE.Vector3();
+  const built: { single: Level[] | null; phone: Level[] | null } = { single: null, phone: null };
   let fur: Parameters<LabStevie["setFur"]> | null = null;
-  const levels = () => (mode === "phone" ? phone : [single]);
+  const build = (m: LevelMode): Level[] => {
+    const existing = built[m];
+    if (existing) return existing;
+    const assets = m === "phone" ? kit.phone : kit.single ? [{ asset: kit.single, minScreenHeight: 0 }] : null;
+    if (!assets) throw new Error(`Stevie's ${m} levels are not loaded`);
+    const levels = assets.map(({ asset, minScreenHeight }) => ({ stevie: createStevie(asset, loop, options), minScreenHeight }));
+    for (const entry of levels) {
+      entry.stevie.root.visible = false;
+      root.add(entry.stevie.root);
+      if (fur) entry.stevie.setFur(...fur);
+    }
+    built[m] = levels;
+    return levels;
+  };
+  const levels = () => build(mode);
+  const all = () => [...(built.single ?? []), ...(built.phone ?? [])];
+  const position = new THREE.Vector3();
   let active = levels()[0]!;
   let time = 0;
   const show = (everything: boolean) => {
     const shown = levels();
-    for (const entry of all) entry.stevie.root.visible = shown.includes(entry) && (everything || entry === active);
+    for (const entry of all()) entry.stevie.root.visible = shown.includes(entry) && (everything || entry === active);
   };
   show(false);
   return {
     root,
     position,
     get speedMps() {
-      return single.stevie.speedMps;
+      return active.stevie.speedMps;
     },
     get metrics() {
       return { ...active.stevie.metrics, mode, drawnFile: active.stevie.metrics.file };
     },
     setMode(next) {
       mode = next;
-      active = levels()[0]!;
-      if (fur) for (const entry of levels()) entry.stevie.setFur(...fur);
+      const shown = levels();
+      shown[0]!.stevie.update(time);
+      active = shown[0]!;
       show(false);
     },
     selectLevel(screenHeight) {
@@ -448,7 +471,7 @@ export function createLevelled(kit: StevieKit, loop: WalkLoop, options: { clone?
     prepare: show,
     setFur(...args) {
       fur = args;
-      for (const entry of levels()) entry.stevie.setFur(...args);
+      for (const entry of all()) entry.stevie.setFur(...args);
     },
     update(seconds) {
       time = seconds;
@@ -458,14 +481,18 @@ export function createLevelled(kit: StevieKit, loop: WalkLoop, options: { clone?
   };
 }
 
+/** Reports one file's download, with the level set it belongs to. */
+export type TrackLevelDownload = (key: string, mode: LevelMode) => ReturnType<TrackGroomDownload>;
+
 /**
- * Loads level 0 and the phone tier's levels as the manifest's chain lists them (phone: levels 1 and 2, each drawn
- * down to its minScreenHeight). `model` maps a file name to its URL; `trackModel` reports each file's download.
+ * Loads the manifest's chain, then only `mode`'s files: level 0 (stevie.glb and its maps), or the phone tier's levels
+ * as the chain lists them (phone: levels 1 and 2, each drawn down to its minScreenHeight, with the phone's 1024 px
+ * maps). `model` maps a file name to its URL; `trackModel` and `trackGroom` report each model and map download.
  */
-export async function loadStevieKit(model: (file: string) => string, trackModel: TrackGroomDownload, loader = new GLTFLoader(), trackGroom?: TrackGroomDownload): Promise<StevieKit> {
-  const load = (file: string, ...rest: [{ tier?: "phone"; level?: number }?]) => {
-    const download = trackModel(file);
-    return loadStevieAsset(model(file), download.onProgress, loader, trackGroom, ...rest).finally(download.finish);
+export async function loadStevieKit(model: (file: string) => string, trackModel: TrackLevelDownload, loader = new GLTFLoader(), trackGroom: TrackLevelDownload | undefined, mode: LevelMode): Promise<StevieKit> {
+  const load = (file: string, set: LevelMode, options?: { tier?: "phone"; level?: number }) => {
+    const download = trackModel(file, set);
+    return loadStevieAsset(model(file), download.onProgress, loader, trackGroom && ((key) => trackGroom(key, set)), options).finally(download.finish);
   };
   const sourceMedia = model("stevie.glb").includes("/source/");
   const manifest = await fetch(new URL(`assets/models/stevie/${sourceMedia ? "source-manifest" : "manifest"}.json`, new URL(sourceMedia ? "../" : "./", model("stevie.glb")))).then((r) => {
@@ -476,13 +503,32 @@ export async function loadStevieKit(model: (file: string) => string, trackModel:
   const names = chain.tiers.find((t: Any) => t.name === "phone").levels as number[];
   const heights = Object.fromEntries(chain.levels.map((l: Any) => [l.level, l.minScreenHeight]));
   const phoneLevels = Object.values(manifest.model.tiers.phone.levels) as Any[];
-  const [single, ...phone] = await Promise.all([
-    load("stevie.glb"),
-    ...names.map((level) => {
-      const entry = phoneLevels.find((l) => l.level === level);
-      const file = String(entry.path).split("/").at(-1)!;
-      return load(file, { tier: "phone", level }).then((asset) => ({ asset, minScreenHeight: heights[level] as number }));
-    }),
-  ]);
-  return { single: single as StevieAsset, phone: phone as StevieKit["phone"] };
+  const loading: Partial<Record<LevelMode, Promise<void>>> = {};
+  const kit: StevieKit = {
+    single: null,
+    phone: null,
+    ensure(set) {
+      loading[set] ??= set === "single"
+        ? load("stevie.glb", "single").then((asset) => {
+            kit.single = asset;
+          })
+        : Promise.all(names.map((level) => {
+            const entry = phoneLevels.find((l) => l.level === level);
+            const file = String(entry.path).split("/").at(-1)!;
+            return load(file, "phone", { tier: "phone", level }).then((asset) => ({ asset, minScreenHeight: heights[level] as number }));
+          })).then((phone) => {
+            kit.phone = phone;
+          });
+      // A failed load can be asked for again.
+      loading[set]!.catch(() => delete loading[set]);
+      return loading[set]!;
+    },
+    get any() {
+      const asset = kit.single ?? kit.phone?.[0]?.asset;
+      if (!asset) throw new Error("no Stevie level is loaded");
+      return asset;
+    },
+  };
+  await kit.ensure(mode);
+  return kit;
 }

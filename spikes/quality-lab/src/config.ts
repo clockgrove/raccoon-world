@@ -304,7 +304,10 @@ export const BUDGET_SLACK = 1.1;
 export const targetMs = (platform: Platform) => 1000 / TARGET_FPS[platform];
 export const budgetMs = (platform: Platform) => targetMs(platform) * BUDGET_SLACK;
 
-export type ViewName = "yard" | "close";
+/** The yard as framed, the close-up, and the yard zoomed out to FAR_ZOOM (Stevie below his phone level 1's 5% of the height). */
+export type ViewName = "yard" | "close" | "far";
+/** The zoomed-out yard's zoom, as a fraction of the yard's: the yard puts Stevie at about 7% of the height, this at about 4%. */
+export const FAR_ZOOM = 0.6;
 export type StateName = "dusk" | "night";
 
 export interface Measurement {
@@ -343,8 +346,10 @@ export interface DeviceInfo {
   screen: [number, number];
   /** Seconds each loading step took: the renderer, the models (download and decode), the first shader compile. */
   loadS: { graphics: number | null; models: number | null; shaders: number | null };
-  /** Bytes the models downloaded (compressed web media). */
+  /** Bytes the models downloaded to start the page (compressed web media): the props and the page's own level set. */
   modelMb: number | null;
+  /** Bytes each of Stevie's level sets downloaded (its model files and maps); null until the set is loaded. */
+  levelsMb: Record<LevelMode, number | null>;
 }
 
 /** The Stevie file the page draws now, for the report and the journey. */
@@ -390,8 +395,6 @@ export interface LabHandle {
   apply(config: LabConfig): Promise<void>;
   setView(view: ViewName): Promise<void>;
   setState(state: StateName): Promise<void>;
-  /** Scales the camera's zoom (1 is the view as framed; below 1 draws everything smaller). */
-  setZoom?(scale: number): Promise<void>;
   /** Lets the animation run for warmupMs, then records frame intervals (and GPU time) for holdMs. */
   measure(options?: { warmupMs?: number; holdMs?: number }): Promise<Measurement>;
   /** The current frame as a JPEG data URL, at most maxWidth pixels wide. */

@@ -305,8 +305,8 @@ async function checkGroom(page, backend, errors, out) {
   check(initial.metresPerUnit.every((m) => m > 0.2 && m < 0.6) && initial.metresPerUnit.every((m) => near(m, initial.metresPerUnit[0], 1e-3)), `${backend}: compressed media's bind scale not found: ${JSON.stringify(initial.metresPerUnit)}`);
   const download = await page.evaluate(async () => {
     const sizes = await fetch(new URL("media/manifest.json", document.baseURI)).then((r) => r.json());
-    // The desktop levels (stevie.lodN.glb) ship beside the page but it draws the phone tier's, not these.
-    const bytes = Object.entries(sizes).filter(([key]) => !key.startsWith("source/") && !/^stevie\.lod\d\.glb$/u.test(key) && /\.(glb|ktx2)$/u.test(key)).reduce((sum, [, size]) => sum + size, 0);
+    // The desktop page loads level 0 alone: the desktop levels (stevie.lodN.glb) and the phone set ship beside it, unloaded.
+    const bytes = Object.entries(sizes).filter(([key]) => !key.startsWith("source/") && !/^stevie\.lod\d\.glb$/u.test(key) && !/(^|\/)stevie\.phone\./u.test(key) && /\.(glb|ktx2)$/u.test(key)).reduce((sum, [, size]) => sum + size, 0);
     return { expected: Math.round(bytes / 1e5) / 10, actual: globalThis.lab.status().device.modelMb };
   });
   check(download.actual === download.expected, `${backend}: groom downloads missing from load report: ${JSON.stringify(download)}`);
@@ -411,14 +411,21 @@ async function phoneChain() {
   return { phone, mainTriangles: model.triangles };
 }
 
-/** The drawn level, once a frame has drawn it, from a view at a zoom scale. */
-const drawn = (page, view, zoom = 1) =>
-  page.evaluate(async ({ view, zoom }) => {
-    await globalThis.lab.setZoom(zoom);
+/** The drawn level, once a frame has drawn it, from a view ("far" is the zoomed-out yard). */
+const drawn = (page, view) =>
+  page.evaluate(async (view) => {
     await globalThis.lab.setView(view);
     globalThis.lab.frame();
     return globalThis.lab.status().stevie;
-  }, { view, zoom });
+  }, view);
+
+/** Bytes, in MB as the page rounds them, of the web media files whose keys match. */
+const mediaMb = (page, pattern) =>
+  page.evaluate(async (source) => {
+    const sizes = await fetch(new URL("media/manifest.json", document.baseURI)).then((r) => r.json());
+    const match = new RegExp(source, "u");
+    return Math.round(Object.entries(sizes).filter(([key]) => !key.startsWith("source/") && match.test(key)).reduce((sum, [, size]) => sum + size, 0) / 1e5) / 10;
+  }, pattern.source);
 
 async function checkLevels(browser, siteUrl, backend, chain) {
   const [near, far] = chain.phone;
@@ -427,10 +434,17 @@ async function checkLevels(browser, siteUrl, backend, chain) {
   const { page, errors } = phone;
   check(phone.status.platform === "phone" && phone.status.software, `${backend}: expected a software phone page`);
   const web = JSON.parse(await readFile(path.join(repo, "references/web-media/web-media.json"), "utf8")).files;
-  // Stevie is a third of the frame in the close-up and about 6% in the yard, both above the finest level's 5%; zoomed
-  // out to 60% he is below it, so that framing draws the coarsest level.
+  // Only the phone set loaded: neither stevie.glb nor its 2048 px maps were downloaded, and the load report is the
+  // props and the phone files alone.
+  const phoneSet = /^stevie\.phone\.|^assets\/models\/stevie\/stevie\.phone\./;
+  const phoneLoad = await page.evaluate(() => globalThis.lab.status().device);
+  const propsMb = await mediaMb(page, /^props\/.*\.glb$/);
+  const phoneMb = await mediaMb(page, phoneSet);
+  check(phoneLoad.levelsMb.single === null && phoneLoad.levelsMb.phone === phoneMb && Math.abs(phoneLoad.modelMb - (propsMb + phoneMb)) <= 0.2, `${backend}: the phone page did not load only the phone set: ${JSON.stringify({ device: phoneLoad, propsMb, phoneMb })}`);
+  // Stevie is a third of the frame in the close-up and about 7% in the yard, both above the finest level's 5%; the
+  // zoomed-out yard (the "far" view, in the panel as Zoomed out) puts him below it, so it draws the coarsest level.
   const close = await drawn(page, "close");
-  const yard = await drawn(page, "yard", 0.6);
+  const yard = await drawn(page, "far");
   const framed = await drawn(page, "yard");
   const expected = (h) => chain.phone.find((l) => h >= l.minScreenHeight) ?? far;
   check(framed.file === expected(framed.screenHeight).file, `${backend}: the yard as framed (height ${framed.screenHeight}) draws ${framed.file}, not ${expected(framed.screenHeight).file}`);
@@ -441,8 +455,8 @@ async function checkLevels(browser, siteUrl, backend, chain) {
   check([19747, 5979].includes(close.triangles) && [19747, 5979].includes(yard.triangles) && close.triangles !== yard.triangles, `${backend}: the levels' triangle counts are not 19747 and 5979`);
   check(close.screenHeight >= near.minScreenHeight && yard.screenHeight < near.minScreenHeight, `${backend}: Stevie's screen heights ${close.screenHeight} (close-up) and ${yard.screenHeight} (zoomed out) do not straddle ${near.minScreenHeight}`);
   // The loaded bytes are the web media built from the manifest's file, not the 59,847-triangle model.
-  for (const [view, zoom, level] of [["close", 1, near], ["yard", 0.6, far]]) {
-    await drawn(page, view, zoom);
+  for (const [view, level] of [["close", near], ["far", far]]) {
+    await drawn(page, view);
     const entry = web[level.file];
     check(entry?.sourceSha256 === level.sha256 && (await loadedSha256(page)) === entry.sha256, `${backend}: the loaded ${view} file is not the web media of ${level.file}`);
   }
@@ -458,29 +472,48 @@ async function checkLevels(browser, siteUrl, backend, chain) {
   await page.waitForFunction(() => globalThis.lab.status().config.levels === "single" && !document.querySelector(".ql.busy"));
   const single = await drawn(page, "close");
   check(single.mode === "single" && single.file === "stevie.glb" && single.triangles === chain.mainTriangles, `${backend}: the panel's level 0 control draws ${JSON.stringify(single)}`);
+  const singleMb = await mediaMb(page, /^stevie\.glb$|^assets\/models\/stevie\/stevie\.(?!phone\.)[^/]*\.ktx2$/);
+  const both = await page.evaluate(() => globalThis.lab.status().device);
+  check(both.levelsMb.single === singleMb && both.levelsMb.phone === phoneMb && both.modelMb === phoneLoad.modelMb, `${backend}: level 0 loaded on demand is not reported on its own: ${JSON.stringify({ device: both, singleMb, phoneMb })}`);
+  // The panel's Zoomed out view draws the coarsest phone level.
+  await levelsGroup.getByRole("button", { name: "Phone levels", exact: true }).click();
+  await page.getByRole("button", { name: /^Apply \d+ changes?$/ }).click();
+  await page.waitForFunction(() => globalThis.lab.status().config.levels === "phone" && !document.querySelector(".ql.busy"));
+  await page.getByRole("group", { name: "Camera view", exact: true }).getByRole("button", { name: "Zoomed out", exact: true }).click();
+  await page.waitForFunction(() => globalThis.lab.status().view === "far");
+  check((await drawn(page, "far")).file === far.file, `${backend}: the panel's Zoomed out view does not draw ${far.file}`);
+  await levelsGroup.getByRole("button", { name: "Level 0 only", exact: true }).click();
+  await page.getByRole("button", { name: /^Apply \d+ changes?$/ }).click();
+  await page.waitForFunction(() => globalThis.lab.status().config.levels === "single" && !document.querySelector(".ql.busy"));
   await levelsGroup.getByRole("button", { name: "Phone levels", exact: true }).click();
   await page.getByRole("button", { name: /^Apply \d+ changes?$/ }).click();
   await page.waitForFunction(() => globalThis.lab.status().config.levels === "phone" && !document.querySelector(".ql.busy"));
   check((await drawn(page, "close")).file === near.file, `${backend}: the panel did not return to the phone levels`);
-  // Compare levels: each preset once on level 0 and once on the phone levels, no times on a software GPU.
+  // Compare levels: each preset once on level 0 and once on the phone levels, as framed and zoomed out, no times on a software GPU.
+  await drawn(page, "close");
   const reportCount = await page.evaluate(() => globalThis.labRunner.reports().length);
   const comparison = await page.evaluate(() => globalThis.labRunner.compareLevels({ presets: ["medium", "low"], warmupMs: 50, holdMs: 150 }));
-  check(comparison.kind === "levels" && comparison.software === true && comparison.view === "close" && comparison.steps.length === 4, `${backend}: Compare levels did not run its four steps: ${JSON.stringify(comparison).slice(0, 300)}`);
+  check(comparison.kind === "levels" && comparison.software === true && comparison.view === "close" && JSON.stringify(comparison.views) === JSON.stringify(["close", "far"]) && comparison.steps.length === 8, `${backend}: Compare levels did not run its eight steps: ${JSON.stringify(comparison).slice(0, 300)}`);
+  check(comparison.downloadMb.single === singleMb && comparison.downloadMb.phone === phoneMb, `${backend}: Compare levels does not report each set's download: ${JSON.stringify(comparison.downloadMb)}`);
   check(comparison.steps.every((s) => !s.error && s.measurement === null && s.screenshot.startsWith("data:image/")), `${backend}: Compare levels errors, times or no screenshot on a software GPU: ${JSON.stringify(comparison.steps.map(({ id, error, measurement }) => ({ id, error, measurement })))}`);
-  check(comparison.costs.length === 2 && comparison.costs.every((c) => Object.entries(c).every(([key, value]) => key === "preset" || value === null)), `${backend}: Compare levels fabricated costs: ${JSON.stringify(comparison.costs)}`);
-  const [level0, levelled] = comparison.steps;
-  check(level0.config.levels === "single" && levelled.config.levels === "phone" && JSON.stringify({ ...level0.config, levels: "phone" }) === JSON.stringify(levelled.config), `${backend}: the comparison pair differs in more than the levels`);
-  check(level0.stevie.file === "stevie.glb" && level0.stevie.triangles === chain.mainTriangles && levelled.stevie.file === near.file && levelled.stevie.triangles === near.triangles, `${backend}: the pair did not draw level 0 and the phone close-up level: ${JSON.stringify([level0.stevie, levelled.stevie])}`);
+  check(comparison.costs.length === 4 && comparison.costs.every((c) => Object.entries(c).every(([key, value]) => ["preset", "view", "level"].includes(key) || value === null)), `${backend}: Compare levels fabricated costs: ${JSON.stringify(comparison.costs)}`);
+  check(JSON.stringify(comparison.costs.map((c) => [c.view, c.level])) === JSON.stringify([["close", near.level], ["close", near.level], ["far", far.level], ["far", far.level]]), `${backend}: Compare levels did not measure both phone levels: ${JSON.stringify(comparison.costs)}`);
+  for (const [index, level] of [[0, near], [4, far]]) {
+    const [level0, levelled] = comparison.steps.slice(index, index + 2);
+    check(level0.config.levels === "single" && levelled.config.levels === "phone" && JSON.stringify({ ...level0.config, levels: "phone" }) === JSON.stringify(levelled.config), `${backend}: the comparison pair differs in more than the levels`);
+    check(level0.stevie.file === "stevie.glb" && level0.stevie.triangles === chain.mainTriangles && levelled.stevie.file === level.file && levelled.stevie.triangles === level.triangles, `${backend}: the pair did not draw level 0 and ${level.file}: ${JSON.stringify([level0.stevie, levelled.stevie])}`);
+  }
   check((await page.evaluate(() => globalThis.lab.status().config.levels)) === "phone", `${backend}: Compare levels did not restore the page's levels`);
   const copied = JSON.parse(await page.evaluate(() => globalThis.labRunner.copied()));
   const added = copied.reports.at(-1);
-  check(copied.reports.length === reportCount + 1 && added.kind === "levels" && added.costs.length === 2 && added.costs.every((c) => c.gpuMsP50 === null && c.frameMsP95 === null), `${backend}: Compare levels missing from Copy results or carries times`);
+  check(copied.reports.length === reportCount + 1 && added.kind === "levels" && added.costs.length === 4 && added.costs.every((c) => c.gpuMsP50 === null && c.frameMsP95 === null), `${backend}: Compare levels missing from Copy results or carries times`);
   const timeColumns = ["frameMsP50", "frameMsP95", "frameMsP99", "gpuMsP50", "gpuMsP95", "cpuMsP50", "cpuMsP95"].map((c) => copied.columns.indexOf(c));
   check(added.steps.every((row) => timeColumns.every((i) => row[i] == null)), `${backend}: Copy results carries software frame times for Compare levels`);
   const downloaded = await page.evaluate(() => JSON.stringify(globalThis.labRunner.reports().at(-1).steps.map(({ screenshot, ...rest }) => rest)));
   check(!/"(frameMs\w*|gpuMs\w*|cpuMs\w*)":\s*[-0-9{]/u.test(downloaded), `${backend}: the downloaded Compare levels JSON carries software frame times`);
   check(errors.length === 0, `${backend}: page errors on the phone page: ${errors.join("; ")}`);
-  console.log(`lab levels (${backend}): panel control, Compare levels (${comparison.steps.length} steps) and exported results pass; software timings suppressed`);
+  console.log(`lab levels (${backend}): the phone page downloaded ${phoneLoad.modelMb} MB (props ${propsMb} MB, phone levels ${phoneMb} MB); level 0, loaded only when asked, is ${singleMb} MB`);
+  console.log(`lab levels (${backend}): panel control, Compare levels (${comparison.steps.length} steps: level 0 against ${near.file} as framed and ${far.file} zoomed out) and exported results pass; software timings suppressed`);
   await phone.context.close();
   // ---- A desktop: today's single level 0 ----
   const desktop = await open(browser, siteUrl, { backend, width: 640, height: 360, extra: { t: "1", preset: "medium", idle: "1" } });

@@ -5,6 +5,8 @@
 import { KNOBS, KNOB_LABELS, LEVELS, PRESETS, PRESET_ORDER } from "./config.ts";
 import type { Coat, FurMode, Knob, LevelMode, LabConfig, LabHandle, PresetName, StateName, ViewName } from "./config.ts";
 import { compactJson, compareFur, compareLevels, findCastBudget, findCeiling, findTriangleBudget, runSoak, runSweep, slimJson } from "./runner.ts";
+
+const VIEW_TEXT: Record<ViewName, string> = { yard: "Yard", close: "Close-up", far: "Zoomed out" };
 import type { AnyReport, CastOptions, CeilingOptions, CeilingReport, FurComparisonOptions, LevelsComparisonOptions, RunOptions, SoakOptions, StepResult, SweepReport, TriangleOptions } from "./runner.ts";
 
 const CSS = `
@@ -303,7 +305,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   // The view and time apply at once; during a rebuild they wait for it to finish.
   const wantedView = () => sceneWanted?.view ?? lab.status().view;
   const wantedState = () => sceneWanted?.state ?? lab.status().state;
-  const view = segmented<ViewName>("Camera view", [["yard", "Yard"], ["close", "Close-up"]], wantedView, (v) =>
+  const view = segmented<ViewName>("Camera view", [["yard", "Yard"], ["close", "Close-up"], ["far", "Zoomed out"]], wantedView, (v) =>
     applyingSince ? void (sceneWanted = { view: v, state: wantedState() }) : lab.setView(v),
   );
   const state = segmented<StateName>("Time of day", [["dusk", "Dusk"], ["night", "Night"]], wantedState, (v) =>
@@ -515,7 +517,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
         continue;
       }
       if (rep.kind === "levels") {
-        results.append(el("h3", { textContent: `Levels comparison · ${rep.coat} · ${rep.view}: ${rep.backend}, ${rep.adapter}` }));
+        results.append(el("h3", { textContent: `Levels comparison · ${rep.coat} · ${rep.views.map((v) => VIEW_TEXT[v]).join(" and ")}: ${rep.backend}, ${rep.adapter}` }));
         if (rep.software) results.append(el("p", { class: "sw", textContent: "software, not performance" }));
         const table = el("table");
         const body = el("tbody");
@@ -523,7 +525,8 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
         for (const step of rep.steps) body.append(row(step.error ? [step.label, step.error] : [step.label, step.stevie ? `${step.stevie.file} (${count(step.stevie.triangles)} tris)` : "n/a",
           ms(step.measurement?.frameMsP50), ms(step.measurement?.frameMsP95), ms(step.measurement?.gpuMsP50), ms(step.measurement?.gpuMsP95), thumb(step)]));
         results.append(table);
-        for (const cost of rep.costs) results.append(el("p", { textContent: `${capital(cost.preset)} phone levels − level 0: ${ms(cost.frameMsP50)} ms frame p50, ${ms(cost.frameMsP95)} ms frame p95, ${ms(cost.gpuMsP50)} ms GPU p50, ${ms(cost.gpuMsP95)} ms GPU p95.` }));
+        results.append(el("p", { textContent: `Download: level 0 ${rep.downloadMb.single ?? "n/a"} MB, phone levels ${rep.downloadMb.phone ?? "n/a"} MB.` }));
+        for (const cost of rep.costs) results.append(el("p", { textContent: `${capital(cost.preset)} · ${VIEW_TEXT[cost.view]} · phone level ${cost.level ?? "n/a"} − level 0: ${ms(cost.frameMsP50)} ms frame p50, ${ms(cost.frameMsP95)} ms frame p95, ${ms(cost.gpuMsP50)} ms GPU p50, ${ms(cost.gpuMsP95)} ms GPU p95.` }));
         continue;
       }
       if (rep.kind === "triangles") {
@@ -586,7 +589,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     if (applyingSince) headSub.textContent = `Applying ${applyingName} · ${waited}`;
     else {
       const name = presetOf(s.config);
-      headSub.textContent = `${name ? capital(name) : "Custom"} · ${s.view === "yard" ? "Yard" : "Close-up"} · ${capital(s.state)}${changed ? ` · ${changed} pending` : ""}`;
+      headSub.textContent = `${name ? capital(name) : "Custom"} · ${VIEW_TEXT[s.view]} · ${capital(s.state)}${changed ? ` · ${changed} pending` : ""}`;
     }
     chip.hidden = !applyingSince;
     chip.textContent = applyingSince ? `Applying ${applyingName} · ${waited}` : "";
