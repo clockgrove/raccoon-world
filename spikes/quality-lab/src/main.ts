@@ -10,7 +10,7 @@ import { anchor, placeCamera, STATES, VIEWS } from "../../ceiling-3d/src/look.ts
 import { ground, puddleSky, rippleStrength, wetness } from "../../ceiling-3d/src/materials.ts";
 import { loadProps } from "../../ceiling-3d/src/props.ts";
 import { buildSet, lampStrength, rain } from "../../ceiling-3d/src/set.ts";
-import { FAR_ZOOM, type LabConfig, type LabHandle, type LevelMode, type LabStatus, type Measurement, type Platform, PRESETS, type PresetName, type StateName, type ViewName } from "./config.ts";
+import { FAR_ZOOM, isMotion, type LabConfig, type LabHandle, type LevelMode, type Motion, type LabStatus, type Measurement, type Platform, PRESETS, type PresetName, type StateName, type ViewName } from "./config.ts";
 import { buildPipeline, grade, type Pipeline } from "./pipeline.ts";
 import { GeometryDetail, sceneTriangles } from "./detail.ts";
 import { webMediaLoader } from "./loader.ts";
@@ -36,6 +36,8 @@ function detectPlatform(): Platform {
   return /Mobi|Android|iPhone|iPad|iPod/u.test(navigator.userAgent) ? "phone" : "desktop";
 }
 const platform = detectPlatform();
+/** `?motion=idle|walk|sniff|eat|play|shelter` starts Stevie and the cast on that clip; an unknown name is walk. */
+const defaultMotion: Motion = isMotion(query.get("motion")) ? (query.get("motion") as Motion) : "walk";
 /** The phone platform draws Stevie's phone levels; `?levels=phone|single` overrides, to compare either on any device. */
 const defaultLevels: LevelMode = query.get("levels") === "phone" || query.get("levels") === "single" ? (query.get("levels") as LevelMode) : platform === "phone" ? "phone" : "single";
 
@@ -180,7 +182,7 @@ function setCast(count: number) {
   while (castExtras.length < count - 1) {
     const i = castExtras.length;
     const radius = 0.35 + 0.25 * (i % 6);
-    const raccoon = createLevelled(kit, { centre: LOOP.centre, radius }, { clone: true, phase: (i * 7.3) % 60 }, config.levels ?? defaultLevels);
+    const raccoon = createLevelled(kit, { centre: LOOP.centre, radius }, { clone: true, phase: (i * 7.3) % 60, motion: config.motion ?? defaultMotion }, config.levels ?? defaultLevels);
     scene.add(raccoon.root);
     castExtras.push(raccoon);
   }
@@ -320,12 +322,20 @@ function render() {
 
 const nextFrame = () => new Promise<number>((resolve) => requestAnimationFrame(resolve));
 
+/** Stevie and every clone play `motion`; a shown or hidden clone alike, so the cast agrees whenever it grows. */
+function playMotion(motion: Motion) {
+  config.motion = motion;
+  for (const raccoon of [...(stevie ? [stevie] : []), ...castExtras]) raccoon.setMotion(motion);
+}
+
 /** Applies every switch of the config to the scene, rebuilds the post graph and compiles it. */
 async function applyConfig(next: LabConfig) {
   busy = true;
   try {
+    const motionBefore = config.motion;
     config = { coat: "summer", furMode: "groomed", ...next };
     config.levels ??= defaultLevels;
+    config.motion ??= motionBefore ?? defaultMotion;
     // Resizing the canvas clears it; only a pixel-ratio change needs it, so the last frame stays up during a rebuild.
     if (renderer.getPixelRatio() !== config.dpr) {
       renderer.setPixelRatio(config.dpr);
@@ -335,6 +345,7 @@ async function applyConfig(next: LabConfig) {
     await kit?.ensure(config.levels);
     setCast(config.cast);
     for (const raccoon of [...(stevie ? [stevie] : []), ...castExtras]) raccoon.setMode(config.levels);
+    playMotion(config.motion);
     stevie?.setFur(config.furShells, config.furFins, config.coat ?? "summer", config.furMode ?? "groomed");
     for (const raccoon of shownCast()) raccoon.setFur(config.furShells, config.furFins, config.coat ?? "summer", config.furMode ?? "groomed");
     detail?.set(config.detail);
@@ -460,7 +471,7 @@ async function adapterString(): Promise<string> {
 function drawnLevel(): LabStatus["stevie"] {
   const m = stevie?.metrics;
   if (!m) return null;
-  return { mode: m.mode as LevelMode, level: m.level as number, file: m.drawnFile as string, triangles: m.triangles as number, textureMaxPx: m.textureMaxPx as number, screenHeight: screenHeight === null ? null : Math.round(screenHeight * 1000) / 1000 };
+  return { mode: m.mode as LevelMode, level: m.level as number, file: m.drawnFile as string, triangles: m.triangles as number, textureMaxPx: m.textureMaxPx as number, motion: m.motion as Motion, clip: m.clip as string, clipSeconds: m.clipSeconds as number, position: [Math.round(stevie!.position.x * 1000) / 1000, Math.round(stevie!.position.y * 1000) / 1000], screenHeight: screenHeight === null ? null : Math.round(screenHeight * 1000) / 1000 };
 }
 
 const lab: LabHandle & Record<string, unknown> = {
@@ -494,6 +505,12 @@ const lab: LabHandle & Record<string, unknown> = {
     };
   },
   apply: applyConfig,
+  setMotion: async (next: Motion) => {
+    if (!isMotion(next)) throw new Error(`unknown motion "${String(next)}"`);
+    playMotion(next);
+    render();
+    await nextFrame();
+  },
   async setView(next) {
     view = next;
     render();
@@ -760,7 +777,7 @@ async function init() {
   modelMb = Math.round(total / 1e5) / 10;
   finishStep("models", `${MB(total)} MB in ${elapsed(stepStarted)}`);
   kit = loaded;
-  stevie = createLevelled(kit, LOOP, {}, defaultLevels);
+  stevie = createLevelled(kit, LOOP, { motion: defaultMotion }, defaultLevels);
   scene.add(stevie.root);
   // The triangle stress tier covers the set and its props; the rain and splashes stay as they are.
   detail = new GeometryDetail([set.root], [shower.mesh, splashes]);
