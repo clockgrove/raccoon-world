@@ -4,7 +4,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 import { attribute, color, float, fract, mix, mx_noise_float, smoothstep, texture, uv, vec2 } from "three/tsl";
 import { furShell } from "../../ceiling-3d/src/materials.ts";
-import type { FurShells, LevelMode } from "./config.ts";
+import type { FurShells, LevelMode, Motion } from "./config.ts";
 import { groomMaterial, loadGroom, type Coat, type FurMode, type GroomAsset, type TrackGroomDownload } from "./groom.ts";
 
 // biome-ignore lint/suspicious/noExplicitAny: three objects and node graphs crossing the loader boundary.
@@ -15,11 +15,53 @@ export interface WalkLoop {
   radius: number;
 }
 
+/**
+ * Which clip a raccoon plays and where that leaves him on the loop. Only walk advances along it: the seconds spent in
+ * any other motion are taken out of the walk's clock, so he stands where he stopped and walks on from there. Times are
+ * the raccoon's own (page seconds plus its phase). One timeline is shared by every level of a raccoon.
+ */
+class MotionTimeline {
+  motion: Motion;
+  /** When the current motion began, and when the last stop began (the walk's clock is frozen at it). */
+  private began: number;
+  private stopped: number;
+  private paused = 0;
+
+  constructor(motion: Motion, at: number) {
+    this.motion = motion;
+    this.began = this.stopped = at;
+  }
+
+  /** Switches motion at time `at`; asking for the motion already playing changes nothing. */
+  set(motion: Motion, at: number) {
+    if (motion === this.motion) return;
+    if (motion === "walk") this.paused += at - this.stopped;
+    else if (this.motion === "walk") this.stopped = at;
+    this.motion = motion;
+    this.began = at;
+  }
+
+  /** Seconds the raccoon has walked at time `t`: where he is along the loop. */
+  walked(t: number) {
+    return (this.motion === "walk" ? t : this.stopped) - this.paused;
+  }
+
+  /** Seconds into the clip: the walk keeps the page's clock, the others start from when they were chosen. */
+  clipTime(t: number, duration: number) {
+    const local = this.motion === "walk" ? t : t - this.began;
+    return ((local % duration) + duration) % duration;
+  }
+}
+
 export interface LabStevie {
   readonly root: THREE.Object3D;
   readonly speedMps: number;
   readonly metrics: Record<string, unknown>;
   readonly position: THREE.Vector3;
+  /** The motion playing. */
+  readonly motion: Motion;
+  /** Plays the named motion's clip; walk moves along the loop and every other motion stays in place. Throws for a name the file has no clip for. It takes effect at page time `seconds` (default: the last update). */
+  setMotion(motion: Motion, seconds?: number): void;
   setFur(shells: FurShells, fins: boolean, coat?: Coat, furMode?: FurMode): void;
   update(seconds: number): void;
 }
@@ -125,7 +167,9 @@ function finMaterial(map: THREE.Texture | null) {
 export interface StevieAsset {
   gltf: Any;
   groom: GroomAsset;
+  /** The walk clip, and every clip of the file by name. */
   clip: THREE.AnimationClip;
+  clips: Map<string, THREE.AnimationClip>;
   speedMps: number;
   loadMs: number;
   /** Shared across raccoons: the fur shell materials by "count-layer", the fins' geometry and material. */
@@ -203,22 +247,30 @@ export async function loadStevieAsset(url: string, onProgress?: (event: Progress
       material.needsUpdate = true;
     }
   });
-  const clip: THREE.AnimationClip = gltf.animations.find((c: THREE.AnimationClip) => c.name === "walk") ?? gltf.animations[0];
+  const clips = new Map<string, THREE.AnimationClip>((gltf.animations as THREE.AnimationClip[]).map((c) => [c.name, c]));
+  const clip = clips.get("walk");
   if (!clip) throw new Error("Stevie's glTF holds no walk clip");
   const bind = bindScale(gltf.scene, groom.manifest.model.eyes.material);
   const textureMaxPx = Math.max(pixels(groom.baseColor), pixels(groom.eyes), pixels(groom.winterTint), ...Object.values(groom.coats).flatMap((c) => [pixels(c.length), pixels(c.direction), pixels(c.density)]));
-  return { gltf, groom, clip, speedMps: groom.manifest.model.clips.find((c: Any) => c.name === "walk")?.speedMps ?? recordedSpeed(gltf), loadMs: Math.round(performance.now() - started), shellMaterials: new Map(), fins: new Map(), url, bind, file: new URL(url, document.baseURI).pathname.split("/media/").at(-1)!.replace(/^source\//u, ""), level: options.level ?? 0, tier: options.tier ?? "desktop", textureMaxPx };
+  return { gltf, groom, clip, clips, speedMps: groom.manifest.model.clips.find((c: Any) => c.name === "walk")?.speedMps ?? recordedSpeed(gltf), loadMs: Math.round(performance.now() - started), shellMaterials: new Map(), fins: new Map(), url, bind, file: new URL(url, document.baseURI).pathname.split("/media/").at(-1)!.replace(/^source\//u, ""), level: options.level ?? 0, tier: options.tier ?? "desktop", textureMaxPx };
 }
 
 /**
  * One raccoon walking a loop: Stevie himself (the file's own scene), or a clone of his rig with its own skeleton and
  * animation, `phase` seconds along the loop. Clones share the geometry and materials.
  */
-export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clone?: boolean; phase?: number } = {}): LabStevie {
+export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clone?: boolean; phase?: number; motion?: Motion; timeline?: MotionTimeline } = {}): LabStevie {
   // Keep the loaded scene pristine: later cast clones must not inherit Stevie's already-attached shells.
   const scene: THREE.Object3D = SkeletonUtils.clone(asset.gltf.scene);
   const phase = options.phase ?? 0;
-  const { clip, speedMps } = asset;
+  const { speedMps } = asset;
+  const timeline = options.timeline ?? new MotionTimeline(options.motion ?? "walk", phase);
+  const clipFor = (name: string) => {
+    const found = asset.clips.get(name);
+    if (!found) throw new Error(`Stevie's ${asset.file} has no "${name}" clip (it has ${[...asset.clips.keys()].join(", ")})`);
+    return found;
+  };
+  let clip = clipFor(timeline.motion);
   let body: THREE.SkinnedMesh | undefined;
   scene.traverse((node: Any) => {
     if (node.isSkinnedMesh) {
@@ -327,6 +379,7 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
     bindSizeM: asset.bind.sizeM.toArray(),
     triangles,
     joints: skinned.skeleton.bones.length,
+    motion: timeline.motion,
     clip: clip.name,
     clipSeconds: clip.duration,
     speedMps,
@@ -335,6 +388,8 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
     loadMs: asset.loadMs,
   };
 
+  // The raccoon's own time at the last update: a motion chosen between frames begins there.
+  let lastT = phase;
   let shown: FurShells | -1 = -1;
   let finsOn: boolean | undefined;
   let shownCoat: Coat | undefined;
@@ -344,6 +399,21 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
     speedMps,
     metrics,
     position,
+    get motion() {
+      return timeline.motion;
+    },
+    setMotion(name, seconds) {
+      const next = clipFor(name);
+      if (next !== clip) {
+        mixer.stopAllAction();
+        mixer.clipAction(next).play();
+        clip = next;
+      }
+      timeline.set(name, seconds === undefined ? lastT : seconds + phase);
+      metrics.motion = name;
+      metrics.clip = clip.name;
+      metrics.clipSeconds = clip.duration;
+    },
     setFur(shells, on, coat = "summer", furMode = "groomed") {
       const coatChanged = coat !== shownCoat || furMode !== shownMode;
       if (shells !== shown || coatChanged) {
@@ -375,8 +445,9 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
     },
     update(seconds) {
       const t = seconds + phase;
-      mixer.setTime(t % clip.duration);
-      const angle = (speedMps * t) / loop.radius;
+      lastT = t;
+      mixer.setTime(timeline.clipTime(t, clip.duration));
+      const angle = (speedMps * timeline.walked(t)) / loop.radius;
       position.set(loop.centre.x + loop.radius * Math.cos(angle), loop.centre.y + loop.radius * Math.sin(angle), 0);
       root.position.copy(position);
       root.rotation.z = angle + Math.PI;
@@ -414,9 +485,10 @@ type Level = { stevie: LabStevie; minScreenHeight: number };
  * One raccoon made from the kit's level files. Only the mode's drawn level is visible; each level keeps its own
  * skeleton, shells and fins, built when its mode is first used, so a switch while walking is a visibility change.
  */
-export function createLevelled(kit: StevieKit, loop: WalkLoop, options: { clone?: boolean; phase?: number } = {}, mode: LevelMode = "single"): LevelledStevie {
+export function createLevelled(kit: StevieKit, loop: WalkLoop, options: { clone?: boolean; phase?: number; motion?: Motion } = {}, mode: LevelMode = "single"): LevelledStevie {
   const root = new THREE.Group();
   root.name = options.clone ? "raccoon" : "stevie";
+  const timeline = new MotionTimeline(options.motion ?? "walk", options.phase ?? 0);
   const built: { single: Level[] | null; phone: Level[] | null } = { single: null, phone: null };
   let fur: Parameters<LabStevie["setFur"]> | null = null;
   const build = (m: LevelMode): Level[] => {
@@ -424,7 +496,7 @@ export function createLevelled(kit: StevieKit, loop: WalkLoop, options: { clone?
     if (existing) return existing;
     const assets = m === "phone" ? kit.phone : kit.single ? [{ asset: kit.single, minScreenHeight: 0 }] : null;
     if (!assets) throw new Error(`Stevie's ${m} levels are not loaded`);
-    const levels = assets.map(({ asset, minScreenHeight }) => ({ stevie: createStevie(asset, loop, options), minScreenHeight }));
+    const levels = assets.map(({ asset, minScreenHeight }) => ({ stevie: createStevie(asset, loop, { ...options, timeline }), minScreenHeight }));
     for (const entry of levels) {
       entry.stevie.root.visible = false;
       root.add(entry.stevie.root);
@@ -451,6 +523,13 @@ export function createLevelled(kit: StevieKit, loop: WalkLoop, options: { clone?
     },
     get metrics() {
       return { ...active.stevie.metrics, mode, drawnFile: active.stevie.metrics.file };
+    },
+    get motion() {
+      return timeline.motion;
+    },
+    setMotion(next) {
+      // Every level takes the clip; they share the timeline, so the first call moves it and the rest find it moved.
+      for (const entry of all()) entry.stevie.setMotion(next, time);
     },
     setMode(next) {
       mode = next;
