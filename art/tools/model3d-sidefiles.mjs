@@ -130,7 +130,7 @@ function accessorMax(glb, index) {
   return max;
 }
 
-/** The numbers the manifest records, read the way the pinned Assetforge reads them. */
+/** The numbers the manifest records, read the way the pinned Assetgrove reads them. */
 export function measureGlb(bytes) {
   const glb = parseGlb(bytes);
   const { json } = glb;

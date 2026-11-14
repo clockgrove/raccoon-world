@@ -86,7 +86,7 @@ fal's prices are its listed per-call prices, because fal's billing API and web p
 **What the sandbox could not do.**
 
 - It has no browser, so the report's stills and frame times come from the maintainer step on Clockgrove issue 77. That step also makes the **likeness check at the reduced count**: the shipped 10K models on the report page against the turnaround, which the bullets above did not yet do. The shipped Meshy files now carry recomputed smooth normals, so their shading is part of that check. The previews above came from a scratch CPU rasteriser, with skinning computed by three.js. CI renders under SwiftShader, so its numbers are correctness evidence only (`performance: false`). The report names the host of every number.
-- The 2D arm is still a plain crop, because Assetforge's CLI is not in the sandbox.
+- The 2D arm is still a plain crop, because Assetgrove's CLI is not in the sandbox.
 
 ## Ship form and validation
 
@@ -211,5 +211,5 @@ Any Stevie art kept after the pick lives in this repository, not in Clockgrove (
 ## Consequences
 
 - Production rendering doesn't change. Character art stays on the current placeholder path until the owner picks.
-- If the pick is 3D or 3D rendered to sprites, the material model (Clockgrove issue 66) extends to meshes, and Assetforge's 3D work (PRD §5.8) moves earlier.
-- If the pick is 2D, the sheet needs the missing directions, and the derived maps should come from Assetforge's transformation core (§5.11) rather than the spike's alpha dome.
+- If the pick is 3D or 3D rendered to sprites, the material model (Clockgrove issue 66) extends to meshes, and Assetgrove's 3D work (PRD §5.8) moves earlier.
+- If the pick is 2D, the sheet needs the missing directions, and the derived maps should come from Assetgrove's transformation core (§5.11) rather than the spike's alpha dome.

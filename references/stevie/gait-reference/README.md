@@ -1,6 +1,6 @@
 # Raccoon gait reference
 
-Frames from Kirk's own porch footage of raccoon kits, 2026-11-10. This is the motion reference for Raccoon World's raccoon walk (clockgrove/assetforge's shared rig and generated gait). Only cropped frames are kept here, never the clip; the footage is shot through a screen door, so it is soft.
+Frames from Kirk's own porch footage of raccoon kits, 2026-11-10. This is the motion reference for Raccoon World's raccoon walk (clockgrove/assetgrove's shared rig and generated gait). Only cropped frames are kept here, never the clip; the footage is shot through a screen door, so it is soft.
 
 - `side-crossing.png`: a kit crossing in side view, t = 0.00–0.20 s at about 25 fps.
 - `walk-away.png`: a kit walking away, t = 6.20–7.95 s at about 9 fps.

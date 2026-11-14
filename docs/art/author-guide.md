@@ -1,25 +1,25 @@
-# Making Raccoon World's art with Assetforge
+# Making Raccoon World's art with Assetgrove
 
 This guide takes one of Stevie's animation families from the committed inputs to a strip in the live yard. Agents generate and stage; only a person confirms a grouping, picks, approves an asset or approves a golden.
 
 Everything runs from this repository against two pinned checkouts:
 
 - Clockgrove at `CLOCKGROVE_COMMIT`: `bash scripts/clockgrove.sh fetch` (into `.clockgrove/`);
-- Assetforge at `ASSETFORGE_COMMIT`: `bash scripts/assetforge.sh fetch` (into `.assetforge-src/`). `bash scripts/assetforge.sh run <command> ...` runs its CLI.
+- Assetgrove at `ASSETGROVE_COMMIT`: `bash scripts/assetgrove.sh fetch` (into `.assetgrove-src/`). `bash scripts/assetgrove.sh run <command> ...` runs its CLI.
 
-Neither comes from npm. Each pin lives only in its file, and moving it is a commit that changes that file and nothing else. `CLOCKGROVE_COMMIT` and `scripts/clockgrove.sh` are Factory-protected paths, so only a maintainer moves the Clockgrove pin. `ASSETFORGE_COMMIT` and `scripts/assetforge.sh` are not protected yet: until a maintainer adds them to `FACTORY_PROTECTED_PATHS` in `.github/workflows/factory.yml`, a reviewer must check that no Factory PR moves the Assetforge pin by accident.
+Neither comes from npm. Each pin lives only in its file, and moving it is a commit that changes that file and nothing else. `CLOCKGROVE_COMMIT` and `scripts/clockgrove.sh` are Factory-protected paths, so only a maintainer moves the Clockgrove pin. `ASSETGROVE_COMMIT` and `scripts/assetgrove.sh` are not protected yet: until a maintainer adds them to `FACTORY_PROTECTED_PATHS` in `.github/workflows/factory.yml`, a reviewer must check that no Factory PR moves the Assetgrove pin by accident.
 
 ## What is committed
 
 | Path | What it is |
 | --- | --- |
-| `art/style-bible.md` | The style bible: the one statement of the world's look (Assetforge's Markdown format: DTCG tokens, prose, Do's and Don'ts, anchors, identity locks). |
+| `art/style-bible.md` | The style bible: the one statement of the world's look (Assetgrove's Markdown format: DTCG tokens, prose, Do's and Don'ts, anchors, identity locks). |
 | `art/style-bible.json` | Derived from the Markdown bible for the commands that read JSON (`generate-sheet`, `import`). Regenerate with `node art/tools/derive-bible.mjs`; never edit by hand. |
 | `art/target-profile.json` | The target profile: Clockgrove's manifest v2 shape, frame grid, layout, licence rule, review field, identity and QA settings, and the validator. |
 | `reference/asset-style.json` | The world's style profile as Clockgrove reads it (soft alpha, unrestricted colour). |
 | `art/stevie/<family>/spec.json` | What to draw: Stevie, the family, 4 frames of 32×32, anchor (16, 30), quadruped gait. |
 | `art/stevie/<family>/brief.json` | What the strip is for: where it appears, its neighbours, mood and the motion to show. |
-| `art/stevie/<family>/run.json` | One run's settings: up to 4 candidates for at most $5 (Assetforge's run-settings shape). |
+| `art/stevie/<family>/run.json` | One run's settings: up to 4 candidates for at most $5 (Assetgrove's run-settings shape). |
 
 `art/README.md` records why each value was chosen.
 
@@ -27,7 +27,7 @@ Check everything offline, with no key and no spend:
 
 ```sh
 bash scripts/clockgrove.sh fetch
-bash scripts/assetforge.sh check
+bash scripts/assetgrove.sh check
 ```
 
 ## 1. Forecast the run
@@ -35,13 +35,13 @@ bash scripts/assetforge.sh check
 A run is up to 4 candidates of one family. On the sheet path a candidate is one generated sheet. Each `generate-sheet` call gets a quarter of the run's cap, so the four together can never pass $5. Forecast one candidate first; it spends nothing and needs no key:
 
 ```sh
-bash scripts/assetforge.sh run generate-sheet \
+bash scripts/assetgrove.sh run generate-sheet \
   --spec art/stevie/shelter/spec.json --bible art/style-bible.json \
   --profile art/target-profile.json --lock-bible art/style-bible.md \
   --cap 1.25 --dry-run --json
 ```
 
-The forecast lists the sheet, the grouping proposal and the identity score (about $0.32). `bash scripts/assetforge.sh check` prints each family's whole-run forecast: four of these plus four agent QA passes.
+The forecast lists the sheet, the grouping proposal and the identity score (about $0.32). `bash scripts/assetgrove.sh check` prints each family's whole-run forecast: four of these plus four agent QA passes.
 
 ## 2. Generate up to four candidates
 
@@ -49,20 +49,20 @@ This is the step that spends money. It runs in the owner's lead agent session wi
 
 ```sh
 for candidate in 1 2 3 4; do
-  bash scripts/assetforge.sh run generate-sheet \
+  bash scripts/assetgrove.sh run generate-sheet \
     --spec art/stevie/shelter/spec.json --bible art/style-bible.json \
     --profile art/target-profile.json --lock-bible art/style-bible.md \
-    --cap 1.25 --imports .assetforge/imports --json
+    --cap 1.25 --imports .assetgrove/imports --json
 done
 ```
 
-Each candidate draws the whole cycle as one sheet, then Assetforge slices, mattes (soft alpha, full colour) and registers it into `.assetforge/imports/<import>/`. Git ignores that directory. Assetforge proposes a grouping in `grouping.json` with status `proposed`. Identity is scored against Stevie's lock in shadow mode at 0.68: the score is recorded and nothing is filtered.
+Each candidate draws the whole cycle as one sheet, then Assetgrove slices, mattes (soft alpha, full colour) and registers it into `.assetgrove/imports/<import>/`. Git ignores that directory. Assetgrove proposes a grouping in `grouping.json` with status `proposed`. Identity is scored against Stevie's lock in shadow mode at 0.68: the score is recorded and nothing is filtered.
 
 A sheet with the wrong number of figures is refused with exit 5 (`qa_found_nothing`). It is never padded. The sheet and its record stay in the import directory, and the attempt still counts as one of the four.
 
 ## 3. Agent QA, then the owner picks
 
-Agent QA runs first. Each candidate's import already carries Assetforge's import checks in `import.json` and in the command's JSON output:
+Agent QA runs first. Each candidate's import already carries Assetgrove's import checks in `import.json` and in the command's JSON output:
 
 - the frame count;
 - each frame's matte checks (edge halo, leftover background);
@@ -73,8 +73,8 @@ The agent reports each candidate's import directory, `contact.png`, identity sco
 ## 4. Write the pick into this repository
 
 ```sh
-bash scripts/assetforge.sh run write-families \
-  --import .assetforge/imports/<import> --target . --json
+bash scripts/assetgrove.sh run write-families \
+  --import .assetgrove/imports/<import> --target . --json
 ```
 
 The command writes, in Clockgrove's layout:
@@ -88,7 +88,7 @@ It then runs Clockgrove's validator (`bash scripts/validate-asset.sh`). A refusa
 `write-families` also runs the pixel animation QA against the family's motion template (ground contact, anchor and footprint drift, silhouette, loop seam, edge halo; `art/target-profile.json` sets the quadruped gait). It writes the onion skin and looping preview into the import's `preview/`. Then the agent runs the two vision checks, identity flicker and holes, on what was written, within a small cap. A failing check exits 5 and names its frame:
 
 ```sh
-bash scripts/assetforge.sh run animation-qa --import .assetforge/imports/<import> --cap 1 --json
+bash scripts/assetgrove.sh run animation-qa --import .assetgrove/imports/<import> --cap 1 --json
 ```
 
 Then commit the strip, manifest and provenance. `.gitattributes` puts the PNG in Git LFS, and `REUSE.toml`'s `**` annotation covers an MIT pick.
@@ -101,7 +101,7 @@ Then commit the strip, manifest and provenance. `.gitattributes` puts the PNG in
 
 Otherwise CI's lab step loads the stale web media and fails.
 
-**A CC-BY-4.0 pick** needs its own REUSE annotation, in the same commit, the way `REUSE.toml` already does for the Meshy models. Add an `override` annotation for the strip and its provenance file, with the provider as copyright holder and the credit line Assetforge recorded:
+**A CC-BY-4.0 pick** needs its own REUSE annotation, in the same commit, the way `REUSE.toml` already does for the Meshy models. Add an `override` annotation for the strip and its provenance file, with the provider as copyright holder and the credit line Assetgrove recorded:
 
 ```toml
 [[annotations]]
@@ -111,16 +111,16 @@ SPDX-FileCopyrightText = "<year> <provider, as in the provenance's output grant>
 SPDX-License-Identifier = "CC-BY-4.0"
 ```
 
-`bash scripts/assetforge.sh check` fails (`licences:`) when any manifest's licence differs from the licence `REUSE.toml` gives its source file, so the strip can't land as CC-BY-4.0 in its manifest and MIT in its REUSE metadata.
+`bash scripts/assetgrove.sh check` fails (`licences:`) when any manifest's licence differs from the licence `REUSE.toml` gives its source file, so the strip can't land as CC-BY-4.0 in its manifest and MIT in its REUSE metadata.
 
 The pick lands with review pending and full provenance, and CI stays green.
 
 **Fallback: one bad frame.** Fix it with a reference-guided edit from an approved neighbour, within its own cap, then hand off the fixed strip:
 
 ```sh
-bash scripts/assetforge.sh run fix-frame --strip assets/source/stevie/shelter.png \
+bash scripts/assetgrove.sh run fix-frame --strip assets/source/stevie/shelter.png \
   --profile art/target-profile.json --family shelter --frame 3 --from 2 \
-  --out .assetforge/fixes/shelter --cap 2 --json
+  --out .assetgrove/fixes/shelter --cap 2 --json
 ```
 
 A strip made from a key pose needs a key pose the owner approved.
@@ -187,4 +187,4 @@ The atlas, golden and live-yard changes after the picks land as one direct PR wi
 These sit in the platform tools, not in this repository:
 
 - **Clockgrove:** the manifest decoder requires a non-empty palette even for unrestricted-colour art. The profile records the bible's palette tokens, which `check` keeps equal to the bible.
-- **Assetforge:** the briefs are read by `plan` and its key-pose fallback, not by `generate-sheet` at the pinned commit. On the sheet path they are the author's statement of what the strip must show.
+- **Assetgrove:** the briefs are read by `plan` and its key-pose fallback, not by `generate-sheet` at the pinned commit. On the sheet path they are the author's statement of what the strip must show.

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Raccoon World's 3D target profile's own checker (issue 39). It is the profile's validator command
-// (art/target-profile-3d.json -> validator.command), which Assetforge runs from the target repository
+// (art/target-profile-3d.json -> validator.command), which Assetgrove runs from the target repository
 // root after it writes a model, and check.mjs imports its pure exports.
 //
 //   node art/tools/model3d.mjs validate <manifest> [--profile <path>] [--kind character|prop] [--json]

@@ -1,19 +1,19 @@
 # Stevie in 3D: wave 0 candidates
 
-**Kirk picked c3** (2026-11-10). It is the quality lab's Stevie (raccoon-world#45) until `assetforge pick` writes it through the 3D target profile (#39). Kirk's note on the pick: the walk needs work around the ankles and feet; see clockgrove/assetforge's follow-up.
+**Kirk picked c3** (2026-11-10). It is the quality lab's Stevie (raccoon-world#45) until `assetgrove pick` writes it through the 3D target profile (#39). Kirk's note on the pick: the walk needs work around the ankles and feet; see clockgrove/assetgrove's follow-up.
 
-Four real-time 3D candidates of Stevie for Kirk to pick from: Assetforge wave 0 ([clockgrove/assetforge#72](https://github.com/clockgrove/assetforge/issues/72), [PLAN](https://github.com/clockgrove/assetforge/blob/main/docs/PLAN.md)). This is review material, not approved art, and nothing is in `assets/`. The pick is written into the game once this repository's 3D target profile lands (raccoon-world#39).
+Four real-time 3D candidates of Stevie for Kirk to pick from: Assetgrove wave 0 ([clockgrove/assetgrove#72](https://github.com/clockgrove/assetgrove/issues/72), [PLAN](https://github.com/clockgrove/assetgrove/blob/main/docs/PLAN.md)). This is review material, not approved art, and nothing is in `assets/`. The pick is written into the game once this repository's 3D target profile lands (raccoon-world#39).
 
-- **Run:** 2026-11-10, `assetforge stage` with a `character-3d` spec: quadruped, the walk clip, 0.45 m tall. The inputs were Stevie's approved turnaround from `art/style-bible.json` (three-quarter, front and side) and a throwaway profile with desktop budgets: 60,000 triangles, 2048 px textures, 4 materials, 80 bones.
+- **Run:** 2026-11-10, `assetgrove stage` with a `character-3d` spec: quadruped, the walk clip, 0.45 m tall. The inputs were Stevie's approved turnaround from `art/style-bible.json` (three-quarter, front and side) and a throwaway profile with desktop budgets: 60,000 triangles, 2048 px textures, 4 materials, 80 bones.
 - **Route:** Tripo (paid plan, so the output is owned and declared under this repository's licence). Image-to-3D (`tripo/v2.5-20250123`), auto-rig (`animate-rig-v2.0`, quadruped), and the library walk retargeted onto the rig, with its loop closed.
-- **Spend:** $2.60 for 4 candidates (260 Tripo credits), inside the $5 run cap and Assetforge's cross-run spend limits.
+- **Spend:** $2.60 for 4 candidates (260 Tripo credits), inside the $5 run cap and Assetgrove's cross-run spend limits.
 - **QA:** all 4 passed every check:
   - the Khronos glTF validator, with 0 errors;
   - every budget;
   - a skeleton is present, and the walk plays on it and loops;
   - turntable renders;
   - identity against Stevie's lock, in shadow mode at a 0.68 cutoff, so it is recorded and nothing is filtered.
-- **Not yet:** the painted albedo in the mockup's style, fur groom maps and eye highlights (look-dev, clockgrove/assetforge#82). These models carry Tripo's own texture, which is darker and browner than the mockup.
+- **Not yet:** the painted albedo in the mockup's style, fur groom maps and eye highlights (look-dev, clockgrove/assetgrove#82). These models carry Tripo's own texture, which is darker and browner than the mockup.
 
 | Candidate | Triangles | Bones | Texture | Identity | Walk loop error | Cost | Agent read |
 | --- | --- | --- | --- | --- | --- | --- | --- |

@@ -148,7 +148,7 @@ export function groomMaterial(
   const maps = asset.coats[coat];
   const h: Any = fin ? attribute("fin", "vec2").y : float(layer / layers);
   const length = texture(maps.length, uv()).r;
-  // Assetforge encodes a rest-pose model-space comb direction as rgb = d * 0.5 + 0.5.
+  // Assetgrove encodes a rest-pose model-space comb direction as rgb = d * 0.5 + 0.5.
   const comb = texture(maps.direction, uv()).rgb.mul(2).sub(1);
   const bent = normalLocal.add(comb.mul(h));
   const direction = mix(

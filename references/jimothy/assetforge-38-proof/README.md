@@ -1,6 +1,6 @@
-# Assetforge #38 real-art proof (2026-11-08)
+# Assetgrove #38 real-art proof (2026-11-08)
 
-Output of clockgrove/assetforge#38's opt-in real-art test, run on Jimothy's 57-frame sheet. The test exercises the motion templates, loop and continuity QA, the onion-skin sheets, the loop previews and one per-frame fix.
+Output of clockgrove/assetgrove#38's opt-in real-art test, run on Jimothy's 57-frame sheet. The test exercises the motion templates, loop and continuity QA, the onion-skin sheets, the loop previews and one per-frame fix.
 
 - `grouping.json`: the families, confirmed by the owner. walk-left is frames 15–22, not a mirror of walk-right.
 - `qa/<family>.qa.json`: every check, with its frames and reasons.

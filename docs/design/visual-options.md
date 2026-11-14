@@ -48,7 +48,7 @@ Pictures for the owner's 3D-or-not decision ([visual decisions](visual-decisions
 
 ![Spiritfarer raccoon shopkeeper](https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/972660/ss_13be8ec2a11cf1f012abbbe9d526447cfff6cdea.600x338.jpg)
 
-**Our Stevie in painted 2D** (Assetforge strips from his turnaround, comparison only):
+**Our Stevie in painted 2D** (Assetgrove strips from his turnaround, comparison only):
 
 <img src="../../references/stevie/comparison-candidates/walk/strip.png" width="720" alt="Painted 2D Stevie walk strip">
 <img src="../../references/stevie/comparison-candidates/idle/strip.png" width="540" alt="Painted 2D Stevie idle strip">

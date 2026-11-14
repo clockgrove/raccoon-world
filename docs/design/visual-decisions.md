@@ -25,5 +25,5 @@ These are the owner's decisions about how Raccoon World looks and is drawn. Art 
 
 - The 3D look proof (#26, [3d-look-proof.md](3d-look-proof.md)) and the 3D visual ceiling (#34, [3d-ceiling.md](3d-ceiling.md)) are the evidence behind the character choice. clockgrove/clockgrove#184 is the product renderer work it depends on.
 - Sprite scale no longer applies to characters or the yard: #11's three-way comparison, #23 (storybook sprite scale) and clockgrove/clockgrove#158 (per-world sprite scale) are closed as superseded. The 2D shelter candidates (PR #21) stay as the record of the 2D attempt.
-- Shipped 3D art needs provider output whose licence the art pipeline accepts (clockgrove/assetforge#47 refuses free-plan CC BY or non-commercial output), so characters are built on Tripo's paid plan.
+- Shipped 3D art needs provider output whose licence the art pipeline accepts (clockgrove/assetgrove#47 refuses free-plan CC BY or non-commercial output), so characters are built on Tripo's paid plan.
 - Every art brief states the decided camera, zoom range, device floor and detail budget.

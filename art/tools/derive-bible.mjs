@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Derives art/style-bible.json, the JSON bible Assetforge's generate-sheet and import read, from the
+// Derives art/style-bible.json, the JSON bible Assetgrove's generate-sheet and import read, from the
 // Markdown bible art/style-bible.md, the one statement of Raccoon World's art direction. The Markdown
-// bible is parsed and validated by the pinned Assetforge's own bible reader.
+// bible is parsed and validated by the pinned Assetgrove's own bible reader.
 //
 // Usage: node art/tools/derive-bible.mjs           write art/style-bible.json
 //        node art/tools/derive-bible.mjs --check   exit 1 when the committed copy differs
-// ASSETFORGE_DIR names the pinned checkout (default .assetforge-src; bash scripts/assetforge.sh fetch).
+// ASSETGROVE_DIR names the pinned checkout (default .assetgrove-src; bash scripts/assetgrove.sh fetch).
 import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -14,9 +14,9 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 export const MARKDOWN = join(root, "art/style-bible.md");
 export const DERIVED = join(root, "art/style-bible.json");
 
-export async function deriveBible(assetforgeDir) {
+export async function deriveBible(assetgroveDir) {
   const { loadBible, biblePalette } = await import(
-    pathToFileURL(join(assetforgeDir, "src/bible.ts")).href
+    pathToFileURL(join(assetgroveDir, "src/bible.ts")).href
   );
   const { data } = await loadBible(MARKDOWN);
   for (const field of ["perspective", "perspectiveDescription", "subjects"])
@@ -58,8 +58,8 @@ export async function deriveBible(assetforgeDir) {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const assetforgeDir = resolve(process.env.ASSETFORGE_DIR ?? join(root, ".assetforge-src"));
-  const fresh = await deriveBible(assetforgeDir);
+  const assetgroveDir = resolve(process.env.ASSETGROVE_DIR ?? join(root, ".assetgrove-src"));
+  const fresh = await deriveBible(assetgroveDir);
   if (process.argv.includes("--check")) {
     const committed = await readFile(DERIVED, "utf8").catch(() => "");
     if (committed !== fresh) {

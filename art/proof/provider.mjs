@@ -1,4 +1,4 @@
-// The offline proof's scripted model provider (Assetforge `--provider-script`). It never calls a
+// The offline proof's scripted model provider (Assetgrove `--provider-script`). It never calls a
 // model and nothing it makes is committed: the proof writes into a throwaway copy of the repository.
 //
 // - image: draws a contact sheet of soft-edged four-legged figures on a flat pale background, one per
@@ -7,7 +7,7 @@
 // - vision: proposes one family holding every frame, in order (the grouping proposal).
 // - decide: an identity score in the middle of the rubric, recorded in shadow mode.
 //
-// Not art: a stand-in for a model's sheet, so Assetforge's real slicing, matting, registration, QA,
+// Not art: a stand-in for a model's sheet, so Assetgrove's real slicing, matting, registration, QA,
 // hand-off and Clockgrove's real validator run on it.
 import { deflateSync } from "node:zlib";
 
@@ -37,7 +37,7 @@ function chunk(type, data) {
   out.writeUInt32BE(crc32(out.subarray(4, 8 + data.length)), 8 + data.length);
   return out;
 }
-/** An 8-bit RGB PNG (a model's sheet has no alpha; Assetforge removes the background). */
+/** An 8-bit RGB PNG (a model's sheet has no alpha; Assetgrove removes the background). */
 function encodeRgbPng(width, height, rgb) {
   const raw = Buffer.alloc((width * 3 + 1) * height);
   for (let y = 0; y < height; y++) {

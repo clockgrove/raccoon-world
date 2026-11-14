@@ -99,7 +99,7 @@ beside Jimothy's sheet. The results, the costs and the likeness findings are in 
   Tripo $0.75); the turnaround itself is never regenerated.
 - **fal's terms:** re-check TRELLIS.2's terms on fal's model page and record them in `media/provenance.json` before
   relying on the licence. The run could not reach fal's web pages.
-- **Assetforge sheet import:** run clockgrove/assetforge's sheet import on the identity sheet. Compare its frames
+- **Assetgrove sheet import:** run clockgrove/assetgrove's sheet import on the identity sheet. Compare its frames
   with the spike's plain crop (`atlas-sheet-albedo.png` in the output), and post the result.
 
 CI (`tests/ci/stevie-3d.journey.browser.test.mjs`, SwiftShader) checks only that the page builds and renders. Every arm
