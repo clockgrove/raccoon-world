@@ -2,8 +2,8 @@
 // it changes, the runs, the results and the ways to copy the numbers back. Plain DOM over the page's LabHandle.
 // Desktop: a panel on the left. Phone: a bottom sheet that starts folded, so the yard is what you see first.
 
-import { KNOBS, KNOB_LABELS, LEVELS, PRESETS, PRESET_ORDER } from "./config.ts";
-import type { Coat, FurMode, Knob, LevelMode, LabConfig, LabHandle, PresetName, StateName, ViewName } from "./config.ts";
+import { KNOBS, KNOB_LABELS, LEVELS, MOTIONS, PRESETS, PRESET_ORDER } from "./config.ts";
+import type { Coat, FurMode, Knob, LevelMode, LabConfig, Motion, LabHandle, PresetName, StateName, ViewName } from "./config.ts";
 import { compactJson, compareFur, compareLevels, findCastBudget, findCeiling, findTriangleBudget, runSoak, runSweep, slimJson } from "./runner.ts";
 
 const VIEW_TEXT: Record<ViewName, string> = { yard: "Yard", close: "Close-up", far: "Zoomed out" };
@@ -193,7 +193,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   let applyError = "";
   let settledAt = performance.now();
   let sceneWanted: { view: ViewName; state: StateName } | null = null;
-  const pending = () => [...KNOBS, "coat", "furMode", "levels" as const].filter((k) => draft[k as keyof LabConfig] !== lab.status().config[k as keyof LabConfig]);
+  const pending = () => [...KNOBS, "coat", "furMode", "levels", "motion" as const].filter((k) => draft[k as keyof LabConfig] !== lab.status().config[k as keyof LabConfig]);
   const edit = (next: LabConfig) => {
     draft = { ...next };
     applyError = "";
@@ -276,7 +276,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   alertFix.addEventListener("click", () => {
     alertBox.hidden = true;
     slowWindows = 0;
-    edit({ ...PRESETS.low, coat: draft.coat, furMode: draft.furMode, levels: draft.levels });
+    edit({ ...PRESETS.low, coat: draft.coat, furMode: draft.furMode, levels: draft.levels, motion: draft.motion });
     void applyDraft();
   });
   alertClose.addEventListener("click", () => {
@@ -321,7 +321,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     PRESET_ORDER.map((name) => [name, capital(name)] as [PresetName, string]),
     () => presetOf(draft),
     (name) => {
-      if (name) edit({ ...PRESETS[name], coat: draft.coat, furMode: draft.furMode, levels: draft.levels });
+      if (name) edit({ ...PRESETS[name], coat: draft.coat, furMode: draft.furMode, levels: draft.levels, motion: draft.motion });
     },
     true,
   );
@@ -378,7 +378,9 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     el("p", { class: "hint", textContent: "Summer and winter read Stevie’s groom maps. Uniform shells keep the earlier 12 mm material for comparison." }));
   const levelMode = segmented<LevelMode>("Stevie's levels", [["single", "Level 0 only"], ["phone", "Phone levels"]], () => draft.levels ?? "single", (v) => edit({ ...draft, levels: v }));
   coatSection.append(levelMode.row, el("p", { class: "hint", textContent: "Phone levels draw Stevie from his 1024 px phone files, a finer one while he is large on screen and a coarser one when he is small. Level 0 is the full model." }));
-  const controls = [...preset.buttons, ...knobControls, ...coat.buttons, ...furMode.buttons, ...levelMode.buttons];
+  const motion = segmented<Motion>("Stevie's motion", MOTIONS.map((m) => [m, capital(m)] as [Motion, string]), () => draft.motion ?? "walk", (v) => edit({ ...draft, motion: v }));
+  coatSection.append(motion.row, el("p", { class: "hint", textContent: "Walk moves Stevie along the loop. Every other motion plays in place on repeat, on him and on the cast." }));
+  const controls = [...preset.buttons, ...knobControls, ...coat.buttons, ...furMode.buttons, ...levelMode.buttons, ...motion.buttons];
 
   // Runs: the action bar stays in reach at the bottom of the panel.
   const sweepBtn = el("button", { type: "button", class: "btn primary", textContent: "Run the sweep" });
@@ -610,6 +612,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
     coat.sync();
     furMode.sync();
     levelMode.sync();
+    motion.sync();
     for (const f of knobSyncs) f();
     paintHead();
     const name = presetOf(draft);
