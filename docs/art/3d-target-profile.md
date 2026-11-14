@@ -38,7 +38,7 @@ Hand-off budget (`model3d.budgets`): **60,000 triangles, 2048 px textures, 4 mat
 | Phone (recent phones, lower tier) | prop / set piece | 10,000 | 512 px | 4 | 8 | 3 | **pending** |
 
 - **Bones and materials are the same on both tiers.** Every raccoon shares one skeleton, so its clips work on every tier, and a material split would double draw calls on the tier that can least afford it.
-- **A phone draws its characters from the LOD chain.** It does not use a separate model. The phone budgets are what LOD1 must fit.
+- **A phone draws its characters from the LOD chain.** It does not use a separate model. The phone budgets are what LOD1 must fit. Stevie's chain (#113) is built, and the validator checks each level against the tier that draws it.
 - **Phone numbers are provisional.** They wait on Kirk's device run (below).
 
 ### How the desktop numbers were measured
@@ -81,7 +81,7 @@ The switch points are the character's on-screen height as a fraction of the scre
 | LOD1 | 0.33 (20k, the phone tier) | 0.05 |
 | LOD2 | 0.10 (6k) | anything smaller (the whole-yard view) |
 
-The hand-off may carry 1 to 3 levels (`budgets.lods`, counted as 1 plus `MSFT_lod` levels). Assetforge's wave 0 hands over LOD0 only. Like the KTX2 encode, LOD1 and LOD2 are a target-side build step, and they come with the first real pick (#82).
+The hand-off may carry 1 to 3 levels (`budgets.lods`, counted as 1 plus `MSFT_lod` levels). Assetforge's wave 0 hands over LOD0 only. Like the KTX2 encode, Stevie's LOD1 and LOD2 were built by `assetforge lod` from the approved model (#113) and sit beside the main file as `.glb` files (`handoff.lods: "files"`). Assetforge's wave 0 pick still hands over LOD0 only; the scripted proof pick has no chain.
 
 ## Texture size and format: hand-off vs shipped
 
@@ -171,19 +171,22 @@ The pinned Clockgrove's pack format has no coat field yet (clockgrove/clockgrove
 
 ## The profile's own checks
 
-`node art/tools/model3d.mjs validate <manifest>` routes a manifest that declares side files (`model.groom`, `model.textures` or `model.eyes`) to this world's own checks (below). Otherwise it maps the manifest to Clockgrove's model manifest (`node art/tools/model3d.mjs map <manifest>` prints it) and runs the pinned `clockgrove-assets validate` on a throwaway world. The model target is the desktop budget for the model's kind (`tiers.desktop.character`, which equals the flat hand-off `budgets`, or `tiers.desktop.prop`). The kind is `--kind character|prop`, else the manifest's `kind` (`character-3d` or `prop-3d`), else character. It needs the checkout from `bash scripts/clockgrove.sh fetch` and exits 2 without it. It exits 0 when it accepts the model and 1 when it refuses it.
+`node art/tools/model3d.mjs validate <manifest>` routes a manifest that declares side files (`model.groom`, `model.textures` or `model.eyes`) to this world's own checks (below). Otherwise it maps the manifest to Clockgrove's model manifest (`node art/tools/model3d.mjs map <manifest>` prints it) and runs the pinned `clockgrove-assets validate` on a throwaway world. The model target's limits are the desktop budget for the model's kind (`tiers.desktop.character`, which equals the flat hand-off `budgets`, or `tiers.desktop.prop`), and its `tiers` are every tier's budget for that kind. A manifest with level files (`model.levels`) is sent with them beside the `.glb`, as Clockgrove's `output.levels` (level 0 is the main file), and with `output.renditions` from `model.chain.tiers`, so Clockgrove checks each level against the tier that draws it (clockgrove/clockgrove#304). A tier with its own `model.tiers.<tier>.levels` files is left out of both, because Clockgrove's contract has no per-tier files, and this world checks it instead. The kind is `--kind character|prop`, else the manifest's `kind` (`character-3d` or `prop-3d`), else character. It needs the checkout from `bash scripts/clockgrove.sh fetch` and exits 2 without it. It exits 0 when it accepts the model and 1 when it refuses it.
 
-- **Refused by Clockgrove:** printed as `refused <code>: <line>` with Clockgrove's own codes, for example `MODEL_BUDGET_EXCEEDED` or `ASSET_MANIFEST_INVALID`. It then stops. The platform does the container, measures, budgets, content hash, bounds shape, provenance and grant checks, so the world codes that did those (`over-budget:*`, `format:container`, `format:units`, `manifest:content-hash`, `manifest:mismatch:*`, `manifest:source`, `manifest:provenance:<model|provider|route|outputGrant>`, `grant:relabel`, `grant:non-commercial`, `clip:mismatch`) are gone.
+- **Refused by Clockgrove:** printed as `refused <code>: <line>` with Clockgrove's own codes, for example `MODEL_BUDGET_EXCEEDED`, `MODEL_HASH_MISMATCH` (a level file) or `ASSET_MANIFEST_INVALID`. It then stops. A `MODEL_BUDGET_EXCEEDED` on a tier whose `status` is not `measured` (the phone, pending) is not a refusal: it comes back as that tier's `tier:<tier>:<key>` flag, naming the level. The platform does the container, measures, budgets, content hash, bounds shape, provenance and grant checks, so the world codes that did those (`over-budget:*`, `format:container`, `format:units`, `manifest:content-hash`, `manifest:mismatch:*`, `manifest:source`, `manifest:provenance:<model|provider|route|outputGrant>`, `grant:relabel`, `grant:non-commercial`, `clip:mismatch`) are gone.
 - **Refused by this world** (after Clockgrove accepts):
   - `format:texture-media-type`: a texture that is not PNG or JPEG;
   - `manifest:bounds`: not standing on y=0, or not 0.05 to 5 m tall;
   - `manifest:provenance:digitalSourceType`;
   - `grant:license`: not the profile's licence or an accepted one;
   - `rig:template` or `rig:joints`: not the declared template, or not its joints in order;
-  - `clip:not-generated:<family>`: locomotion that is not the generated gait.
+  - `clip:not-generated:<family>`: locomotion that is not the generated gait;
+  - `manifest:levels`: a level file or side map of a tier's chain that is missing, unreadable, has a different sha256, is not a one-level GLB, or has a different triangle count than the manifest declares, or a level `model.chain.tiers` says a tier draws that the tier's own `model.tiers.<tier>.levels` files leave out.
 - **Flagged** (accepted and reported):
-  - `tier:<tier>:<key>`: over a lower tier's budget, which the LOD chain must bring within;
+  - `tier:<tier>:<key>`: a level the tier draws is over that tier's budget. The detail names the level and its file. A manifest with no chain is checked as its main file against each tier;
   - `clip-missing:<family>`: a required clip that is not there yet.
+
+Stevie's chain (#113) is checked level by level. A tier draws its own `model.tiers.<tier>.levels` files when it has them (and they must cover every level `model.chain.tiers` lists for it), else the levels `model.chain.tiers` lists for it (0 is the main file). Each level's triangles, materials, bones and texture size (its embedded textures or the side maps the tier draws, whichever is larger) and the number of levels drawn are compared with that tier's budget. Stevie's phone levels and maps fit the phone budget, so it carries no `tier:phone` flag. `model3d.handoff.lods` is `"embedded"` or `"files"`.
 
 The hand-off declares `clipFields` and `sideImages: "embedded"` as Assetforge's characters-3d.md describes. Clockgrove refuses side images until clockgrove/clockgrove#305.
 
@@ -192,7 +195,7 @@ The hand-off declares `clipFields` and `sideImages: "embedded"` as Assetforge's 
 `node art/tools/model3d.mjs profile` checks the profile's own shape:
 - the tiers;
 - the hand-off budget equal to the desktop character tier;
-- the LOD chain;
+- the LOD chain and `handoff.lods`;
 - the clip set covering the gaits;
 - seasons and a calendar that covers every month.
 
@@ -206,9 +209,11 @@ Clockgrove-side validation of 3D models is clockgrove/clockgrove#281 (now run by
    - Assetforge fits the raccoon template and generates the idle and the walk.
    - The candidate passes every QA check.
    - Assetforge's own scripted quadruped is not raccoon-shaped, and the raccoon template's joint-limit QA refuses it, so the proof uses a real raccoon body.
-2. `pick` writes the rigged `.glb`, its manifest and its provenance through the profile, with Clockgrove's clip fields and no side images. The profile's validator accepts it on the first try, Clockgrove's `clockgrove-assets validate` at the pinned commit included. It flags the phone tier and the four clips still missing.
+2. `pick` writes the rigged `.glb`, its manifest and its provenance through the profile, with Clockgrove's clip fields and no side images. The profile's validator accepts it on the first try, Clockgrove's `clockgrove-assets validate` at the pinned commit included. It flags the phone tier (the scripted pick has no chain) and the four clips still missing.
 3. Clockgrove refuses the same model with `MODEL_BUDGET_EXCEEDED` under a lower hand-off triangle budget, and again when it is checked against the desktop prop budget.
 4. The handed-off model renders through the pinned renderer's world-content seam (clockgrove/clockgrove#112): `art/tools/model3d-render.mjs` loads it through `context.loaders` on Clockgrove's fixture renderer page, plays its idle under a software GPU, and checks that it is skinned with the manifest's bones and that the picture changes when the model is hidden and when the idle moves.
 5. A free-plan CC BY grant is refused with exit 7, and nothing is written.
+6. Stevie's committed manifest is accepted with no `tier:` flag. A phone triangle budget of 15,000 flags `tier:phone:triangles` naming level 1, a wrong sha256 on a phone level is refused with `manifest:levels`, and so is a phone level `model.chain.tiers` lists with no phone file.
+7. The scripted pick given a level file and `model.chain.tiers` goes to Clockgrove with them: Clockgrove accepts it and its phone level 1 comes back as `tier:phone:triangles`, and a wrong sha256 on the level file is refused by Clockgrove with `MODEL_HASH_MISMATCH`.
 
 Nothing the proof writes is committed.

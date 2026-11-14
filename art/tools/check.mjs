@@ -405,7 +405,7 @@ async function proof() {
 async function checkModel3d() {
   const PROFILE = "art/target-profile-3d.json";
   const SPEC = "art/stevie/character-3d/spec.json";
-  const { checkProfile } = await import(pathToFileURL(join(root, "art/tools/model3d.mjs")).href);
+  const { checkProfile, validateModel } = await import(pathToFileURL(join(root, "art/tools/model3d.mjs")).href);
   const { characterSpec } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/profile.ts")).href);
   const { model3dSettings } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/profile.ts")).href);
   const { loadRig } = await import(pathToFileURL(join(assetforgeDir, "src/model3d/rig/template.ts")).href);
@@ -456,6 +456,39 @@ async function checkModel3d() {
     if (source !== (generated ? "generated" : "library"))
       fail("model3d", `${SPEC}: clip ${clip} must come from ${generated ? "the generated gait" : "the provider's library"}`);
   }
+
+  // Stevie's committed chain (#113) is checked level by level against the tier that draws it.
+  const steviePath = "assets/models/stevie/manifest.json";
+  const stevieManifest = await json(steviePath);
+  const levelFiles = new Map();
+  for (const entry of [...Object.values(stevieManifest.model?.levels ?? {}), ...Object.values(stevieManifest.model?.tiers ?? {}).flatMap((t) => Object.values(t.levels ?? {}))])
+    levelFiles.set(entry.path, await readFile(join(root, entry.path)).catch(() => undefined));
+  const sideMaps = async (node) => {
+    if (node && typeof node === "object" && typeof node.path === "string") levelFiles.set(node.path, await readFile(join(root, node.path)).catch(() => undefined));
+    else for (const value of Object.values(node ?? {})) if (value && typeof value === "object") await sideMaps(value);
+  };
+  await sideMaps(stevieManifest.model);
+  const stevieInput = {
+    glb: new Uint8Array(await readFile(join(root, stevieManifest.source.path))),
+    templateBytes: new Uint8Array(await readFile(join(root, "art", m.rig.template))),
+    readBytes: (path) => (levelFiles.has(path) ? levelFiles.get(path) : undefined),
+  };
+  const chained = validateModel({ profile, manifest: stevieManifest, ...stevieInput });
+  if (!chained.accepted || chained.flags.some((f) => f.code.startsWith("tier:")))
+    fail("model3d", `Stevie's chain must be accepted with no tier flag: ${JSON.stringify([...chained.refusals, ...chained.flags.filter((f) => f.code.startsWith("tier:"))])}`);
+  const tight = structuredClone(profile);
+  tight.model3d.tiers.phone.character.triangles = 15000;
+  const tightened = validateModel({ profile: tight, manifest: stevieManifest, ...stevieInput });
+  if (!tightened.flags.some((f) => f.code === "tier:phone:triangles" && f.detail.includes("level 1")))
+    fail("model3d", "a phone triangle budget of 15000 must flag tier:phone:triangles naming level 1");
+  const tampered = structuredClone(stevieManifest);
+  tampered.model.tiers.phone.levels.lod1.sha256 = "0".repeat(64);
+  if (!validateModel({ profile, manifest: tampered, ...stevieInput }).refusals.some((r) => r.code === "manifest:levels"))
+    fail("model3d", "a phone level whose sha256 is wrong must be refused with manifest:levels");
+  const uncovered = structuredClone(stevieManifest);
+  delete uncovered.model.tiers.phone.levels.lod1;
+  if (!validateModel({ profile, manifest: uncovered, ...stevieInput }).refusals.some((r) => r.code === "manifest:levels" && r.detail.includes("level 1")))
+    fail("model3d", "a phone level model.chain.tiers lists with no file in model.tiers.phone.levels must be refused with manifest:levels");
 
   // Stevie's 3D run (up to 4 candidates) forecasts within its cap, offline, on the real routes.
   const settings = await json("art/stevie/character-3d/run.json");
@@ -536,6 +569,34 @@ async function checkModel3d() {
     await refusedBy(["--profile", "art/over-budget-3d.json"], "a model over the hand-off triangle budget");
     // The same model checked as a prop is refused against the desktop prop budget, not the character's.
     await refusedBy(["--kind", "prop"], "a model over the desktop prop budget");
+
+    // A chain without side files goes to Clockgrove (clockgrove/clockgrove#304) with its level files,
+    // renditions and tier budgets: Clockgrove checks each level against the tier that draws it, and a
+    // pending tier's excess comes back as this world's tier flag naming the level.
+    const glbBytes = await readFile(join(target, manifest.source.path));
+    const lodPath = manifest.source.path.replace(/\.glb$/, ".lod1.glb");
+    await writeFile(join(target, lodPath), glbBytes);
+    const chainManifest = structuredClone(manifest);
+    chainManifest.model.levels = { lod1: { level: 1, triangles: manifest.model.triangles, path: lodPath, sha256: createHash("sha256").update(glbBytes).digest("hex") } };
+    chainManifest.model.chain = { packaging: "files", tiers: [{ name: "desktop", levels: [0, 1] }, { name: "phone", levels: [1] }] };
+    const validateChain = async (chain, what) => {
+      await writeFile(join(target, "chain-manifest.json"), JSON.stringify(chain));
+      try {
+        const { stdout } = await run(process.execPath, ["art/tools/model3d.mjs", "validate", "chain-manifest.json", "--json"], { cwd: target, env });
+        return JSON.parse(stdout);
+      } catch (error) {
+        if (error.code === 1) return JSON.parse(error.stdout);
+        fail("model3d", `${what}: model3d.mjs exited ${error.code}: ${error.stderr}`);
+      }
+    };
+    const viaClockgrove = await validateChain(chainManifest, "a chain without side files");
+    if (!viaClockgrove?.accepted || viaClockgrove.route !== "clockgrove" || !viaClockgrove.flags.some((f) => f.code === "tier:phone:triangles" && f.detail.includes("level 1") && f.detail.includes("clockgrove-assets validate")))
+      fail("model3d", `Clockgrove must accept the chain and its phone level 1 must come back as tier:phone:triangles: ${JSON.stringify(viaClockgrove)}`);
+    const wrongLevel = structuredClone(chainManifest);
+    wrongLevel.model.levels.lod1.sha256 = "0".repeat(64);
+    const levelRefused = await validateChain(wrongLevel, "a chain level with a wrong sha256");
+    if (levelRefused?.accepted !== false || !levelRefused.refusals.some((r) => r.platform && r.code === "MODEL_HASH_MISMATCH"))
+      fail("model3d", `Clockgrove must refuse a chain level whose sha256 is wrong with MODEL_HASH_MISMATCH: ${JSON.stringify(levelRefused)}`);
 
     // It renders through the world-content seam (clockgrove/clockgrove#112) of the pinned renderer.
     let rendered;

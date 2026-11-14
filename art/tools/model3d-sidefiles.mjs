@@ -10,14 +10,18 @@
 //     format:container, format:texture-media-type, format:units
 //     over-budget:triangles, over-budget:textureMaxPx, over-budget:materials, over-budget:bones,
 //       over-budget:lods
+//     manifest:levels (a level file or side map of a tier's chain that is missing, unreadable, changed,
+//       not a one-level GLB, or not the triangle count the manifest declares),
 //     manifest:content-hash, manifest:mismatch:<key> (the five budget keys), manifest:source,
 //       manifest:bounds, manifest:provenance:<model|provider|route|outputGrant|digitalSourceType>
 //     grant:license, grant:relabel, grant:non-commercial
 //     rig:template, rig:joints
 //     clip:not-generated:<family>, clip:mismatch
 //   flags (accepted, reported)
-//     tier:<tier>:<key>, clip-missing:<family>
+//     tier:<tier>:<key> (a level the tier draws is over that tier's budget; the detail names the level),
+//       clip-missing:<family>
 import { createHash } from "node:crypto";
+import { isAbsolute } from "node:path";
 
 export const BUDGET_KEYS = ["triangles", "textureMaxPx", "materials", "bones", "lods"];
 const PROVENANCE_FIELDS = ["model", "provider", "route", "outputGrant", "digitalSourceType"];
@@ -186,10 +190,119 @@ export function measureGlb(bytes) {
   };
 }
 
+// --- the levels each tier draws ---
+
+const relativeInside = (path) => typeof path === "string" && path !== "" && !isAbsolute(path) && !path.split(/[\\/]/).includes("..");
+
+function sideMapLeaves(node, out = []) {
+  if (!node || typeof node !== "object") return out;
+  if (typeof node.path === "string" && typeof node.sha256 === "string") out.push(node);
+  else for (const value of Object.values(node)) sideMapLeaves(value, out);
+  return out;
+}
+
+/**
+ * Checks every level a tier draws against that tier's budget for the kind. A tier draws its own
+ * model.tiers.<tier>.levels files when present, else the levels model.chain.tiers lists for it
+ * (0 is the main file, n is model.levels.lod<n>), else just the main file. `measured` is the main
+ * file's measures; `readBytes(path)` returns a repository-relative file's bytes or undefined.
+ * Over budget flags tier:<tier>:<key>; a level or map that cannot be trusted, or a level model.chain.tiers
+ * says a tier draws that its own files do not cover, is refused as manifest:levels. `tiers(name)` picks the tiers checked.
+ */
+export function tierLevelChecks({ profile, manifest, kind = "character", measured, readBytes, tiers = () => true }) {
+  const refusals = [];
+  const flags = [];
+  const refuse = (detail) => {
+    if (!refusals.some((r) => r.detail === detail)) refusals.push({ code: "manifest:levels", detail });
+  };
+  const model = manifest?.model ?? {};
+  const cache = new Map();
+  const read = (path) => {
+    if (!cache.has(path)) cache.set(path, relativeInside(path) ? readBytes?.(path) : undefined);
+    return cache.get(path);
+  };
+
+  const maps = (source) => {
+    let largest = 0;
+    for (const leaf of ["groom", "textures", "eyes"].flatMap((key) => sideMapLeaves(source?.[key]))) {
+      const bytes = read(leaf.path);
+      if (!relativeInside(leaf.path) || !bytes) {
+        refuse(`side map ${leaf.path} is not a readable file inside the world`);
+      } else if (sha256(bytes) !== leaf.sha256) {
+        refuse(`side map ${leaf.path} sha256 differs from the manifest's ${leaf.sha256}`);
+      } else {
+        const size = imageSize(bytes);
+        if (size) largest = Math.max(largest, size.width, size.height);
+      }
+    }
+    return largest;
+  };
+  const mainMapPx = maps(model);
+
+  const levelFile = (entry, name) => {
+    const label = `${name} (${entry?.path})`;
+    const bytes = read(entry?.path);
+    if (!relativeInside(entry?.path)) return refuse(`${label}: path is missing or not a relative path inside the world`);
+    if (!bytes) return refuse(`${label}: file cannot be read`);
+    if (sha256(bytes) !== entry.sha256) return refuse(`${label}: sha256 differs from the manifest's ${entry.sha256}`);
+    let found;
+    try {
+      found = measureGlb(bytes);
+    } catch (error) {
+      return refuse(`${label}: not a GLB (${error.message})`);
+    }
+    if (found.triangles !== entry.triangles) return refuse(`${label}: measured ${found.triangles} triangles, the manifest declares ${entry.triangles}`);
+    if (found.lods !== 1) return refuse(`${label}: measures ${found.lods} lods, a level file holds one`);
+    return { label, measures: found };
+  };
+
+  for (const [tier, t] of Object.entries(profile.model3d?.tiers ?? {})) {
+    const budget = t?.[kind];
+    if (!budget || !tiers(tier)) continue;
+    const own = model.tiers?.[tier];
+    const mapPx = own && ["groom", "textures", "eyes"].some((k) => own[k]) ? maps(own) : mainMapPx;
+    const levels = [];
+    const main = { label: "level 0", measures: measured };
+    const chainTier = model.chain?.tiers?.find((c) => c.name === tier);
+    if (own?.levels && Object.keys(own.levels).length > 0) {
+      const ownEntries = Object.values(own.levels);
+      for (const entry of ownEntries) levels.push(levelFile(entry, `level ${entry?.level}`));
+      if (Array.isArray(chainTier?.levels)) {
+        const covered = new Set(ownEntries.map((entry) => entry?.level));
+        for (const n of chainTier.levels) {
+          if (!covered.has(n)) refuse(`level ${n}, which model.chain.tiers says the ${tier} tier draws, has no file in model.tiers.${tier}.levels`);
+        }
+      }
+    } else if (Array.isArray(chainTier?.levels)) {
+      for (const n of chainTier.levels) {
+        if (n === 0) levels.push(main);
+        else if (model.levels?.[`lod${n}`]) levels.push(levelFile(model.levels[`lod${n}`], `level ${n}`));
+        else refuse(`level ${n} of the ${tier} tier is not in model.levels`);
+      }
+    } else {
+      levels.push(main);
+    }
+    const drawn = levels.length;
+    for (const level of levels) {
+      if (!level) continue;
+      const values = { ...level.measures, textureMaxPx: Math.max(level.measures.textureMaxPx ?? 0, mapPx), lods: drawn };
+      for (const key of BUDGET_KEYS) {
+        if (values[key] > budget[key]) {
+          flags.push({
+            code: `tier:${tier}:${key}`,
+            detail: `${level.label}: ${key} ${values[key]} over the ${tier} ${kind} budget of ${budget[key]}; the LOD chain must bring it within (${tier} status: ${t.status})`,
+          });
+        }
+      }
+    }
+  }
+  return { refusals, flags };
+}
+
 // --- one side-file model against the profile ---
 
 /** Validates a model with side files, world-side only: refusals stop the hand-off, flags are accepted and reported. */
-export function validateSideFileModel({ profile, manifest, glb, templateBytes, kind = "character" }) {
+export function validateSideFileModel({ profile, manifest, glb, templateBytes, kind = "character", readBytes = () => undefined }) {
   const refusals = [];
   const flags = [];
   const refuse = (code, detail) => refusals.push({ code, detail });
@@ -271,17 +384,9 @@ export function validateSideFileModel({ profile, manifest, glb, templateBytes, k
     refuse("clip:mismatch", `manifest clips [${manifestClips.map((c) => c.name)}] differ from the model's [${glbNames}]`);
   }
 
-  for (const [tier, t] of Object.entries(m.tiers ?? {})) {
-    if (tier === "desktop" || !t?.[kind]) continue;
-    for (const key of BUDGET_KEYS) {
-      if (measured[key] > t[kind][key]) {
-        flags.push({
-          code: `tier:${tier}:${key}`,
-          detail: `${key} ${measured[key]} over the ${tier} ${kind} budget of ${t[kind][key]}; the LOD chain must bring it within (${tier} status: ${t.status})`,
-        });
-      }
-    }
-  }
+  const levelChecks = tierLevelChecks({ profile, manifest, kind, measured, readBytes });
+  refusals.push(...levelChecks.refusals);
+  flags.push(...levelChecks.flags);
   for (const family of set.required) {
     if (!glbNames.includes(family)) flags.push({ code: `clip-missing:${family}`, detail: `no "${family}" clip in the model; never faked` });
   }

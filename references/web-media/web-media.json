@@ -162,9 +162,145 @@
     },
     "assets/models/stevie/manifest.json": {
       "source": "assets/models/stevie/manifest.json",
-      "sourceSha256": "53abdf28a389824ac6c11a7bf8f8ac9b3883317f6033859be4140f1db8643120",
-      "sha256": "e8168b27df9df8f47b8bc0885889b15f71ff35fd18df0395331f05c43fdc1264",
-      "bytes": 5470
+      "sourceSha256": "f4f64ffba4511e7541f7c755784f7586b82c7287feffc795726f35dd08742f1d",
+      "sha256": "736e1021a678c06dc26b59e66db9e7d1eb68c453a783a0ed983805d9cf9df166",
+      "bytes": 9658
+    },
+    "stevie.lod1.glb": {
+      "sourceDependencies": {
+        "assets/models/stevie/stevie.groom.summer.length.png": "971a64b964ec7ad3a43722d034531c26898a07ecda7d81450c40fb5fe49c5866",
+        "assets/models/stevie/stevie.groom.summer.direction.png": "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
+        "assets/models/stevie/stevie.groom.summer.density.png": "11b5d8dbdd4c48f64ad232f034e6a52b8ca9dd837300f234eedf150ce06bf037",
+        "assets/models/stevie/stevie.groom.winter.length.png": "f40e7d03512abc7d5aecd84811b8574c571afbd93f25c2b44594953e8ca368c3",
+        "assets/models/stevie/stevie.groom.winter.direction.png": "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
+        "assets/models/stevie/stevie.groom.winter.density.png": "d8496c68f3fadbc8512be65b689d4b31cdaa73e64f8b37b0812a4aa881842ed4",
+        "assets/models/stevie/stevie.tint.winter.png": "f3c266b6f5d726e2366cfc6afbc285d1f449228c9b4d960dd1a7a5edb0bdf89b",
+        "assets/models/stevie/stevie.eyes.mask.png": "95e19e95b551b283b998ccf68006b8bf25c7c410452cffe24ae539ce2de01eb0"
+      },
+      "source": "assets/models/stevie/stevie.lod1.glb",
+      "sourceSha256": "cbd8bbcaed59670d694d65ff81ebdde2b0487635a964c45930339cece6a7ec22",
+      "sha256": "bfd209ed6951c8f164310f55630bf6cbd6657f17ea2b43b3af21dbc6abfbc6a3",
+      "sourceBytes": 20132408,
+      "bytes": 3620968,
+      "triangles": 19747
+    },
+    "stevie.lod2.glb": {
+      "sourceDependencies": {
+        "assets/models/stevie/stevie.groom.summer.length.png": "971a64b964ec7ad3a43722d034531c26898a07ecda7d81450c40fb5fe49c5866",
+        "assets/models/stevie/stevie.groom.summer.direction.png": "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
+        "assets/models/stevie/stevie.groom.summer.density.png": "11b5d8dbdd4c48f64ad232f034e6a52b8ca9dd837300f234eedf150ce06bf037",
+        "assets/models/stevie/stevie.groom.winter.length.png": "f40e7d03512abc7d5aecd84811b8574c571afbd93f25c2b44594953e8ca368c3",
+        "assets/models/stevie/stevie.groom.winter.direction.png": "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
+        "assets/models/stevie/stevie.groom.winter.density.png": "d8496c68f3fadbc8512be65b689d4b31cdaa73e64f8b37b0812a4aa881842ed4",
+        "assets/models/stevie/stevie.tint.winter.png": "f3c266b6f5d726e2366cfc6afbc285d1f449228c9b4d960dd1a7a5edb0bdf89b",
+        "assets/models/stevie/stevie.eyes.mask.png": "95e19e95b551b283b998ccf68006b8bf25c7c410452cffe24ae539ce2de01eb0"
+      },
+      "source": "assets/models/stevie/stevie.lod2.glb",
+      "sourceSha256": "6fe28c69080a85bd74f387944587bd8c1545dd6e21a5f0c6042d69c94c5f916f",
+      "sha256": "bb83db842a6ab482e5c70fadfbe0989505a6eb89d227a80819c94484abcbca8b",
+      "sourceBytes": 19573792,
+      "bytes": 3463280,
+      "triangles": 5979
+    },
+    "stevie.phone.lod1.glb": {
+      "sourceDependencies": {
+        "assets/models/stevie/stevie.phone.groom.summer.length.png": "a0c061f2d648ccb74954bf49ec653c4ef775ef282043f84fb5dbf3ebd4a5d8da",
+        "assets/models/stevie/stevie.phone.groom.summer.direction.png": "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26",
+        "assets/models/stevie/stevie.phone.groom.summer.density.png": "85bfc74fda41a6c82b56e915b2e43fd67adc3989669b56f3179b99b062659eae",
+        "assets/models/stevie/stevie.phone.groom.winter.length.png": "69bc47b29a3ad98f1b1dff1b1d763cfd709d51d782a20cbee0ee641d3e1b8f97",
+        "assets/models/stevie/stevie.phone.groom.winter.direction.png": "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26",
+        "assets/models/stevie/stevie.phone.groom.winter.density.png": "5980e52f2efc390b5d88f475af717ada2ff931814788e55f318b7cd6a7dc2f12",
+        "assets/models/stevie/stevie.phone.tint.winter.png": "9a04636bb2f84fe7e76335e1b0b01ca522fca878070a60e422fc6b3baf003d4b",
+        "assets/models/stevie/stevie.phone.eyes.mask.png": "795838b2134eeea92899af7a715740fbaf2d1b29de72a45643968e042c5ba41d"
+      },
+      "source": "assets/models/stevie/stevie.phone.lod1.glb",
+      "sourceSha256": "29845d664f5bbe2432ee71a2ddd4b5c2ffc7ef567acde21c9f9413e045c50a60",
+      "sha256": "161f000e8e11743ccdcee050cddf3d620566e71a3718521708d1c7c9daacb4b1",
+      "sourceBytes": 8738200,
+      "bytes": 1295436,
+      "triangles": 19747
+    },
+    "stevie.phone.lod2.glb": {
+      "sourceDependencies": {
+        "assets/models/stevie/stevie.phone.groom.summer.length.png": "a0c061f2d648ccb74954bf49ec653c4ef775ef282043f84fb5dbf3ebd4a5d8da",
+        "assets/models/stevie/stevie.phone.groom.summer.direction.png": "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26",
+        "assets/models/stevie/stevie.phone.groom.summer.density.png": "85bfc74fda41a6c82b56e915b2e43fd67adc3989669b56f3179b99b062659eae",
+        "assets/models/stevie/stevie.phone.groom.winter.length.png": "69bc47b29a3ad98f1b1dff1b1d763cfd709d51d782a20cbee0ee641d3e1b8f97",
+        "assets/models/stevie/stevie.phone.groom.winter.direction.png": "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26",
+        "assets/models/stevie/stevie.phone.groom.winter.density.png": "5980e52f2efc390b5d88f475af717ada2ff931814788e55f318b7cd6a7dc2f12",
+        "assets/models/stevie/stevie.phone.tint.winter.png": "9a04636bb2f84fe7e76335e1b0b01ca522fca878070a60e422fc6b3baf003d4b",
+        "assets/models/stevie/stevie.phone.eyes.mask.png": "795838b2134eeea92899af7a715740fbaf2d1b29de72a45643968e042c5ba41d"
+      },
+      "source": "assets/models/stevie/stevie.phone.lod2.glb",
+      "sourceSha256": "2a32e0dbf4f609f7c275828c1ab289e972015b5e51f513148d085464fcec2071",
+      "sha256": "035d62e02a9bc7e8b046b56632493c7119b0f974e8f8941fc69a8216a22d6e29",
+      "sourceBytes": 8179580,
+      "bytes": 1137748,
+      "triangles": 5979
+    },
+    "assets/models/stevie/stevie.phone.tint.winter.ktx2": {
+      "source": "assets/models/stevie/stevie.phone.tint.winter.png",
+      "sourceSha256": "9a04636bb2f84fe7e76335e1b0b01ca522fca878070a60e422fc6b3baf003d4b",
+      "sha256": "adb5f85298fc683e13f412a68c388e12306184d39ecb8fd0bf5b002e121696f4",
+      "sourceBytes": 1083883,
+      "bytes": 95720,
+      "colourSpace": "srgb"
+    },
+    "assets/models/stevie/stevie.phone.eyes.mask.ktx2": {
+      "source": "assets/models/stevie/stevie.phone.eyes.mask.png",
+      "sourceSha256": "795838b2134eeea92899af7a715740fbaf2d1b29de72a45643968e042c5ba41d",
+      "sha256": "11579b3bf48ec6f54ad9df9e518a870189515dfe96772f1d54ee4c899b24d980",
+      "sourceBytes": 658699,
+      "bytes": 3590,
+      "colourSpace": "linear"
+    },
+    "assets/models/stevie/stevie.phone.groom.summer.length.ktx2": {
+      "source": "assets/models/stevie/stevie.phone.groom.summer.length.png",
+      "sourceSha256": "a0c061f2d648ccb74954bf49ec653c4ef775ef282043f84fb5dbf3ebd4a5d8da",
+      "sha256": "afad487f5d9202428f337542148b83aef20c628bfcd4fe18eda5210b91e5a597",
+      "sourceBytes": 1998192,
+      "bytes": 474475,
+      "colourSpace": "linear"
+    },
+    "assets/models/stevie/stevie.phone.groom.summer.direction.ktx2": {
+      "source": "assets/models/stevie/stevie.phone.groom.summer.direction.png",
+      "sourceSha256": "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26",
+      "sha256": "1e97df995b4e094c7b03440e7a9479f7c66d51d2e134ea9cf1a344978d8fa019",
+      "sourceBytes": 3233241,
+      "bytes": 1210503,
+      "colourSpace": "linear"
+    },
+    "assets/models/stevie/stevie.phone.groom.summer.density.ktx2": {
+      "source": "assets/models/stevie/stevie.phone.groom.summer.density.png",
+      "sourceSha256": "85bfc74fda41a6c82b56e915b2e43fd67adc3989669b56f3179b99b062659eae",
+      "sha256": "0de6c249fbcd308f6c74329fb2cc554bb520c480a2a825fe03fab1845a97b066",
+      "sourceBytes": 1505628,
+      "bytes": 282664,
+      "colourSpace": "linear"
+    },
+    "assets/models/stevie/stevie.phone.groom.winter.length.ktx2": {
+      "source": "assets/models/stevie/stevie.phone.groom.winter.length.png",
+      "sourceSha256": "69bc47b29a3ad98f1b1dff1b1d763cfd709d51d782a20cbee0ee641d3e1b8f97",
+      "sha256": "030baad3c1e45cd61357493b5ad407a659c9e0dc7393a56cb27f907e0de04947",
+      "sourceBytes": 2106735,
+      "bytes": 496940,
+      "colourSpace": "linear"
+    },
+    "assets/models/stevie/stevie.phone.groom.winter.direction.ktx2": {
+      "source": "assets/models/stevie/stevie.phone.groom.winter.direction.png",
+      "sourceSha256": "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26",
+      "sha256": "1e97df995b4e094c7b03440e7a9479f7c66d51d2e134ea9cf1a344978d8fa019",
+      "sourceBytes": 3233241,
+      "bytes": 1210503,
+      "colourSpace": "linear"
+    },
+    "assets/models/stevie/stevie.phone.groom.winter.density.ktx2": {
+      "source": "assets/models/stevie/stevie.phone.groom.winter.density.png",
+      "sourceSha256": "5980e52f2efc390b5d88f475af717ada2ff931814788e55f318b7cd6a7dc2f12",
+      "sha256": "0756332b03e6a54cf0f2b032f71beb1f5665fafdb90611d9377145b0d935262c",
+      "sourceBytes": 918462,
+      "bytes": 274480,
+      "colourSpace": "linear"
     }
   }
 }

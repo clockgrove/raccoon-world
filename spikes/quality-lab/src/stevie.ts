@@ -4,7 +4,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
 import { attribute, color, float, fract, mix, mx_noise_float, smoothstep, texture, uv, vec2 } from "three/tsl";
 import { furShell } from "../../ceiling-3d/src/materials.ts";
-import type { FurShells } from "./config.ts";
+import type { FurShells, LevelMode } from "./config.ts";
 import { groomMaterial, loadGroom, type Coat, type FurMode, type GroomAsset, type TrackGroomDownload } from "./groom.ts";
 
 // biome-ignore lint/suspicious/noExplicitAny: three objects and node graphs crossing the loader boundary.
@@ -24,7 +24,8 @@ export interface LabStevie {
   update(seconds: number): void;
 }
 
-const SOURCE = "assets/models/stevie/stevie.glb";
+const SOURCE_DIR = "assets/models/stevie";
+const SOURCE = `${SOURCE_DIR}/stevie.glb`;
 const RECORDED_SPEED = 0.267756;
 const FUR_LENGTH = 0.012;
 const MAX_FIN_EDGES = 5000;
@@ -133,6 +134,11 @@ export interface StevieAsset {
   /** The URL the model was loaded from, and the body mesh's local units in metres along each axis. */
   url: string;
   bind: BindScale;
+  /** The level file's name under media/, its detail level (0 for stevie.glb), its tier and the largest texture it draws with. */
+  file: string;
+  level: number;
+  tier: "desktop" | "phone";
+  textureMaxPx: number;
 }
 
 export interface BindScale {
@@ -176,9 +182,20 @@ function bindScale(scene: THREE.Object3D, eyesMaterial: string): BindScale {
   return { metresPerUnit, sizeM };
 }
 
-export async function loadStevieAsset(url: string, onProgress?: (event: ProgressEvent) => void, loader = new GLTFLoader(), trackGroom?: TrackGroomDownload): Promise<StevieAsset> {
+const pixels = (map: Any): number => Math.max(map?.image?.width ?? 0, map?.image?.height ?? 0, map?.mipmaps?.[0]?.width ?? 0);
+
+export async function loadStevieAsset(url: string, onProgress?: (event: ProgressEvent) => void, loader = new GLTFLoader(), trackGroom?: TrackGroomDownload, options: { tier?: "phone"; level?: number } = {}): Promise<StevieAsset> {
   const started = performance.now();
-  const [gltf, groom]: [Any, GroomAsset] = await Promise.all([loader.loadAsync(url, onProgress), loadGroom(url, loader, trackGroom)]);
+  const [gltf, groom]: [Any, GroomAsset] = await Promise.all([loader.loadAsync(url, onProgress), loadGroom(url, loader, trackGroom, options.tier)]);
+  if (options.tier) {
+    // The phone tier's base colour is the level file's own embedded 1024 px map.
+    let embedded: Any = null;
+    gltf.scene.traverse((node: Any) => {
+      if (node.isMesh && !embedded && node.material.name !== groom.manifest.model.eyes.material) embedded = node.material.map;
+    });
+    if (!embedded) throw new Error(`${url}: the phone level carries no base colour texture`);
+    groom.baseColor = embedded;
+  }
   gltf.scene.traverse((node: Any) => {
     if (!node.isMesh) return;
     for (const material of Array.isArray(node.material) ? node.material : [node.material]) {
@@ -189,7 +206,8 @@ export async function loadStevieAsset(url: string, onProgress?: (event: Progress
   const clip: THREE.AnimationClip = gltf.animations.find((c: THREE.AnimationClip) => c.name === "walk") ?? gltf.animations[0];
   if (!clip) throw new Error("Stevie's glTF holds no walk clip");
   const bind = bindScale(gltf.scene, groom.manifest.model.eyes.material);
-  return { gltf, groom, clip, speedMps: groom.manifest.model.clips.find((c: Any) => c.name === "walk")?.speedMps ?? recordedSpeed(gltf), loadMs: Math.round(performance.now() - started), shellMaterials: new Map(), fins: new Map(), url, bind };
+  const textureMaxPx = Math.max(pixels(groom.baseColor), pixels(groom.eyes), pixels(groom.winterTint), ...Object.values(groom.coats).flatMap((c) => [pixels(c.length), pixels(c.direction), pixels(c.density)]));
+  return { gltf, groom, clip, speedMps: groom.manifest.model.clips.find((c: Any) => c.name === "walk")?.speedMps ?? recordedSpeed(gltf), loadMs: Math.round(performance.now() - started), shellMaterials: new Map(), fins: new Map(), url, bind, file: new URL(url, document.baseURI).pathname.split("/media/").at(-1)!.replace(/^source\//u, ""), level: options.level ?? 0, tier: options.tier ?? "desktop", textureMaxPx };
 }
 
 /**
@@ -298,8 +316,12 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
     if (node.isMesh) triangles += (node.geometry.getIndex()?.count ?? node.geometry.getAttribute("position").count) / 3;
   });
   const metrics: Record<string, unknown> = {
-    source: SOURCE,
+    source: asset.tier === "phone" || asset.level > 0 ? `${SOURCE_DIR}/${asset.file}` : SOURCE,
     url: asset.url,
+    file: asset.file,
+    level: asset.level,
+    tier: asset.tier,
+    textureMaxPx: asset.textureMaxPx,
     contentHash: asset.groom.manifest.contentHash,
     metresPerUnit: metresPerUnit.toArray(),
     bindSizeM: asset.bind.sizeM.toArray(),
@@ -347,7 +369,7 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
       const perUnit = (top?.material as Any)?.userData?.unitsPerMetre as number[] | undefined;
       metrics.drawnMaxLengthM = perUnit ? perUnit.map((u, i) => (metrics.maxLengthM as number) * u * metresPerUnit.getComponent(i)) : null;
       metrics.groom = asset.groom.coats[coat].paths;
-      metrics.baseColor = asset.groom.manifest.model.textures.baseColor.path;
+      metrics.baseColor = asset.groom.manifest.model.textures.baseColor?.path ?? `${asset.file} (embedded)`;
       metrics.eyesMask = asset.groom.manifest.model.eyes.path;
       metrics.winterTint = coat === "winter" && furMode === "groomed" ? asset.groom.manifest.model.textures.tint.winter.path : null;
     },
@@ -363,7 +385,150 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
   };
 }
 
-export async function loadStevie(url: string, loop: WalkLoop, onProgress?: (event: ProgressEvent) => void, loader = new GLTFLoader(), trackGroom?: TrackGroomDownload): Promise<LabStevie & { asset: StevieAsset }> {
-  const asset = await loadStevieAsset(url, onProgress, loader, trackGroom);
-  return Object.assign(createStevie(asset, loop), { asset });
+
+/**
+ * Stevie's files, loaded one level set at a time: today's single level 0, or the phone tier's levels (finest first) with
+ * their switch heights. A page loads only its own mode's set; the other loads when the panel or Compare levels asks.
+ */
+export interface StevieKit {
+  single: StevieAsset | null;
+  phone: { asset: StevieAsset; minScreenHeight: number }[] | null;
+  /** Loads a mode's files once (later calls share the first load); resolves when they are ready. */
+  ensure(mode: LevelMode): Promise<void>;
+  /** A loaded asset of either set, for the body's height and walk speed (the levels share both). */
+  readonly any: StevieAsset;
+}
+
+export interface LevelledStevie extends LabStevie {
+  /** Switches to a mode whose files the kit has loaded (await kit.ensure(mode) first). */
+  setMode(mode: LevelMode): void;
+  /** Picks the level for this fraction of the viewport height (the finest whose minScreenHeight it reaches). */
+  selectLevel(screenHeight: number): void;
+  /** Shows every level of the mode (true) so the scene compiles them all, or only the drawn one (false). */
+  prepare(all: boolean): void;
+}
+
+type Level = { stevie: LabStevie; minScreenHeight: number };
+
+/**
+ * One raccoon made from the kit's level files. Only the mode's drawn level is visible; each level keeps its own
+ * skeleton, shells and fins, built when its mode is first used, so a switch while walking is a visibility change.
+ */
+export function createLevelled(kit: StevieKit, loop: WalkLoop, options: { clone?: boolean; phase?: number } = {}, mode: LevelMode = "single"): LevelledStevie {
+  const root = new THREE.Group();
+  root.name = options.clone ? "raccoon" : "stevie";
+  const built: { single: Level[] | null; phone: Level[] | null } = { single: null, phone: null };
+  let fur: Parameters<LabStevie["setFur"]> | null = null;
+  const build = (m: LevelMode): Level[] => {
+    const existing = built[m];
+    if (existing) return existing;
+    const assets = m === "phone" ? kit.phone : kit.single ? [{ asset: kit.single, minScreenHeight: 0 }] : null;
+    if (!assets) throw new Error(`Stevie's ${m} levels are not loaded`);
+    const levels = assets.map(({ asset, minScreenHeight }) => ({ stevie: createStevie(asset, loop, options), minScreenHeight }));
+    for (const entry of levels) {
+      entry.stevie.root.visible = false;
+      root.add(entry.stevie.root);
+      if (fur) entry.stevie.setFur(...fur);
+    }
+    built[m] = levels;
+    return levels;
+  };
+  const levels = () => build(mode);
+  const all = () => [...(built.single ?? []), ...(built.phone ?? [])];
+  const position = new THREE.Vector3();
+  let active = levels()[0]!;
+  let time = 0;
+  const show = (everything: boolean) => {
+    const shown = levels();
+    for (const entry of all()) entry.stevie.root.visible = shown.includes(entry) && (everything || entry === active);
+  };
+  show(false);
+  return {
+    root,
+    position,
+    get speedMps() {
+      return active.stevie.speedMps;
+    },
+    get metrics() {
+      return { ...active.stevie.metrics, mode, drawnFile: active.stevie.metrics.file };
+    },
+    setMode(next) {
+      mode = next;
+      const shown = levels();
+      shown[0]!.stevie.update(time);
+      active = shown[0]!;
+      show(false);
+    },
+    selectLevel(screenHeight) {
+      const shown = levels();
+      const next = shown.find((entry) => screenHeight >= entry.minScreenHeight) ?? shown.at(-1)!;
+      if (next === active) return;
+      // The level just chosen continues the walk where the last one was.
+      next.stevie.update(time);
+      active = next;
+      show(false);
+    },
+    prepare: show,
+    setFur(...args) {
+      fur = args;
+      for (const entry of all()) entry.stevie.setFur(...args);
+    },
+    update(seconds) {
+      time = seconds;
+      active.stevie.update(seconds);
+      position.copy(active.stevie.position);
+    },
+  };
+}
+
+/** Reports one file's download, with the level set it belongs to. */
+export type TrackLevelDownload = (key: string, mode: LevelMode) => ReturnType<TrackGroomDownload>;
+
+/**
+ * Loads the manifest's chain, then only `mode`'s files: level 0 (stevie.glb and its maps), or the phone tier's levels
+ * as the chain lists them (phone: levels 1 and 2, each drawn down to its minScreenHeight, with the phone's 1024 px
+ * maps). `model` maps a file name to its URL; `trackModel` and `trackGroom` report each model and map download.
+ */
+export async function loadStevieKit(model: (file: string) => string, trackModel: TrackLevelDownload, loader = new GLTFLoader(), trackGroom: TrackLevelDownload | undefined, mode: LevelMode): Promise<StevieKit> {
+  const load = (file: string, set: LevelMode, options?: { tier?: "phone"; level?: number }) => {
+    const download = trackModel(file, set);
+    return loadStevieAsset(model(file), download.onProgress, loader, trackGroom && ((key) => trackGroom(key, set)), options).finally(download.finish);
+  };
+  const sourceMedia = model("stevie.glb").includes("/source/");
+  const manifest = await fetch(new URL(`assets/models/stevie/${sourceMedia ? "source-manifest" : "manifest"}.json`, new URL(sourceMedia ? "../" : "./", model("stevie.glb")))).then((r) => {
+    if (!r.ok) throw new Error(`Stevie manifest: HTTP ${r.status}`);
+    return r.json();
+  });
+  const chain = manifest.model.chain;
+  const names = chain.tiers.find((t: Any) => t.name === "phone").levels as number[];
+  const heights = Object.fromEntries(chain.levels.map((l: Any) => [l.level, l.minScreenHeight]));
+  const phoneLevels = Object.values(manifest.model.tiers.phone.levels) as Any[];
+  const loading: Partial<Record<LevelMode, Promise<void>>> = {};
+  const kit: StevieKit = {
+    single: null,
+    phone: null,
+    ensure(set) {
+      loading[set] ??= set === "single"
+        ? load("stevie.glb", "single").then((asset) => {
+            kit.single = asset;
+          })
+        : Promise.all(names.map((level) => {
+            const entry = phoneLevels.find((l) => l.level === level);
+            const file = String(entry.path).split("/").at(-1)!;
+            return load(file, "phone", { tier: "phone", level }).then((asset) => ({ asset, minScreenHeight: heights[level] as number }));
+          })).then((phone) => {
+            kit.phone = phone;
+          });
+      // A failed load can be asked for again.
+      loading[set]!.catch(() => delete loading[set]);
+      return loading[set]!;
+    },
+    get any() {
+      const asset = kit.single ?? kit.phone?.[0]?.asset;
+      if (!asset) throw new Error("no Stevie level is loaded");
+      return asset;
+    },
+  };
+  await kit.ensure(mode);
+  return kit;
 }

@@ -5,6 +5,8 @@
 /** Fur shells drawn over Stevie's body (0 = none). */
 export type Coat = "summer" | "winter";
 export type FurMode = "groomed" | "uniform";
+/** Which of Stevie's files is drawn: today's single level 0, or the phone tier's levels chosen by his height on screen. */
+export type LevelMode = "single" | "phone";
 export type FurShells = 0 | 4 | 8 | 16;
 export type Antialias = "none" | "msaa" | "traa";
 /** Upscaling: the scene is drawn at RENDER_SCALE of the canvas and brought back up by TAAU or FSR 1. */
@@ -17,6 +19,8 @@ export type Upscale = "none" | "taau" | "fsr";
 export interface LabConfig {
   coat: Coat;
   furMode: FurMode;
+  /** Stevie's levels. Left out, the page's default for its platform: the phone levels on a phone, else level 0. */
+  levels?: LevelMode;
   /** Fur: shell count. */
   furShells: FurShells;
   /** Fur: silhouette fins. */
@@ -53,7 +57,7 @@ export interface LabConfig {
   cast: Cast;
 }
 
-export type Knob = Exclude<keyof LabConfig, "coat" | "furMode">;
+export type Knob = Exclude<keyof LabConfig, "coat" | "furMode" | "levels">;
 
 /** The scale the scene pass draws at when an upscaler is on. */
 export const RENDER_SCALE = 0.67;
@@ -300,7 +304,10 @@ export const BUDGET_SLACK = 1.1;
 export const targetMs = (platform: Platform) => 1000 / TARGET_FPS[platform];
 export const budgetMs = (platform: Platform) => targetMs(platform) * BUDGET_SLACK;
 
-export type ViewName = "yard" | "close";
+/** The yard as framed, the close-up, and the yard zoomed out to FAR_ZOOM (Stevie below his phone level 1's 5% of the height). */
+export type ViewName = "yard" | "close" | "far";
+/** The zoomed-out yard's zoom, as a fraction of the yard's: the yard puts Stevie at about 7% of the height, this at about 4%. */
+export const FAR_ZOOM = 0.6;
 export type StateName = "dusk" | "night";
 
 export interface Measurement {
@@ -339,8 +346,21 @@ export interface DeviceInfo {
   screen: [number, number];
   /** Seconds each loading step took: the renderer, the models (download and decode), the first shader compile. */
   loadS: { graphics: number | null; models: number | null; shaders: number | null };
-  /** Bytes the models downloaded (compressed web media). */
+  /** Bytes the models downloaded to start the page (compressed web media): the props and the page's own level set. */
   modelMb: number | null;
+  /** Bytes each of Stevie's level sets downloaded (its model files and maps); null until the set is loaded. */
+  levelsMb: Record<LevelMode, number | null>;
+}
+
+/** The Stevie file the page draws now, for the report and the journey. */
+export interface DrawnLevel {
+  mode: LevelMode;
+  level: number;
+  file: string;
+  triangles: number;
+  textureMaxPx: number;
+  /** His height as a fraction of the viewport height at the last frame (the level switch's input). */
+  screenHeight: number | null;
 }
 
 export interface LabStatus {
@@ -359,6 +379,8 @@ export interface LabStatus {
   /** Triangles in the visible scene now, and drawn by the GPU in the last frame (every pass). */
   triangles: number;
   drawnTriangles: number | null;
+  /** The level file Stevie is drawn from, with its triangle count; null before he loads. */
+  stevie: DrawnLevel | null;
   config: LabConfig;
   view: ViewName;
   state: StateName;

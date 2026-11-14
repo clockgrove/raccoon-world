@@ -10,11 +10,11 @@ import { anchor, placeCamera, STATES, VIEWS } from "../../ceiling-3d/src/look.ts
 import { ground, puddleSky, rippleStrength, wetness } from "../../ceiling-3d/src/materials.ts";
 import { loadProps } from "../../ceiling-3d/src/props.ts";
 import { buildSet, lampStrength, rain } from "../../ceiling-3d/src/set.ts";
-import { type LabConfig, type LabHandle, type LabStatus, type Measurement, type Platform, PRESETS, type PresetName, type StateName, type ViewName } from "./config.ts";
+import { FAR_ZOOM, type LabConfig, type LabHandle, type LevelMode, type LabStatus, type Measurement, type Platform, PRESETS, type PresetName, type StateName, type ViewName } from "./config.ts";
 import { buildPipeline, grade, type Pipeline } from "./pipeline.ts";
 import { GeometryDetail, sceneTriangles } from "./detail.ts";
 import { webMediaLoader } from "./loader.ts";
-import { createStevie, type LabStevie, loadStevie, type StevieAsset } from "./stevie.ts";
+import { createLevelled, type LevelledStevie, loadStevieKit, type StevieKit } from "./stevie.ts";
 import { mountUi } from "./ui.ts";
 
 // biome-ignore lint/suspicious/noExplicitAny: TSL nodes and backend internals.
@@ -36,6 +36,8 @@ function detectPlatform(): Platform {
   return /Mobi|Android|iPhone|iPad|iPod/u.test(navigator.userAgent) ? "phone" : "desktop";
 }
 const platform = detectPlatform();
+/** The phone platform draws Stevie's phone levels; `?levels=phone|single` overrides, to compare either on any device. */
+const defaultLevels: LevelMode = query.get("levels") === "phone" || query.get("levels") === "single" ? (query.get("levels") as LevelMode) : platform === "phone" ? "phone" : "single";
 
 const renderer = new THREE.WebGPURenderer({ antialias: false, forceWebGL, trackTimestamp: true } as Any);
 const sceneEl = document.getElementById("scene");
@@ -166,18 +168,19 @@ function ensureProbes() {
 
 // ---- Stevie walks a loop on the open ground of puddles and stepping stones in front of the porch steps ----
 const LOOP = { centre: anchor(480, 680), radius: 0.65 };
-let stevie: (LabStevie & { asset: StevieAsset }) | null = null;
+let stevie: LevelledStevie | null = null;
+let kit: StevieKit | null = null;
 /**
  * The rest of the cast: clones of Stevie's rig, each with its own skeleton and walk, on loops around his (radii
  * 0.35 to 1.6 m, spread along each loop). Built once as the count first rises, then shown or hidden.
  */
-const castExtras: LabStevie[] = [];
+const castExtras: LevelledStevie[] = [];
 function setCast(count: number) {
-  if (!stevie) return;
+  if (!stevie || !kit) return;
   while (castExtras.length < count - 1) {
     const i = castExtras.length;
     const radius = 0.35 + 0.25 * (i % 6);
-    const raccoon = createStevie(stevie.asset, { centre: LOOP.centre, radius }, { clone: true, phase: (i * 7.3) % 60 });
+    const raccoon = createLevelled(kit, { centre: LOOP.centre, radius }, { clone: true, phase: (i * 7.3) % 60 }, config.levels ?? defaultLevels);
     scene.add(raccoon.root);
     castExtras.push(raccoon);
   }
@@ -187,9 +190,28 @@ function setCast(count: number) {
 }
 const shownCast = () => castExtras.filter((r) => r.root.visible);
 
+/** A raccoon's height on screen as a fraction of the viewport's height: his body height projected at his position. */
+const footPoint = new THREE.Vector3();
+const headPoint = new THREE.Vector3();
+let screenHeight: number | null = null;
+function projectedHeight(at: THREE.Vector3): number {
+  const heightM = kit?.any.bind.sizeM.y ?? 0.45;
+  footPoint.set(at.x, at.y, 0).project(camera);
+  headPoint.set(at.x, at.y, heightM).project(camera);
+  return Math.abs(headPoint.y - footPoint.y) / 2;
+}
+/** Each raccoon draws the level its own height on screen calls for (the camera is already placed). */
+function selectLevels() {
+  if (stevie) {
+    screenHeight = projectedHeight(stevie.position);
+    stevie.selectLevel(screenHeight);
+  }
+  for (const raccoon of shownCast()) raccoon.selectLevel(projectedHeight(raccoon.position));
+}
+
 // ---- State ----
 let config: LabConfig = { ...(PRESETS[(query.get("preset") as PresetName) ?? "medium"] ?? PRESETS.medium) };
-let view: ViewName = query.get("view") === "close" ? "close" : "yard";
+let view: ViewName = query.get("view") === "close" ? "close" : query.get("view") === "far" ? "far" : "yard";
 let state: StateName = query.get("state") === "night" ? "night" : "dusk";
 let current: Pipeline | null = null;
 let ready = false;
@@ -213,6 +235,11 @@ function placeView() {
     const focus = stevie.position.clone().setZ(0.2);
     placeCamera(camera, { label: "close-up", zoom: CLOSE_ZOOM, focus: () => focus }, aspect);
   } else placeCamera(camera, VIEWS.hero, aspect);
+  if (view === "far") {
+    // The yard zoomed out: Stevie below his phone level 1's minimum height, so the phone draws its coarsest level.
+    camera.zoom *= FAR_ZOOM;
+    camera.updateProjectionMatrix();
+  }
 }
 
 let appliedState: StateName | null = null;
@@ -284,6 +311,7 @@ function render() {
   for (const raccoon of shownCast()) raccoon.update(t);
   shower.update(t);
   placeView();
+  selectLevels();
   renderer.info.reset();
   current?.pipeline.render();
   drawnTriangles = renderer.info.render.triangles;
@@ -297,12 +325,16 @@ async function applyConfig(next: LabConfig) {
   busy = true;
   try {
     config = { coat: "summer", furMode: "groomed", ...next };
+    config.levels ??= defaultLevels;
     // Resizing the canvas clears it; only a pixel-ratio change needs it, so the last frame stays up during a rebuild.
     if (renderer.getPixelRatio() !== config.dpr) {
       renderer.setPixelRatio(config.dpr);
       renderer.setSize(...viewSize(), false);
     }
+    // A level set the page has not loaded (the other mode, from the panel or Compare levels) loads now, once.
+    await kit?.ensure(config.levels);
     setCast(config.cast);
+    for (const raccoon of [...(stevie ? [stevie] : []), ...castExtras]) raccoon.setMode(config.levels);
     stevie?.setFur(config.furShells, config.furFins, config.coat ?? "summer", config.furMode ?? "groomed");
     for (const raccoon of shownCast()) raccoon.setFur(config.furShells, config.furFins, config.coat ?? "summer", config.furMode ?? "groomed");
     detail?.set(config.detail);
@@ -335,7 +367,15 @@ async function applyConfig(next: LabConfig) {
     current = buildPipeline(config, { renderer, scene, camera, shaftLight: porchLight, hazeLayer: HAZE_LAYER, hazeMaterial });
     applyState();
     placeView();
-    await renderer.compileAsync(scene, camera);
+    selectLevels();
+    // Every level of the mode is compiled now, so the first switch while walking draws without a stall.
+    const raccoons = [...(stevie ? [stevie] : []), ...shownCast()];
+    for (const raccoon of raccoons) raccoon.prepare(true);
+    try {
+      await renderer.compileAsync(scene, camera);
+    } finally {
+      for (const raccoon of raccoons) raccoon.prepare(false);
+    }
     // One frame finishes what compileAsync leaves for the first draw (the post graph); measure() warms up after it.
     render();
     await nextFrame();
@@ -417,6 +457,12 @@ async function adapterString(): Promise<string> {
   return String(ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
 }
 
+function drawnLevel(): LabStatus["stevie"] {
+  const m = stevie?.metrics;
+  if (!m) return null;
+  return { mode: m.mode as LevelMode, level: m.level as number, file: m.drawnFile as string, triangles: m.triangles as number, textureMaxPx: m.textureMaxPx as number, screenHeight: screenHeight === null ? null : Math.round(screenHeight * 1000) / 1000 };
+}
+
 const lab: LabHandle & Record<string, unknown> = {
   status(): LabStatus {
     return {
@@ -431,6 +477,7 @@ const lab: LabHandle & Record<string, unknown> = {
       canvas: [renderer.domElement.width, renderer.domElement.height],
       triangles: sceneTriangles(scene),
       drawnTriangles,
+      stevie: drawnLevel(),
       config: { ...config },
       view,
       state,
@@ -442,6 +489,7 @@ const lab: LabHandle & Record<string, unknown> = {
         screen: [Math.round(screen.width * devicePixelRatio), Math.round(screen.height * devicePixelRatio)],
         loadS: { ...loadS },
         modelMb,
+        levelsMb: levelsMb(),
       },
     };
   },
@@ -633,6 +681,8 @@ const watchdog = setInterval(() => {
 // Download progress against the build's manifest of model sizes (the server gzips, so its lengths are compressed).
 const downloads = new Map<string, { loaded: number; total: number; done: boolean }>();
 function paintDownloads() {
+  // A level set loaded after the page is ready (the panel or Compare levels) is reported in levelsMb, not the load screen.
+  if (ready) return;
   let loaded = 0;
   let total = 0;
   let done = 0;
@@ -650,6 +700,20 @@ function paintDownloads() {
   if (bar) bar.style.width = `${Math.round(fraction * 100)}%`;
   loadBar?.setAttribute("aria-valuenow", String(Math.round(fraction * 100)));
 }
+/** Each of Stevie's level sets' downloads, by key, so each set's bytes are reported on their own. */
+const levelDownloads: Record<LevelMode, Set<string>> = { single: new Set(), phone: new Set() };
+function trackedLevel(key: string, mode: LevelMode, size: number | undefined) {
+  levelDownloads[mode].add(key);
+  return tracked(key, size);
+}
+const levelsMb = (): Record<LevelMode, number | null> => {
+  const mb = (mode: LevelMode) => {
+    const keys = [...levelDownloads[mode]];
+    if (keys.length === 0 || keys.some((key) => !downloads.get(key)?.done)) return null;
+    return Math.round(keys.reduce((sum, key) => sum + (downloads.get(key)!.total || downloads.get(key)!.loaded), 0) / 1e5) / 10;
+  };
+  return { single: mb("single"), phone: mb("phone") };
+};
 function tracked(key: string, size: number | undefined) {
   const entry = { loaded: 0, total: size ?? 0, done: false };
   downloads.set(key, entry);
@@ -682,11 +746,10 @@ async function init() {
   beginStep("models", "Downloading");
   // The display's refresh, measured while nothing is drawn yet (the renderer's loop starts after the shaders).
   void probeRefresh();
-  const stevieDownload = tracked("stevie.glb", manifest[model("stevie.glb")]);
   const propDownloads = Object.fromEntries(Object.keys(set.slots).map((name) => [name, tracked(`props/${name}.glb`, manifest[model(`props/${name}.glb`)])]));
   paintDownloads();
   const [loaded] = await Promise.all([
-    loadStevie(media(model("stevie.glb")), LOOP, stevieDownload.onProgress, gltf, (key) => tracked(key, manifest[key])).finally(stevieDownload.finish),
+    loadStevieKit((file) => media(model(file)), (file, mode) => trackedLevel(file, mode, manifest[model(file)]), gltf, (key, mode) => trackedLevel(key, mode, manifest[key]), defaultLevels),
     loadProps(set.slots, set.groups.props as THREE.Object3D, media(model("props/")), {
       onProgress: (name, event) => propDownloads[name]?.onProgress(event),
       onDone: (name) => propDownloads[name]?.finish(),
@@ -696,7 +759,8 @@ async function init() {
   const total = [...downloads.values()].reduce((sum, d) => sum + (d.total || d.loaded), 0);
   modelMb = Math.round(total / 1e5) / 10;
   finishStep("models", `${MB(total)} MB in ${elapsed(stepStarted)}`);
-  stevie = loaded;
+  kit = loaded;
+  stevie = createLevelled(kit, LOOP, {}, defaultLevels);
   scene.add(stevie.root);
   // The triangle stress tier covers the set and its props; the rain and splashes stay as they are.
   detail = new GeometryDetail([set.root], [shower.mesh, splashes]);

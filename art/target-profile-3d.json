@@ -27,7 +27,8 @@
       "textureMediaTypes": ["image/png", "image/jpeg"],
       "ktx2": "not required",
       "clipFields": { "name": "name", "durationMs": "durationMs", "loop": "loop", "generated": "generated" },
-      "sideImages": "embedded"
+      "sideImages": "embedded",
+      "lods": "files"
     },
     "shipped": {
       "container": "glb",
@@ -178,7 +179,10 @@
       "rig": "{{output.rig}}",
       "groom": "{{output.groom?}}",
       "textures": "{{output.textures?}}",
-      "eyes": "{{output.eyes?}}"
+      "eyes": "{{output.eyes?}}",
+      "levels": "{{output.levels?}}",
+      "tiers": "{{output.tiers?}}",
+      "chain": "{{output.chain?}}"
     },
     "contentHash": "{{output.sha256}}",
     "accessibilityLabel": "{{spec.fields.accessibilityLabel?}}"

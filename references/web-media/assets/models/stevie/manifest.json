@@ -144,12 +144,144 @@
       "material": "eyes",
       "path": "assets/models/stevie/stevie.eyes.mask.ktx2",
       "sha256": "1584d84cf521fc3ff7fe15f2ebb45107ab2586886ab06b51de4c8dab478c9614"
+    },
+    "levels": {
+      "lod1": {
+        "level": 1,
+        "triangles": 19747,
+        "triangleRatio": 0.33,
+        "minScreenHeight": 0.05,
+        "path": "assets/models/stevie/stevie.lod1.glb",
+        "sha256": "cbd8bbcaed59670d694d65ff81ebdde2b0487635a964c45930339cece6a7ec22"
+      },
+      "lod2": {
+        "level": 2,
+        "triangles": 5979,
+        "triangleRatio": 0.1,
+        "minScreenHeight": 0,
+        "path": "assets/models/stevie/stevie.lod2.glb",
+        "sha256": "6fe28c69080a85bd74f387944587bd8c1545dd6e21a5f0c6042d69c94c5f916f"
+      }
+    },
+    "tiers": {
+      "phone": {
+        "levels": {
+          "lod1": {
+            "level": 1,
+            "triangles": 19747,
+            "triangleRatio": 0.33,
+            "minScreenHeight": 0.05,
+            "textureMaxPx": 1024,
+            "path": "assets/models/stevie/stevie.phone.lod1.glb",
+            "sha256": "29845d664f5bbe2432ee71a2ddd4b5c2ffc7ef567acde21c9f9413e045c50a60"
+          },
+          "lod2": {
+            "level": 2,
+            "triangles": 5979,
+            "triangleRatio": 0.1,
+            "minScreenHeight": 0,
+            "textureMaxPx": 1024,
+            "path": "assets/models/stevie/stevie.phone.lod2.glb",
+            "sha256": "2a32e0dbf4f609f7c275828c1ab289e972015b5e51f513148d085464fcec2071"
+          }
+        },
+        "groom": {
+          "summer": {
+            "length": {
+              "maxLengthM": 0.04,
+              "path": "assets/models/stevie/stevie.phone.groom.summer.length.ktx2",
+              "sha256": "afad487f5d9202428f337542148b83aef20c628bfcd4fe18eda5210b91e5a597"
+            },
+            "direction": {
+              "path": "assets/models/stevie/stevie.phone.groom.summer.direction.ktx2",
+              "sha256": "1e97df995b4e094c7b03440e7a9479f7c66d51d2e134ea9cf1a344978d8fa019"
+            },
+            "density": {
+              "path": "assets/models/stevie/stevie.phone.groom.summer.density.ktx2",
+              "sha256": "0de6c249fbcd308f6c74329fb2cc554bb520c480a2a825fe03fab1845a97b066"
+            }
+          },
+          "winter": {
+            "length": {
+              "maxLengthM": 0.08,
+              "path": "assets/models/stevie/stevie.phone.groom.winter.length.ktx2",
+              "sha256": "030baad3c1e45cd61357493b5ad407a659c9e0dc7393a56cb27f907e0de04947"
+            },
+            "direction": {
+              "path": "assets/models/stevie/stevie.phone.groom.winter.direction.ktx2",
+              "sha256": "1e97df995b4e094c7b03440e7a9479f7c66d51d2e134ea9cf1a344978d8fa019"
+            },
+            "density": {
+              "path": "assets/models/stevie/stevie.phone.groom.winter.density.ktx2",
+              "sha256": "0756332b03e6a54cf0f2b032f71beb1f5665fafdb90611d9377145b0d935262c"
+            }
+          }
+        },
+        "textures": {
+          "tint": {
+            "winter": {
+              "path": "assets/models/stevie/stevie.phone.tint.winter.ktx2",
+              "sha256": "adb5f85298fc683e13f412a68c388e12306184d39ecb8fd0bf5b002e121696f4"
+            }
+          }
+        },
+        "eyes": {
+          "material": "eyes",
+          "path": "assets/models/stevie/stevie.phone.eyes.mask.ktx2",
+          "sha256": "11579b3bf48ec6f54ad9df9e518a870189515dfe96772f1d54ee4c899b24d980"
+        }
+      }
+    },
+    "chain": {
+      "packaging": "files",
+      "levels": [
+        {
+          "level": 0,
+          "triangleRatio": 1,
+          "minScreenHeight": 0.15,
+          "triangles": 59847,
+          "passed": true
+        },
+        {
+          "level": 1,
+          "triangleRatio": 0.33,
+          "minScreenHeight": 0.05,
+          "triangles": 19747,
+          "passed": true
+        },
+        {
+          "level": 2,
+          "triangleRatio": 0.1,
+          "minScreenHeight": 0,
+          "triangles": 5979,
+          "passed": true
+        }
+      ],
+      "tiers": [
+        {
+          "name": "desktop",
+          "levels": [
+            0,
+            1,
+            2
+          ],
+          "textureMaxPx": 2048
+        },
+        {
+          "name": "phone",
+          "levels": [
+            1,
+            2
+          ],
+          "textureMaxPx": 1024
+        }
+      ]
     }
   },
   "contentHash": "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355",
   "accessibilityLabel": "Stevie, a stocky grey-brown raccoon with a dark eye mask and a ringed tail",
   "webMedia": {
     "sourceManifest": "assets/models/stevie/source-manifest.json",
-    "sourceSha256": "53abdf28a389824ac6c11a7bf8f8ac9b3883317f6033859be4140f1db8643120"
+    "sourceSha256": "f4f64ffba4511e7541f7c755784f7586b82c7287feffc795726f35dd08742f1d"
   }
 }

@@ -5,6 +5,7 @@
   "look": "character",
   "gait": "quadruped",
   "heightM": 0.45,
+  "tierClass": "character",
   "clips": ["idle", "walk", "sniff", "eat", "play", "shelter"],
   "fields": {
     "semantic": { "role": "actor", "entity": "grove.stevie" },
