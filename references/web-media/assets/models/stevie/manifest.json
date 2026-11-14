@@ -103,7 +103,7 @@
     },
     "rig": {
       "template": "rig/raccoon.json",
-      "sha256": "94d93e1e34d82e49df4fdb640321be2d29a82fe6fc28de4f0bcd034a336ef73d"
+      "sha256": "4c737626f8ae91be0f1bdceba709e5150a72dd7b0fa4e8a7cd8d5a41bb2a28a4"
     },
     "groom": {
       "summer": {
@@ -161,7 +161,7 @@
         "triangleRatio": 0.33,
         "minScreenHeight": 0.05,
         "path": "assets/models/stevie/stevie.lod1.glb",
-        "sha256": "119dbcb416e5add90b2016f5e4348e1be8ba210bde7d2c74a099c9a503778900"
+        "sha256": "43f1d6026ac6b1945f7e23a43cbad5b1d251cb6fac5e8abdffe03590c61987f3"
       },
       "lod2": {
         "level": 2,
@@ -169,7 +169,7 @@
         "triangleRatio": 0.1,
         "minScreenHeight": 0,
         "path": "assets/models/stevie/stevie.lod2.glb",
-        "sha256": "bcf0e812b1371b3e9552286f703239572a7fdb82ad846794b425b739582f2a20"
+        "sha256": "7440f4d25c055f3e614c24302ce815bbb2a5dfb2a95cb3d59422495e1289dd49"
       }
     },
     "tiers": {
@@ -182,7 +182,7 @@
             "minScreenHeight": 0.05,
             "textureMaxPx": 1024,
             "path": "assets/models/stevie/stevie.phone.lod1.glb",
-            "sha256": "679d4f5d4801a57aead38c56af14c7175a1110f8144676bb108ce67f3a55d19c"
+            "sha256": "0fe5e2df206b09d040344b4296a9844d36d887005cd3bce25a2343cfac85c668"
           },
           "lod2": {
             "level": 2,
@@ -191,7 +191,7 @@
             "minScreenHeight": 0,
             "textureMaxPx": 1024,
             "path": "assets/models/stevie/stevie.phone.lod2.glb",
-            "sha256": "de02a31c48a26114b1ee9cc2b5682d7f641680bfa0646e2a27fe4b191c9ccf1b"
+            "sha256": "9aca9008b3b49116e802d91df2605b33e5d27558e708da8c8bdf5a22c45e809f"
           }
         },
         "groom": {
@@ -287,10 +287,10 @@
       ]
     }
   },
-  "contentHash": "c0345317a6d05f45fc6a8cb7b3ce378f9b3eb80356f5fc51d674f173770a73cb",
+  "contentHash": "47d649aa861bc965545de678c8413b06b7a43365f4470eb3bb90c5c1f535929b",
   "accessibilityLabel": "Stevie, a stocky grey-brown raccoon with a dark eye mask and a ringed tail",
   "webMedia": {
     "sourceManifest": "assets/models/stevie/source-manifest.json",
-    "sourceSha256": "e5a80bf1cc7926a4c675a85f96b6f1e1d2733a853dd6055578463a1aa8509a55"
+    "sourceSha256": "7df348797d5338fbbabc0ad0534cd7ae80821543cc639b65cf6a6518ded07fcf"
   }
 }

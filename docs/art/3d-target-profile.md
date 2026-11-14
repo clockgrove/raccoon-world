@@ -109,7 +109,7 @@ The hand-off stays format-neutral (kirk-45, 2026-11-12). The validator never req
 
   | Joint | Limit | Was | Needed by |
   | --- | --- | --- | --- |
-  | `shoulder_*` | roll (z) ±30° | ±25° | play's hop (28.9°) |
+  | `shoulder_*` | roll (z) ±29° | ±25° | play's hop (28.9°) |
   | `elbow_*` | roll (z) ±28° | ±20° | play's hop (27.5°), eat's lifted paw (24.6°) |
   | `wrist_*` | yaw (y) ±22° | ±20° | play's hop (21.8°) |
   | `wrist_*` in stance | pitch (x) −55° to 41° | −55° to 30° | play's bow (40.1°) |

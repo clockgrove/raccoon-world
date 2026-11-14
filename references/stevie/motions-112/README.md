@@ -1,10 +1,11 @@
 # Stevie's idle, sniff, eat, play and shelter: previews for Kirk's pick (#112)
 
-These five motions are now committed on Stevie's model, `assets/models/stevie/stevie.glb` (sha256 `c0345317…a73cb`), with `review.status: pending`. This folder is the review material for **Kirk's pick**. Nothing here ships.
+These five motions are now committed on Stevie's model, `assets/models/stevie/stevie.glb` (sha256 `47d649aa…929b`), with `review.status: pending`. This folder is the review material for **Kirk's pick**. Nothing here ships.
 
 - **Pick:** Kirk picked on 2026-11-13 at 10:32 PM Seattle time, after reviewing these previews. He keeps all five motions (idle, sniff, eat, play and shelter), and none goes back for a redo. The model's `review.status` stays `pending`, because approval is a separate step for Kirk.
 
-- **Run:** 2026-11-14, `assetforge rig` at the pinned Assetforge (f7f31c0) on the approved model (`ac9b439c…f355`, #113) with its look-dev maps beside it. The rig template was `art/rig/raccoon.json` as committed here (sha256 `94d93e1e…f73d`), and the motions were `model3d.motions` from `art/target-profile-3d.json`. No model was called and nothing was spent ($0).
+- **Run:** 2026-11-14, `assetforge rig` at the pinned Assetforge (f7f31c0) on the approved model (`ac9b439c…f355`, #113) with its look-dev maps beside it. The rig template was `art/rig/raccoon.json` as committed here (sha256 `4c737626…28a4`), and the motions were `model3d.motions` from `art/target-profile-3d.json`. No model was called and nothing was spent ($0).
+- **Re-run after review:** the review of PR #122 narrowed shoulder roll from ±30° to ±29°, just past play's 28.9°. The same `rig`, `pick` and `lod` were run again on the narrowed template. The clips' bytes, and every preview and side view here, came out identical. Only the template's hash, and the hashes that follow from it, changed. Kirk's pick still applies to them.
 - **QA:** every check passed. Each of the six clips passed clip, contact, joint limits and skinning. The idle and the shelter also passed loop. Sniff, eat and play also passed `ends-<family>`: each starts and ends within 0.03° of the idle's first pose. The walk still passes its own QA.
 - **Detail levels:** `assetforge lod` then rebuilt the chain and the phone rendition from that model, so every level file carries all six clips (`lod-1-clips`, `lod-2-clips`).
 

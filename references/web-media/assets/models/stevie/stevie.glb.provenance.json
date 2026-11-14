@@ -70,7 +70,7 @@
     "rig": {
       "kind": "raccoon",
       "template": "rig/raccoon.json",
-      "templateSha256": "94d93e1e34d82e49df4fdb640321be2d29a82fe6fc28de4f0bcd034a336ef73d",
+      "templateSha256": "4c737626f8ae91be0f1bdceba709e5150a72dd7b0fa4e8a7cd8d5a41bb2a28a4",
       "gaits": {
         "walk": {
           "sha256": "2e36c769473672a52f6c277af3f95db67ec82442cd29c551078fd7ccb9fcf569",
@@ -532,7 +532,7 @@
         "maxMovedBodyLengths": 0.04
       }
     },
-    "targetProfileSha256": "8c907cd59590114f00939741299562115380bc26d66b3ee9a1b5789c20a230d9",
+    "targetProfileSha256": "8b5cd9cdea2918cba7df1f3b21953d1598abdad905752b1ba42df38db66e609a",
     "rerig": {
       "sourceModel": "stevie.glb",
       "sourceModelSha256": "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355"
@@ -1033,7 +1033,7 @@
     },
     "lod": {
       "source": "stevie.glb",
-      "sourceSha256": "c0345317a6d05f45fc6a8cb7b3ce378f9b3eb80356f5fc51d674f173770a73cb",
+      "sourceSha256": "47d649aa861bc965545de678c8413b06b7a43365f4470eb3bb90c5c1f535929b",
       "method": "meshoptimizer simplifyWithAttributes on index lists only (kept vertices copied byte for byte)",
       "packaging": "files",
       "silhouetteTolerance": 0.06,
@@ -2218,7 +2218,7 @@
       "op": "rig-generated-gait",
       "params": {
         "template": "rig/raccoon.json",
-        "templateSha256": "94d93e1e34d82e49df4fdb640321be2d29a82fe6fc28de4f0bcd034a336ef73d",
+        "templateSha256": "4c737626f8ae91be0f1bdceba709e5150a72dd7b0fa4e8a7cd8d5a41bb2a28a4",
         "gaitSha256": {
           "walk": "2e36c769473672a52f6c277af3f95db67ec82442cd29c551078fd7ccb9fcf569"
         },
@@ -2229,7 +2229,7 @@
           "play": "b714f18a233bd941db3ab212bca58d2ec469032830eafcba606b011031b26006",
           "shelter": "fe105a8a9ffc1444b41f4ed947194b7662d006099f77c8c737afda26a019859f"
         },
-        "targetProfileSha256": "8c907cd59590114f00939741299562115380bc26d66b3ee9a1b5789c20a230d9"
+        "targetProfileSha256": "8b5cd9cdea2918cba7df1f3b21953d1598abdad905752b1ba42df38db66e609a"
       },
       "engine": {
         "name": "assetforge-rig",
@@ -2239,7 +2239,7 @@
         "ac9b439ca4c015c2b038228a53e3c29011313ffbfe8cc47444dc85021c0df355"
       ],
       "outputs": [
-        "cbf70448327a7d6e33253537ee84f681abda6c60a48f96913e83980debdac1f5"
+        "3cb3aa25f7032285d859d8238b199923b35e98993c558793110970448c82e408"
       ]
     },
     {
@@ -2288,10 +2288,10 @@
         "version": "1"
       },
       "inputs": [
-        "c0345317a6d05f45fc6a8cb7b3ce378f9b3eb80356f5fc51d674f173770a73cb"
+        "47d649aa861bc965545de678c8413b06b7a43365f4470eb3bb90c5c1f535929b"
       ],
       "outputs": [
-        "c0345317a6d05f45fc6a8cb7b3ce378f9b3eb80356f5fc51d674f173770a73cb",
+        "47d649aa861bc965545de678c8413b06b7a43365f4470eb3bb90c5c1f535929b",
         "971a64b964ec7ad3a43722d034531c26898a07ecda7d81450c40fb5fe49c5866",
         "7cd6c7336111c684816aba0ca32cb4a076bf777395d790d88f7144d31b98beff",
         "11b5d8dbdd4c48f64ad232f034e6a52b8ca9dd837300f234eedf150ce06bf037",
@@ -2300,10 +2300,10 @@
         "d8496c68f3fadbc8512be65b689d4b31cdaa73e64f8b37b0812a4aa881842ed4",
         "f3c266b6f5d726e2366cfc6afbc285d1f449228c9b4d960dd1a7a5edb0bdf89b",
         "95e19e95b551b283b998ccf68006b8bf25c7c410452cffe24ae539ce2de01eb0",
-        "119dbcb416e5add90b2016f5e4348e1be8ba210bde7d2c74a099c9a503778900",
-        "bcf0e812b1371b3e9552286f703239572a7fdb82ad846794b425b739582f2a20",
-        "679d4f5d4801a57aead38c56af14c7175a1110f8144676bb108ce67f3a55d19c",
-        "de02a31c48a26114b1ee9cc2b5682d7f641680bfa0646e2a27fe4b191c9ccf1b",
+        "43f1d6026ac6b1945f7e23a43cbad5b1d251cb6fac5e8abdffe03590c61987f3",
+        "7440f4d25c055f3e614c24302ce815bbb2a5dfb2a95cb3d59422495e1289dd49",
+        "0fe5e2df206b09d040344b4296a9844d36d887005cd3bce25a2343cfac85c668",
+        "9aca9008b3b49116e802d91df2605b33e5d27558e708da8c8bdf5a22c45e809f",
         "a0c061f2d648ccb74954bf49ec653c4ef775ef282043f84fb5dbf3ebd4a5d8da",
         "21f7f116fca7ea1df4b6949b78d62871e32887ccbc0c899ef16d4159d4a1ac26",
         "85bfc74fda41a6c82b56e915b2e43fd67adc3989669b56f3179b99b062659eae",

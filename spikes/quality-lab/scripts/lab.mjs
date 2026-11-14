@@ -274,7 +274,7 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
 // Kirk's approved Stevie (c1 of #107 with the cleaner face of #114, re-rigged with his six clips in #112): the source
 // GLB's sha256, as its manifest's contentHash records it. Other candidates had the same triangle and joint counts, so
 // the hash is what tells them apart.
-const STEVIE_SHA256 = "c0345317a6d05f45fc6a8cb7b3ce378f9b3eb80356f5fc51d674f173770a73cb";
+const STEVIE_SHA256 = "47d649aa861bc965545de678c8413b06b7a43365f4470eb3bb90c5c1f535929b";
 
 /** The sha256 of the model file the page loaded, fetched again from the URL Stevie reports. */
 async function loadedSha256(page) {
