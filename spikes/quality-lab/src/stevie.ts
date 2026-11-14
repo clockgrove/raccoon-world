@@ -447,6 +447,8 @@ export function createStevie(asset: StevieAsset, loop: WalkLoop, options: { clon
       const t = seconds + phase;
       lastT = t;
       mixer.setTime(timeline.clipTime(t, clip.duration));
+      // The skeleton's pose at this time (each joint's local rotation), so a check can tell the pose itself changed.
+      metrics.pose = skinned.skeleton.bones.flatMap((bone) => bone.quaternion.toArray().map((v) => Math.round(v * 1e5) / 1e5));
       const angle = (speedMps * timeline.walked(t)) / loop.radius;
       position.set(loop.centre.x + loop.radius * Math.cos(angle), loop.centre.y + loop.radius * Math.sin(angle), 0);
       root.position.copy(position);

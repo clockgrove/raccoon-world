@@ -556,15 +556,26 @@ async function checkLevelsOn(url, args) {
 const metresBetween = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 
 /**
- * One frame at a frozen page time: the canvas, the clip playing and Stevie's place. Frozen times make the poses
- * repeatable, so a difference between two times is the animation and nothing else.
+ * One frame at a frozen page time: the canvas, the clip playing, Stevie's place and his skeleton's pose (each joint's
+ * local rotation). The rain moves with the same clock, so the pixels alone cannot tell that the pose changed; the
+ * joints can.
  */
 async function motionFrame(page, t) {
   return page.evaluate((t) => {
     globalThis.lab.freeze(t);
     const frame = globalThis.lab.frame();
-    return { frame, ...globalThis.lab.status().stevie, config: globalThis.lab.status().config };
+    return { frame, ...globalThis.lab.status().stevie, pose: globalThis.lab.stevie().pose, config: globalThis.lab.status().config };
   }, t);
+}
+
+/** The largest change in any joint's rotation between two poses, in degrees. */
+function poseChangeDegrees(a, b) {
+  let worst = 0;
+  for (let i = 0; i < a.length; i += 4) {
+    const dot = Math.abs(a[i] * b[i] + a[i + 1] * b[i + 1] + a[i + 2] * b[i + 2] + a[i + 3] * b[i + 3]);
+    worst = Math.max(worst, (2 * Math.acos(Math.min(1, dot)) * 180) / Math.PI);
+  }
+  return worst;
 }
 
 async function checkMotions(browser, siteUrl, backend, { full }) {
@@ -582,12 +593,15 @@ async function checkMotions(browser, siteUrl, backend, { full }) {
     check(a.clipSeconds > 0 && Number.isFinite(a.clipSeconds), `${backend}: ${motion} reports no clip length`);
     clipSeconds[motion] = a.clipSeconds;
     check((await colours(page, a.frame)) > 20 && (await colours(page, b.frame)) > 20, `${backend}: ${motion} draws a blank frame`);
+    check(Array.isArray(a.pose) && a.pose.length === 30 * 4 && b.pose?.length === a.pose.length, `${backend}: ${motion} reports no 30-joint pose`);
+    // The pose is rounded to 1e-5 a component (about 0.002°), so 0.05° is the pose moving, not noise; the idle is the subtlest at about 0.4°.
+    const turned = poseChangeDegrees(a.pose, b.pose);
+    check(turned > 0.05,`${backend}: the pose does not change over time in ${motion} (largest joint change ${turned}°)`);
     const changed = await differing(page, a.frame, b.frame);
-    check(changed > 0, `${backend}: the pose does not change over time in ${motion}`);
     const moved = metresBetween(a.position, b.position);
     if (motion === "walk") check(moved > 0.05, `${backend}: walk does not move Stevie (${moved} m)`);
     else check(moved === 0, `${backend}: ${motion} moved Stevie ${moved} m; it plays in place`);
-    console.log(`lab motions (${backend}): ${motion} plays ${a.clip} (${a.clipSeconds} s), ${changed} pixels differ between two times, Stevie moved ${moved.toFixed(3)} m`);
+    console.log(`lab motions (${backend}): ${motion} plays ${a.clip} (${a.clipSeconds} s), a joint turns up to ${turned.toFixed(1)}° and ${changed} pixels differ between two times, Stevie moved ${moved.toFixed(3)} m`);
   }
   // Walk, stop, walk on: he stands where he stopped and resumes from there.
   await page.evaluate(() => globalThis.lab.setMotion("walk"));
