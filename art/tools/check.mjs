@@ -476,6 +476,24 @@ async function checkModel3d() {
   const chained = validateModel({ profile, manifest: stevieManifest, ...stevieInput });
   if (!chained.accepted || chained.flags.some((f) => f.code.startsWith("tier:")))
     fail("model3d", `Stevie's chain must be accepted with no tier flag: ${JSON.stringify([...chained.refusals, ...chained.flags.filter((f) => f.code.startsWith("tier:"))])}`);
+  // His motions (#112): every family of the clip set is generated, so none is missing, and each declared motion is
+  // looping or a one-shot that blends in from the idle and back out to it, as the committed clips record. Every
+  // level file, desktop and phone, carries all six clips.
+  if (chained.flags.some((f) => f.code.startsWith("clip-missing:")))
+    fail("model3d", `Stevie must have every clip of the raccoon set: ${JSON.stringify(chained.flags.filter((f) => f.code.startsWith("clip-missing:")))}`);
+  if ((stevieManifest.model?.missingClips ?? []).length !== 0) fail("model3d", `${steviePath}: model.missingClips must be empty`);
+  for (const [family, motion] of Object.entries(m.motions ?? {})) {
+    if (m.gaits?.[family]) fail("model3d", `model3d.motions.${family} is also a gait`);
+    if (motion.loop === false && motion.idle !== "idle") fail("model3d", `model3d.motions.${family} is a one-shot, so it must blend from the idle (idle: "idle")`);
+    const clip = stevieManifest.model?.clips?.find((c) => c.name === family);
+    if (!clip || clip.loop !== motion.loop || clip.generated !== true)
+      fail("model3d", `${steviePath}: the ${family} clip must be generated with loop ${motion.loop}, not ${JSON.stringify(clip)}`);
+  }
+  const { parseGlb } = await import(pathToFileURL(join(root, "art/tools/model3d-sidefiles.mjs")).href);
+  for (const [path, bytes] of [[stevieManifest.source.path, stevieInput.glb], ...[...levelFiles].filter(([p]) => p.endsWith(".glb"))]) {
+    const names = bytes ? (parseGlb(new Uint8Array(bytes)).json.animations ?? []).map((a) => a.name) : [];
+    for (const family of required) if (!names.includes(family)) fail("model3d", `${path} lacks the ${family} clip`);
+  }
   const tight = structuredClone(profile);
   tight.model3d.tiers.phone.character.triangles = 15000;
   const tightened = validateModel({ profile: tight, manifest: stevieManifest, ...stevieInput });
@@ -510,8 +528,8 @@ async function checkModel3d() {
       fail("model3d", `model3d.handoff must declare clipFields ${JSON.stringify(clipFields)} and sideImages "embedded" until clockgrove/clockgrove#305`);
 
     // The hand-off: scripted stage and pick in the throwaway copy, through #39's committed profile. Its
-    // shared rig generates the idle (model3d.motions.idle) and the walk (model3d.gaits.walk). The
-    // profile's validator, Clockgrove's `clockgrove-assets validate`, accepts it on the first try.
+    // shared rig generates the walk (model3d.gaits.walk) and the idle, sniff, eat, play and shelter
+    // (model3d.motions, #112). The profile's validator, Clockgrove's `clockgrove-assets validate`, accepts it on the first try.
     const scripted = [...base, "--provider-script", "art/proof/model3d-provider.mjs", "--candidates", "1"];
     const staged = await assetforge(["stage", ...scripted, "--routes", "art/proof/model3d-routes.json"], {}, target);
     if (staged.code !== 0) {
@@ -546,9 +564,11 @@ async function checkModel3d() {
     ];
     for (const [what, ok] of expectations) if (!ok) fail("model3d", `the written model lacks: ${what}`);
     const validator = picked.doc.validator.output;
-    for (const flag of ["clip-missing:sniff", "tier:phone:triangles"])
-      if (!validator.includes(flag)) fail("model3d", `the validator should flag ${flag}:\n${validator}`);
-    if (validator.includes("clip-missing:idle")) fail("model3d", `the idle should not be missing:\n${validator}`);
+    if (!validator.includes("tier:phone:triangles")) fail("model3d", `the validator should flag tier:phone:triangles:\n${validator}`);
+    // The shared rig generates every family of the clip set (#112), so none is missing.
+    if (validator.includes("clip-missing:")) fail("model3d", `no clip should be missing:\n${validator}`);
+    for (const family of required)
+      if (!manifest.model?.clips?.some((c) => c.name === family && c.generated === true)) fail("model3d", `the written model lacks the generated ${family}`);
     const { stdout: attr } = await run("git", ["check-attr", "filter", "--", manifest.source.path], { cwd: root });
     if (!attr.trim().endsWith(": lfs")) fail("model3d", `${manifest.source.path} is not stored in Git LFS by .gitattributes`);
 

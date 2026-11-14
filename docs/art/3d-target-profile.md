@@ -103,7 +103,19 @@ The hand-off stays format-neutral (kirk-45, 2026-11-12). The validator never req
   - a five-joint tail;
   - four legs, each running upper, lower, ankle or wrist, then toe.
 
-  It has four plantigrade feet: hind feet flat heel to toe, and front paws flat like hands in stance, with wrists limited to ±15° of yaw and roll. It is Assetforge's draft (`docs/examples/raccoon-rig/`), adopted as tuned on c3 in clockgrove/assetforge#88.
+  It has four plantigrade feet: hind feet flat heel to toe, and front paws flat like hands in stance, with stance wrists limited to ±21° of yaw (y) and ±15° of roll (z). It is Assetforge's draft (`docs/examples/raccoon-rig/`), adopted as tuned on c3 in clockgrove/assetforge#88.
+
+  #112 widened the fore legs, both sides, only as far as Stevie's eat and play need to read at yard scale. With the draft's limits, the lifted paw and the bow hardly showed. Each value below is just past the worst angle QA measured in those two clips:
+
+  | Joint | Limit | Was | Needed by |
+  | --- | --- | --- | --- |
+  | `shoulder_*` | roll (z) ±30° | ±25° | play's hop (28.9°) |
+  | `elbow_*` | roll (z) ±28° | ±20° | play's hop (27.5°), eat's lifted paw (24.6°) |
+  | `wrist_*` | yaw (y) ±22° | ±20° | play's hop (21.8°) |
+  | `wrist_*` in stance | pitch (x) −55° to 41° | −55° to 30° | play's bow (40.1°) |
+  | `wrist_*` in stance | yaw (y) ±21° | ±15° | play's bow (20.4°) |
+
+  The ears stay at ±5°. The walk still passes its QA.
 - **Walk** (`model3d.gaits.walk`, from the reference traits in `references/stevie/gait-reference/`):
 
   | Field | Value |
@@ -123,13 +135,22 @@ The hand-off stays format-neutral (kirk-45, 2026-11-12). The validator never req
   These are #88's starting values, unchanged:
   - The reference traits agree with them: plantigrade hind feet, hand-like flat front paws, a hunched rump high with the head low, and a low swaying tail.
   - QA agrees with them: applied to c3 through this profile, the walk passes foot contact, joint limits, skinning and loop QA, and its feet stay on one ground line.
-  - A deeper hunch fails stance wrist-yaw QA at ±15°.
+  - A deeper hunch failed stance wrist-yaw QA at the draft's ±15°.
 - **Clip set** (`model3d.clipSets.raccoon`): `idle`, `walk`, `sniff`, `eat`, `play` and `shelter`, the raccoon families.
   - **`walk`** is locomotion and is generated from the gait.
-  - **`idle`** is generated from `model3d.motions.idle`: Assetforge's draft idle (assetforge#135, `docs/examples/raccoon-motions/profile-fragment.json` at the pinned commit), a 4 s breathing loop on the shared rig, unchanged. #82's hand-off needs an idle, and a shared-rig run makes no library call, so the profile declares it. Like every number here it is a draft for Kirk to tune.
-  - **The other four** come from the provider's library only where nothing generated fits.
+  - **The other five** are generated from `model3d.motions` (#112), on the same fitted skeleton as the walk. They start from Assetforge's draft (assetforge#135, `docs/examples/raccoon-motions/profile-fragment.json` at the pinned commit). Like every number here, they are drafts for Kirk to tune:
 
-  At the pinned Assetforge, a shared-rig run makes no library call. Those four come back as `missingClips` and are never faked, and the validator flags each as `clip-missing:<family>`. Library clips on the shared rig are Assetforge work.
+    | Family | Kind | Length | From the draft |
+    | --- | --- | --- | --- |
+    | `idle` | looping | 4.0 s | unchanged: breathing, a head turn, tail sway, ears settling |
+    | `sniff` | one-shot from `idle` | 3.1 s | unchanged: the head down to the ground, sweeping right then left |
+    | `eat` | one-shot from `idle` | 3.5 s | the right fore paw lifts 0.06 body lengths (was 0.04), 0.02 forward (was 0.01), curled 40° (was 25°), while the head bobs twice |
+    | `play` | one-shot from `idle` | 2.4 s | the bow pitches 14° and drops 0.025 body lengths (was 9° and 0.015); the hop lifts every foot 0.03 (was 0.02) and the body 0.035 (was 0.02) |
+    | `shelter` | looping | 2.4 s | unchanged: hunkered low, tail wrapped, ears back, a small shiver |
+
+    Each one-shot starts on the idle's first pose, blends into its keys (`entryS`) and back out to the idle (`exitS`), so Assetforge's `ends-<family>` check holds it to the idle at both ends.
+
+  None is missing now, so the validator raises no `clip-missing:<family>` flag on Stevie.
 
 ## Coats by season
 
@@ -206,10 +227,10 @@ Clockgrove-side validation of 3D models is clockgrove/clockgrove#281 (now run by
 `bash scripts/assetforge.sh check` (check 8, `model3d`) runs the pinned Assetforge and Clockgrove on a throwaway copy of this repository. It makes no paid call and needs no key:
 
 1. `stage` runs Stevie's spec (`art/stevie/character-3d/spec.json`) against the bible and this profile as committed. The run uses the scripted provider `art/proof/model3d-provider.mjs`, which hands Assetforge c3's mesh in place of a Tripo call, and `art/proof/model3d-routes.json`.
-   - Assetforge fits the raccoon template and generates the idle and the walk.
+   - Assetforge fits the raccoon template and generates the walk and the five motions.
    - The candidate passes every QA check.
    - Assetforge's own scripted quadruped is not raccoon-shaped, and the raccoon template's joint-limit QA refuses it, so the proof uses a real raccoon body.
-2. `pick` writes the rigged `.glb`, its manifest and its provenance through the profile, with Clockgrove's clip fields and no side images. The profile's validator accepts it on the first try, Clockgrove's `clockgrove-assets validate` at the pinned commit included. It flags the phone tier (the scripted pick has no chain) and the four clips still missing.
+2. `pick` writes the rigged `.glb`, its manifest and its provenance through the profile, with Clockgrove's clip fields and no side images. The profile's validator accepts it on the first try, Clockgrove's `clockgrove-assets validate` at the pinned commit included. It flags the phone tier (the scripted pick has no chain), and no clip is missing.
 3. Clockgrove refuses the same model with `MODEL_BUDGET_EXCEEDED` under a lower hand-off triangle budget, and again when it is checked against the desktop prop budget.
 4. The handed-off model renders through the pinned renderer's world-content seam (clockgrove/clockgrove#112): `art/tools/model3d-render.mjs` loads it through `context.loaders` on Clockgrove's fixture renderer page, plays its idle under a software GPU, and checks that it is skinned with the manifest's bones and that the picture changes when the model is hidden and when the idle moves.
 5. A free-plan CC BY grant is refused with exit 7, and nothing is written.
