@@ -82,10 +82,30 @@
         "reference": "../references/stevie/gait-reference"
       }
     },
+    "motions": {
+      "idle": {
+        "loop": true,
+        "durationS": 4,
+        "keys": [
+          { "at": 0, "pose": { "backArchDeg": 14, "headPitchDeg": 18, "tailPitchDeg": 14, "tailYawDeg": -6 } },
+          {
+            "at": 0.5,
+            "pose": {
+              "backArchDeg": 17,
+              "headPitchDeg": 14,
+              "headYawDeg": 8,
+              "tailPitchDeg": 12,
+              "tailYawDeg": 8,
+              "joints": { "ear_l": { "x": -4 }, "ear_r": { "x": -4 } }
+            }
+          }
+        ]
+      }
+    },
     "clipSets": {
       "raccoon": {
         "required": ["idle", "walk", "sniff", "eat", "play", "shelter"],
-        "generated": ["walk"]
+        "generated": ["idle", "walk"]
       }
     },
     "groom": {

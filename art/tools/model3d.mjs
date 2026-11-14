@@ -10,7 +10,10 @@
 //   node art/tools/model3d.mjs map <manifest>      prints the manifest as Clockgrove's model manifest
 //   node art/tools/model3d.mjs profile [<path>]
 //
-// validate first maps the manifest and runs the pinned `clockgrove-assets validate` (CLOCKGROVE_COMMIT,
+// A manifest that declares side files (model.groom, model.textures, model.eyes) is checked by this
+// world's own checks in model3d-sidefiles.mjs instead, with its codes, until clockgrove/clockgrove#305.
+//
+// validate otherwise first maps the manifest and runs the pinned `clockgrove-assets validate` (CLOCKGROVE_COMMIT,
 // checkout in .clockgrove or CLOCKGROVE_DIR) on a throwaway world whose model target is the desktop
 // tier's budget for the kind (model3d.tiers.desktop.<kind>). The platform's checks (container, measures,
 // budgets, content hash, bounds shape, provenance, grant) are not repeated here. If Clockgrove refuses,
@@ -33,71 +36,15 @@
 //   profile problems (checkProfile)
 //     profile:format, profile:units, profile:budgets, profile:tiers, profile:lods,
 //     profile:handoff, profile:rig, profile:clip-sets, profile:groom
-import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const BUDGET_KEYS = ["triangles", "textureMaxPx", "materials", "bones", "lods"];
-const ACCEPTED_MEDIA = ["image/png", "image/jpeg"];
+import { ACCEPTED_MEDIA, BUDGET_KEYS, declaresSideFiles, imageBytes, parseGlb, sha256, sniffMediaType, validateSideFileModel } from "./model3d-sidefiles.mjs";
 
-const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
-
-// --- GLB measures ---
-
-function sniffMediaType(bytes, declared) {
-  if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
-    return "image/png";
-  }
-  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
-  if (bytes.length >= 12 && Buffer.from(bytes.subarray(0, 4)).toString("latin1") === "\xabKTX") return "image/ktx2";
-  if (bytes.length >= 12 && Buffer.from(bytes.subarray(8, 12)).toString("latin1") === "WEBP") return "image/webp";
-  return declared ?? "application/octet-stream";
-}
-
-function parseGlb(bytes) {
-  if (!(bytes instanceof Uint8Array) || bytes.length < 20) throw new Error("not a GLB: shorter than the 20-byte header");
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  if (view.getUint32(0, true) !== 0x46546c67) throw new Error("not a GLB: the magic is not glTF");
-  if (view.getUint32(4, true) !== 2) throw new Error(`not a GLB 2.0: version ${view.getUint32(4, true)}`);
-  const total = view.getUint32(8, true);
-  if (total > bytes.length) throw new Error(`GLB truncated: header says ${total} bytes, file has ${bytes.length}`);
-  let json;
-  let bin = new Uint8Array(0);
-  let at = 12;
-  while (at + 8 <= total) {
-    const length = view.getUint32(at, true);
-    const type = view.getUint32(at + 4, true);
-    const start = at + 8;
-    if (start + length > total) throw new Error("GLB chunk runs past the end of the file");
-    if (type === 0x4e4f534a && json === undefined) {
-      try {
-        json = JSON.parse(new TextDecoder().decode(bytes.subarray(start, start + length)));
-      } catch (error) {
-        throw new Error(`GLB JSON chunk is not valid JSON: ${error.message}`);
-      }
-    } else if (type === 0x004e4942 && bin.length === 0) {
-      bin = bytes.subarray(start, start + length);
-    }
-    at = start + length + ((4 - (length % 4)) % 4);
-  }
-  if (!json || typeof json !== "object") throw new Error("GLB has no JSON chunk");
-  return { json, bin };
-}
-
-function imageBytes({ json, bin }, image) {
-  if (image.bufferView !== undefined) {
-    const view = json.bufferViews?.[image.bufferView];
-    if (!view) return undefined;
-    const start = view.byteOffset ?? 0;
-    return bin.subarray(start, start + view.byteLength);
-  }
-  const match = /^data:([^;,]*)(;base64)?,(.*)$/s.exec(image.uri ?? "");
-  if (!match) return undefined;
-  return new Uint8Array(match[2] ? Buffer.from(match[3], "base64") : Buffer.from(decodeURIComponent(match[3]), "latin1"));
-}
+export { BUDGET_KEYS };
 
 // --- the profile's shape ---
 
@@ -285,11 +232,16 @@ class UsageError extends Error {}
 
 // --- one model against the profile ---
 
-/** Validates a written model: Clockgrove first, then the checks only this world makes. */
+/**
+ * Validates a written model: Clockgrove first, then the checks only this world makes. A manifest that
+ * declares side files (Stevie's committed look-dev model) is refused by Clockgrove until
+ * clockgrove/clockgrove#305, so it keeps this world's own checks (model3d-sidefiles.mjs) instead.
+ */
 export function validateModel({ profile, manifest, glb, templateBytes, kind = "character" }) {
+  if (declaresSideFiles(manifest)) return { ...validateSideFileModel({ profile, manifest, glb, templateBytes, kind }), route: "world-side" };
   const refusals = clockgroveRefusals({ profile, manifest, glb, kind });
   const flags = [];
-  if (refusals.length > 0) return { accepted: false, refusals, flags };
+  if (refusals.length > 0) return { accepted: false, refusals, flags, route: "clockgrove" };
   const refuse = (code, detail) => refusals.push({ code, detail });
   const m = profile.model3d ?? {};
 
@@ -359,7 +311,7 @@ export function validateModel({ profile, manifest, glb, templateBytes, kind = "c
     if (!glbNames.includes(family)) flags.push({ code: `clip-missing:${family}`, detail: `no "${family}" clip in the model; never faked` });
   }
 
-  return { accepted: refusals.length === 0, refusals, flags };
+  return { accepted: refusals.length === 0, refusals, flags, route: "clockgrove" };
 }
 
 // --- command line ---
@@ -413,7 +365,8 @@ function cli(argv) {
       console.log(JSON.stringify(result, null, 2));
     } else {
       console.log(result.accepted ? "accepted" : "refused");
-      if (result.accepted || !result.refusals.some((r) => r.platform)) console.log(`platform: accepted by clockgrove-assets validate at ${readFileSync(join(ROOT, "CLOCKGROVE_COMMIT"), "utf8").trim()}`);
+      if (result.route === "world-side") console.log("platform: not run; the manifest declares side files, which Clockgrove refuses until clockgrove/clockgrove#305, so this world's own checks ran");
+      else if (result.accepted || !result.refusals.some((r) => r.platform)) console.log(`platform: accepted by clockgrove-assets validate at ${readFileSync(join(ROOT, "CLOCKGROVE_COMMIT"), "utf8").trim()}`);
       for (const r of result.refusals) console.log(`refused ${r.code}: ${r.detail}`);
       for (const f of result.flags) console.log(`flag ${f.code}: ${f.detail}`);
     }

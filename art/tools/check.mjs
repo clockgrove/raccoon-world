@@ -472,23 +472,15 @@ async function checkModel3d() {
 
     // The hand-off Clockgrove takes (assetforge#137): Clockgrove's clip fields, look-dev maps embedded.
     const clipFields = { name: "name", durationMs: "durationMs", loop: "loop", generated: "generated" };
+    if (m.motions?.idle?.loop !== true) fail("model3d", "model3d.motions.idle must declare the looping idle the hand-off generates");
     if (JSON.stringify(m.handoff?.clipFields) !== JSON.stringify(clipFields) || m.handoff?.sideImages !== "embedded")
       fail("model3d", `model3d.handoff must declare clipFields ${JSON.stringify(clipFields)} and sideImages "embedded" until clockgrove/clockgrove#305`);
 
-    // The hand-off: scripted stage and pick in the throwaway copy, through #39's profile plus Assetforge's
-    // draft idle motion (assetforge#135; a draft, so the committed profile does not declare it). The
+    // The hand-off: scripted stage and pick in the throwaway copy, through #39's committed profile. Its
+    // shared rig generates the idle (model3d.motions.idle) and the walk (model3d.gaits.walk). The
     // profile's validator, Clockgrove's `clockgrove-assets validate`, accepts it on the first try.
-    const fragment = JSON.parse(await readFile(join(assetforgeDir, "docs/examples/raccoon-motions/profile-fragment.json"), "utf8"));
-    const withIdle = structuredClone(profile);
-    withIdle.model3d.motions = { idle: fragment.model3d.motions.idle };
-    await writeFile(join(target, "art/proof-profile-3d.json"), JSON.stringify(withIdle, null, 2));
-    const scriptedBase = [...base.slice(0, 4), "--profile", "art/proof-profile-3d.json", "--runs", runs];
     const scripted = [...base, "--provider-script", "art/proof/model3d-provider.mjs", "--candidates", "1"];
-    const staged = await assetforge(
-      ["stage", ...scriptedBase, "--provider-script", "art/proof/model3d-provider.mjs", "--candidates", "1", "--routes", "art/proof/model3d-routes.json"],
-      {},
-      target,
-    );
+    const staged = await assetforge(["stage", ...scripted, "--routes", "art/proof/model3d-routes.json"], {}, target);
     if (staged.code !== 0) {
       const reasons = (staged.doc?.rejections ?? []).flatMap((c) => c.reasons ?? []).filter((r) => !r.passed);
       fail("model3d", `scripted stage failed (exit ${staged.code}): ${reasons.map((r) => `${r.check}: ${r.reason}`).join("; ") || staged.doc?.error?.message || staged.stderr}`);
@@ -537,13 +529,13 @@ async function checkModel3d() {
           fail("model3d", `${what} must be refused by Clockgrove with MODEL_BUDGET_EXCEEDED (exit 1), got ${error.code}: ${error.stdout}${error.stderr}`);
       }
     };
-    const lower = structuredClone(withIdle);
+    const lower = structuredClone(profile);
     lower.model3d.budgets.triangles = 50000;
     lower.model3d.tiers.desktop.character.triangles = 50000;
     await writeFile(join(target, "art/over-budget-3d.json"), JSON.stringify(lower));
     await refusedBy(["--profile", "art/over-budget-3d.json"], "a model over the hand-off triangle budget");
     // The same model checked as a prop is refused against the desktop prop budget, not the character's.
-    await refusedBy(["--profile", "art/proof-profile-3d.json", "--kind", "prop"], "a model over the desktop prop budget");
+    await refusedBy(["--kind", "prop"], "a model over the desktop prop budget");
 
     // It renders through the world-content seam (clockgrove/clockgrove#112) of the pinned renderer.
     let rendered;
