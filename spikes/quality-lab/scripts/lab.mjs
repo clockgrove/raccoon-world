@@ -681,14 +681,20 @@ async function journey(args) {
     { name: "fallback", backend: "webgl2", start: "ultra", steps: byId("preset:ultra", "preset:low"), walk: true },
   ].filter((s) => !args.backend || args.backend === "both" || s.backend === args.backend);
   try {
-    const results = await Promise.allSettled(shards.map((s) => shard(site.url, s)));
+    const running = shards.map((s) => shard(site.url, s));
+    // Stevie's detail levels (#113: the phone levels, their switch, Compare levels and the desktop's level 0) and his
+    // motions (#112, short: every clip family on the desktop page) run in a fourth browser that starts when the first
+    // shard ends. At most three browsers draw at once, and the shards' long tail, when only one is still busy, is
+    // not followed by the whole of both proofs. Run after the shards, they pushed CI's job past its 35 minutes.
+    const firstDone = shards.length ? Promise.race(running.map((p) => p.then(() => {}, () => {}))) : Promise.resolve();
+    const tail = firstDone.then(async () => {
+      await checkLevelsOn(site.url, args);
+      await checkMotionsOn(site.url, args, { full: false });
+    });
+    const results = await Promise.allSettled([...running, tail]);
     const failed = results.filter((r) => r.status === "rejected");
     for (const r of failed) console.error(`lab journey: ${r.reason?.stack ?? r.reason}`);
-    if (failed.length) throw new Error(`${failed.length} of ${shards.length} shards failed`);
-    // Stevie's detail levels (#113): the phone levels, their switch, Compare levels and the desktop's level 0.
-    await checkLevelsOn(site.url, args);
-    // Stevie's motions (#112), short: every clip family on the desktop page.
-    await checkMotionsOn(site.url, args, { full: false });
+    if (failed.length) throw new Error(`${failed.length} of ${shards.length + 1} parts (the shards, then levels and motions) failed`);
   } finally {
     site.server.close();
   }
