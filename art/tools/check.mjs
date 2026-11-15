@@ -36,7 +36,7 @@
 // ASSETGROVE_DIR and CLOCKGROVE_DIR name the pinned checkouts (defaults .assetgrove-src, .clockgrove).
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { cp, lstat, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -82,10 +82,21 @@ async function writeSettings(file, routes) {
   await writeFile(file, `${JSON.stringify(settings, null, 2)}\n`);
   return file;
 }
-/** The checkout's changed, untracked and ignored entries (ignored directories collapsed). */
+/**
+ * The checkout's changed, untracked and ignored entries. Git collapses an ignored directory into one
+ * line, so the contents of `.assetgrove/` (Assetgrove's default runs and imports directory, which an
+ * owner's own imports may already have created) are listed file by file, with size and mtime, so a
+ * write or rewrite inside it shows up too.
+ */
 async function checkoutState() {
   const { stdout } = await run("git", ["status", "--porcelain", "--ignored"], { cwd: root, maxBuffer: 16 << 20 });
-  return stdout.split("\n").filter(Boolean);
+  const lines = stdout.split("\n").filter(Boolean);
+  const entries = await readdir(join(root, ".assetgrove"), { recursive: true }).catch(() => []);
+  for (const entry of entries.sort()) {
+    const info = await lstat(join(root, ".assetgrove", entry)).catch(() => undefined);
+    if (info) lines.push(`.assetgrove/${entry} ${info.isDirectory() ? "dir" : `${info.size} ${info.mtimeMs}`}`);
+  }
+  return lines;
 }
 async function setUpSettings() {
   settingsDir = await mkdtemp(join(tmpdir(), "raccoon-world-assetgrove-settings-"));

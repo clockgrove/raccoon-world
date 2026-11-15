@@ -60,7 +60,10 @@ The owner's file looks like this:
 
 ## 1. Forecast the run
 
-A run is up to 4 candidates of one family. On the sheet path a candidate is one generated sheet. Each `generate-sheet` call gets a quarter of the run's cap, so the four together can never pass $5. Forecast one candidate first. It spends nothing, needs no key and writes nothing, but it does need settings that configure a provider. An agent may run it, in the owner session or in a worker:
+A run is up to 4 candidates of one family. On the sheet path a candidate is one generated sheet. Each `generate-sheet` call gets a quarter of the run's cap, so the four together can never pass $5. Forecast one candidate first. It spends nothing, needs no key and writes nothing, but it does need settings that configure a provider: with none it exits 2 `route_unavailable`, and with a proxy variable set that the settings don't allow it exits 2 `settings_invalid`.
+
+- **In the owner session** the owner's own settings serve it. An agent there may run the command below.
+- **In a Factory worker** there are no owner settings, and none are handed to it. A worker either reads the forecasts that `bash scripts/assetgrove.sh check` prints (one per family, made with check's throwaway scripted-only settings), or runs the command below the same way `check` does: it writes a scripted-only settings file (`format`, `stateDir`, `providers.scripted` with a `limit`, as in `art/tools/check.mjs`) in a temporary directory outside the checkout, sets `ASSETGROVE_CONFIG` to it, and unsets `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, `NODE_USE_ENV_PROXY`, `NODE_EXTRA_CA_CERTS` and `NODE_TLS_REJECT_UNAUTHORIZED` (both cases) for that one command. The scripted provider prices each job at the core default models' estimates, so the forecast matches the owner's default routes.
 
 ```sh
 bash scripts/assetgrove.sh run generate-sheet \
