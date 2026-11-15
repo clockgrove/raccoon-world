@@ -226,7 +226,7 @@ Clockgrove-side validation of 3D models is clockgrove/clockgrove#281 (now run by
 
 `bash scripts/assetgrove.sh check` (check 8, `model3d`) runs the pinned Assetgrove and Clockgrove on a throwaway copy of this repository. It makes no paid call and needs no key:
 
-1. `stage` runs Stevie's spec (`art/stevie/character-3d/spec.json`) against the bible and this profile as committed. The run uses the scripted provider `art/proof/model3d-provider.mjs`, which hands Assetgrove c3's mesh in place of a Tripo call, and `art/proof/model3d-routes.json`.
+1. `stage` runs Stevie's spec (`art/stevie/character-3d/spec.json`) against the bible and this profile as committed. The run uses the scripted provider `art/proof/model3d-provider.mjs`, which hands Assetgrove c3's mesh in place of a Tripo call. It hands the mesh facing +x (`art/proof/c3-facing-plus-x.glb`), as a Tripo model faces and as Assetgrove's default Tripo route reads it. Assetgrove turns the mesh to this profile's `model3d.forward` (+z). The run's settings are throwaway headless settings outside the checkout, configuring only the scripted provider. They approve, by hash, the provider script and this profile's validator for the copy used.
    - Assetgrove fits the raccoon template and generates the walk and the five motions.
    - The candidate passes every QA check.
    - Assetgrove's own scripted quadruped is not raccoon-shaped, and the raccoon template's joint-limit QA refuses it, so the proof uses a real raccoon body.

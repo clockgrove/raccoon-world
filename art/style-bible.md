@@ -1,4 +1,6 @@
 ---
+format: assetgrove-style-bible/1
+referenceLicense: NOASSERTION
 version: "1"
 world: Raccoon World
 preset: cozy-storybook
@@ -311,4 +313,4 @@ The palette tokens are the colours the mockup is built from: night ink, raccoon 
 - Don't draw outlines, cel shading or flat cartoon fills.
 - Don't render plastic 3D-looking fur or follow the 3D spike's renders.
 - Don't add text, labels, logos, signatures or frame numbers.
-- Don't describe or imitate the look of any named game, studio or artist.
+- Don't describe the look of any named game, studio or artist.

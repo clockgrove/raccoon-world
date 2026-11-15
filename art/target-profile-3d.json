@@ -1,5 +1,5 @@
 {
-  "$comment": "Raccoon World's 3D target profile (issue 39). The numbers and why: docs/art/3d-target-profile.md. Checked by art/tools/model3d.mjs (Clockgrove's asset validation at the pinned commit, plus this world's own checks) and bash scripts/assetgrove.sh check.",
+  "format": "assetgrove-target-profile/1",
   "name": "raccoon-world-3d",
   "license": "MIT",
   "acceptedLicenses": [],

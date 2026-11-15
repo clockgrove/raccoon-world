@@ -7,6 +7,8 @@ Raccoon World's art direction and Assetgrove inputs. The author guide, [docs/art
 **Style bible** (`style-bible.md`)
 - It starts from the `cozy-storybook` preset axes and is written for the owner's mockup: painterly rendered storybook realism, a high three-quarter isometric camera, soft fur edges, full colour, and warm light against cool rain.
 - The mockup is both a positive anchor and the perspective sample that Assetgrove's vision QA judges perspective against (owner decision 2026-11-08).
+- `referenceLicense: NOASSERTION`: the references are the owner's photos, generated turnarounds and the mockup. Assetgrove records the value in provenance (`referenceLicenses`) and gates nothing on it. A reference that needs another value gets its own `license`.
+- The Do's and Don'ts avoid Assetgrove's prompt-policy blocklist (`policy/blocklist.json`), which refuses phrases such as `imitate` in every prompt input (exit 9).
 
 **Identity locks**
 - These are exactly the set the 0.68 threshold was measured on:
@@ -36,7 +38,7 @@ Raccoon World's art direction and Assetgrove inputs. The author guide, [docs/art
 - `stevie/character-3d/` holds Stevie's `character-3d` spec and run settings.
 - `tools/model3d.mjs` is the 3D profile's validator: it maps the manifest and runs Clockgrove's pinned `clockgrove-assets validate` (platform refusals keep Clockgrove's codes), then this world's own checks, and flags the rest.
 - `tools/model3d-render.mjs` draws a handed-off model and its idle through the pinned renderer's world-content seam (clockgrove/clockgrove#112), on Clockgrove's fixture renderer page under a software GPU; the 3D proof runs it.
-- `proof/model3d-provider.mjs` and `proof/model3d-routes.json` are the 3D proof's scripted provider and its routes. They are test data, and nothing they make is committed.
+- `proof/model3d-provider.mjs` is the 3D proof's scripted provider. `proof/c3-facing-plus-x.glb` is c3 facing +x, as a Tripo model faces and as Assetgrove's default Tripo route reads it (a settings route can't set `forward`). It is c3 with its root's yaw reset; the approved c3 itself is unchanged. Both are test data, and nothing they make is committed.
 - The 2D `target-profile.json` below still describes the placeholder strips.
 
 **Negative anchors**
@@ -74,8 +76,9 @@ Raccoon World's art direction and Assetgrove inputs. The author guide, [docs/art
 - Keeping 4 frames of 32×32 keeps each family's atlas slot, so a pick replaces its placeholder without moving the other strips.
 
 **Runs**
-- `run.json` uses Assetgrove's run-settings shape: up to 4 candidates for $5.
-- On the sheet path each candidate is one `generate-sheet` call capped at `capUsd / candidates` ($1.25), so the four together can't pass $5.
+- `run.json` uses Assetgrove 0.1's run-options shape (`candidates`, `strictness`, `exploration`; `--run-options`): up to 4 candidates. Run options can't carry a cap, so a run's $5 cap is `check`'s `MAX_RUN_USD`, the commands pass `--cap`, and the owner's settings keep `caps.runUsd` at $5 or below.
+- On the sheet path each candidate is one `generate-sheet` call capped at $5 / candidates ($1.25), so the four together can't pass $5. Each candidate is its own `--round`.
+- Paid steps run only in the owner session, under the owner's own developer settings. A Factory worker runs Assetgrove offline only: `check` and dry runs (owner decision 2026-11-15, issue #131).
 - `check` forecasts each family's run as 4 × (one sheet's dry-run forecast + one agent QA pass) and requires at most $5. Today that is about $1.60.
 - Agent QA is the import checks plus `animation-qa`'s vision checks.
 - Assetgrove's `stage`/`pick` path is not used while it ignores the style profile.

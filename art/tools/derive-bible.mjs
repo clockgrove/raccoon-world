@@ -19,15 +19,18 @@ export async function deriveBible(assetgroveDir) {
     pathToFileURL(join(assetgroveDir, "src/bible.ts")).href
   );
   const { data } = await loadBible(MARKDOWN);
-  for (const field of ["perspective", "perspectiveDescription", "subjects"])
+  for (const field of ["format", "referenceLicense", "perspective", "perspectiveDescription", "subjects"])
     if (data[field] === undefined) throw new Error(`art/style-bible.md: front matter needs ${field}`);
   const derived = {
+    // Assetgrove reads a shared file only with its format line first (assetgrove-style-bible/1).
+    format: data.format,
     $comment: "Derived from art/style-bible.md by art/tools/derive-bible.mjs; do not edit by hand.",
     version: data.version,
+    referenceLicense: data.referenceLicense,
     palette: biblePalette(data),
     references: data.anchors.positive
       .filter((anchor) => anchor.path !== data.perspective)
-      .map(({ path, role, subject, look }) => ({ path, role, ...(subject && { subject }), ...(look && { look }) })),
+      .map(({ path, role, subject, look, license }) => ({ path, role, ...(subject && { subject }), ...(look && { look }), ...(license && { license }) })),
     perspective: data.perspective,
     perspectiveDescription: data.perspectiveDescription,
     subjects: data.subjects,
