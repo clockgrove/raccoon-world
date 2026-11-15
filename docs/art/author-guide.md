@@ -1,13 +1,13 @@
 # Making Raccoon World's art with Assetgrove
 
-This guide takes one of Stevie's animation families from the committed inputs to a strip in the live yard. Agents generate and stage; only a person confirms a grouping, picks, approves an asset or approves a golden.
+This guide takes one of Stevie's animation families from the committed inputs to a strip in the live yard. Agents forecast, run QA and report. Only a person confirms spend, confirms a grouping, picks, writes into the repository, approves an asset or approves a golden.
 
 Everything runs from this repository against two pinned checkouts:
 
 - Clockgrove at `CLOCKGROVE_COMMIT`: `bash scripts/clockgrove.sh fetch` (into `.clockgrove/`);
 - Assetgrove at `ASSETGROVE_COMMIT`: `bash scripts/assetgrove.sh fetch` (into `.assetgrove-src/`). `bash scripts/assetgrove.sh run <command> ...` runs its CLI.
 
-Neither comes from npm. Each pin lives only in its file, and moving it is a commit that changes that file and nothing else. `CLOCKGROVE_COMMIT` and `scripts/clockgrove.sh` are Factory-protected paths, so only a maintainer moves the Clockgrove pin. `ASSETGROVE_COMMIT` and `scripts/assetgrove.sh` are not protected yet: until a maintainer adds them to `FACTORY_PROTECTED_PATHS` in `.github/workflows/factory.yml`, a reviewer must check that no Factory PR moves the Assetgrove pin by accident.
+Neither comes from npm. Each pin lives only in its file. Moving a pin is a reviewed PR that keeps `bash scripts/clockgrove.sh check` and `bash scripts/assetgrove.sh check` green. When a new pin changes an input format, the PR changes the inputs, tools and docs that follow from it together with the pin, since the old pin and the new formats can't both pass `check`. `CLOCKGROVE_COMMIT` and `scripts/clockgrove.sh` are Factory-protected paths, so only a maintainer moves the Clockgrove pin. `ASSETGROVE_COMMIT` and `scripts/assetgrove.sh` are not protected yet: until a maintainer adds them to `FACTORY_PROTECTED_PATHS` in `.github/workflows/factory.yml`, a reviewer must check that no Factory PR moves the Assetgrove pin by accident.
 
 ## What is committed
 
@@ -19,9 +19,11 @@ Neither comes from npm. Each pin lives only in its file, and moving it is a comm
 | `reference/asset-style.json` | The world's style profile as Clockgrove reads it (soft alpha, unrestricted colour). |
 | `art/stevie/<family>/spec.json` | What to draw: Stevie, the family, 4 frames of 32×32, anchor (16, 30), quadruped gait. |
 | `art/stevie/<family>/brief.json` | What the strip is for: where it appears, its neighbours, mood and the motion to show. |
-| `art/stevie/<family>/run.json` | One run's settings: up to 4 candidates for at most $5 (Assetgrove's run-settings shape). |
+| `art/stevie/<family>/run.json` | One run's options in Assetgrove's run-options shape (`--run-options`): up to 4 candidates, strictness and exploration. It carries no cap. A run's cap is $5: `check` holds each run to it, and the commands below pass `--cap` explicitly. |
 
 `art/README.md` records why each value was chosen.
+
+The shared files (the bible, both target profiles) start with Assetgrove's format line (`format: assetgrove-style-bible/1`, `"format": "assetgrove-target-profile/1"`). `assetgrove migrate <file> --kind <kind>` adds the line to a file that lacks it. The bible's `referenceLicense` is `NOASSERTION`: the references are the owner's photos, generated turnarounds and a mockup, and nothing is gated on the value. A reference may carry its own `license`. The bible's prompts must not use a phrase from Assetgrove's prompt-policy blocklist (`policy/blocklist.json` in the pinned checkout, for example `imitate` or `inspired by`); a run that finds one stops with exit 9 `prompt_refused` before any call.
 
 Check everything offline, with no key and no spend:
 
@@ -30,9 +32,35 @@ bash scripts/clockgrove.sh fetch
 bash scripts/assetgrove.sh check
 ```
 
+`check` writes its own throwaway developer settings into a temporary directory outside the checkout. They are headless, configure only the scripted provider, and approve by hash the provider scripts and validators it runs. It removes them when it finishes, and it fails if anything new appears in the checkout.
+
+## Developer settings (once per developer who spends)
+
+Since Assetgrove 0.1, everything that steers money, code, endpoints, keys, routes or licence grants comes only from one per-user settings file. Shared files and request inputs can't. Assetgrove reads `$ASSETGROVE_CONFIG`, else `$XDG_CONFIG_HOME/assetgrove/settings.json`, else `~/.config/assetgrove/settings.json`. The file and its `stateDir` must sit outside every Git project: never in this repository. Assetgrove's `docs/settings.md` (in the pinned checkout) is the reference. With no settings file there is no provider, and even a `--dry-run` of a paid command exits 2 `route_unavailable`. A free local command (`import --no-propose`, `bible`) needs none.
+
+The owner's file looks like this:
+
+```json
+{
+  "format": "assetgrove-settings/1",
+  "providers": {
+    "vercel-ai-gateway": { "limit": { "kind": "key-budget", "usd": 25, "period": "monthly" } },
+    "tripo": { "limit": { "kind": "prepaid", "usd": 20 } }
+  }
+}
+```
+
+- **Limits.** Every paid provider entry declares the spend limit set with the provider itself (`key-budget`, `team-budget`, `project-hard-limit`, `workspace-limit`, `prepaid`, or `unlimited` with `acceptUnlimited: true`). A paid call to an entry without one exits 3 `provider_limit_undeclared`. The provider's own limit is the hard money limit. Assetgrove's caps sit inside it: `caps.runUsd`, `caps.dailyUsd` and `caps.workItemUsd`, defaulting to $5, $10 and $5. `--cap` may only lower the run cap. The ledger is `<stateDir>/spend.jsonl`. When the ledger and the provider's usage disagree, every paid run exits 3 `spend_hold` until the owner acknowledges the hold (`assetgrove settings change --acknowledge-holds <id>`).
+- **Keys.** A key comes from the environment, and only through a configured provider (`keyEnv`, default `AI_GATEWAY_API_KEY` for the gateway). Keep keys out of the agent's shell: register Assetgrove's MCP server at user scope with the key in the server's `env`, as Assetgrove's `docs/keys.md` shows for each harness. Never add a project-scope MCP config for Assetgrove to this repository: Assetgrove treats one as code to review, and a tracked file holding a key stops every paid command (exit 2 `key_tracked`).
+- **Routes and grants.** Roles and routes come only from the settings (`roles.<role>`, `routes.<operation>`), never from a command-line option, a run's options or a plan. Every core default route carries its provider's output grant. A role or route you point at your own model must declare `outputGrant` and `providerTerms`, or `pick` and `write-families` refuse its output (exit 7 `license_refused`).
+- **Proxies.** A paid command exits 2 `settings_invalid` when `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, `NODE_USE_ENV_PROXY`, `NODE_EXTRA_CA_CERTS` or `NODE_TLS_REJECT_UNAUTHORIZED` is set and the settings' `environment.allow` doesn't list it.
+- **No `headless`** in a person's file. Headless settings let `pick`, `write-families` and `apply` run without a person. Only `check`'s throwaway settings use it.
+
+**Factory workers never run a paid Assetgrove step** (the owner's decision, 2026-11-15, on issue #131). Paid generation (`generate-sheet`, `look-dev`, `rig`, a paid `stage` and the like) runs only in the owner session, which has its own settings outside every checkout. A worker runs Assetgrove offline only: `bash scripts/assetgrove.sh check` and `--dry-run` forecasts. No provider settings, keys or approvals for paid routes are committed or handed to a worker. Assetgrove reads a provider endpoint only from `providers.<id>.baseURL` in the settings. `art/tools/turnaround.mjs` calls the gateway itself and is not an Assetgrove step.
+
 ## 1. Forecast the run
 
-A run is up to 4 candidates of one family. On the sheet path a candidate is one generated sheet. Each `generate-sheet` call gets a quarter of the run's cap, so the four together can never pass $5. Forecast one candidate first; it spends nothing and needs no key:
+A run is up to 4 candidates of one family. On the sheet path a candidate is one generated sheet. Each `generate-sheet` call gets a quarter of the run's cap, so the four together can never pass $5. Forecast one candidate first. It spends nothing, needs no key and writes nothing, but it does need settings that configure a provider. An agent may run it, in the owner session or in a worker:
 
 ```sh
 bash scripts/assetgrove.sh run generate-sheet \
@@ -41,20 +69,22 @@ bash scripts/assetgrove.sh run generate-sheet \
   --cap 1.25 --dry-run --json
 ```
 
-The forecast lists the sheet, the grouping proposal and the identity score (about $0.32). `bash scripts/assetgrove.sh check` prints each family's whole-run forecast: four of these plus four agent QA passes.
+The forecast (the WorkPlan's `jobs` and `forecastUsd`, and `plan.estimateUsd`) lists the prompt-policy check, the sheet, the grouping proposal and the identity score: about $0.32 in all. `bash scripts/assetgrove.sh check` prints each family's whole-run forecast: four of these plus four agent QA passes.
 
 ## 2. Generate up to four candidates
 
-This is the step that spends money. It runs in the owner's lead agent session with the organisation's `AI_GATEWAY_API_KEY` in the environment. Never commit the key or print it. It can also run in a Factory worker, through Factory's gateway relay: the call goes to `FACTORY_GATEWAY_URL`, Factory prices and caps it, and the ledger records the gateway's own cost from the answer. The relay takes image edits up to 128 MB; the reference photos travel base64-encoded (Gracie's four make 38.5 MB).
+This is the step that spends money. It runs only in the owner session, under the owner's own settings, never in a Factory worker. Never commit a key or print it. A paid run needs a person's confirmation of its spend. At a terminal, Assetgrove asks inline. In an agent's shell, which has no terminal, the command stops with exit 8 `confirmation_required`, and `error.confirmation` names the run's id. The owner then runs `assetgrove confirm <id>` at a terminal (or confirms in the MCP client's form), and the same command runs again. A confirmation covers one run directory.
 
 ```sh
 for candidate in 1 2 3 4; do
   bash scripts/assetgrove.sh run generate-sheet \
     --spec art/stevie/shelter/spec.json --bible art/style-bible.json \
     --profile art/target-profile.json --lock-bible art/style-bible.md \
-    --cap 1.25 --imports .assetgrove/imports --json
+    --cap 1.25 --imports .assetgrove/imports --round "$candidate" --json
 done
 ```
+
+`--round` makes each candidate its own run. A paid command's run directory is `.assetgrove/runs/r-<digest>/`, keyed by a digest of the request: the command, round, input bytes, options and cap. An identical request that finished is returned as it ended (`reused: true`, no call), and one that stopped resumes from its journal. Without `--round`, the loop would make one sheet and return it three more times. A later attempt at a candidate needs a new round number too.
 
 Each candidate draws the whole cycle as one sheet, then Assetgrove slices, mattes (soft alpha, full colour) and registers it into `.assetgrove/imports/<import>/`. Git ignores that directory. Assetgrove proposes a grouping in `grouping.json` with status `proposed`. Identity is scored against Stevie's lock in shadow mode at 0.68: the score is recorded and nothing is filtered.
 
@@ -68,7 +98,9 @@ Agent QA runs first. Each candidate's import already carries Assetgrove's import
 - each frame's matte checks (edge halo, leftover background);
 - the shadow-mode identity score.
 
-The agent reports each candidate's import directory, `contact.png`, identity score and any failed frames. The owner then picks one candidate and confirms its grouping: edit that import's `grouping.json` (family name `shelter`, frames in play order, drop bad frames) and set `"status": "confirmed"`. Agents never set `confirmed`.
+The deterministic checks (frame count, transparency) filter. Model-backed checks (vision verdicts, identity flicker, holes, style score) are advisory in Assetgrove 0.1. They are recorded as `shadow` in the result's `filtering` list, never fail a candidate, and a person judges what they report.
+
+The agent reports each candidate's import directory, `contact.png`, identity score and any failed frames. The owner then picks one candidate and confirms its grouping: edit that import's `grouping.json` (family name `shelter`, frames in play order, drop bad frames) and set `"status": "confirmed"`. Agents never set `confirmed`. A confirmed grouping alone doesn't authorise the write: `write-families` asks the owner too (step 4).
 
 ## 4. Write the pick into this repository
 
@@ -77,15 +109,17 @@ bash scripts/assetgrove.sh run write-families \
   --import .assetgrove/imports/<import> --target . --json
 ```
 
+The owner runs or confirms this step. `write-families` and `pick` need a person's confirmation, as a paid run does: in an agent's shell they stop with exit 8 until the owner runs `assetgrove confirm <id>`. The profile's validator (`bash scripts/validate-asset.sh {{manifest}}`, and `node art/tools/model3d.mjs validate {{manifest}}` for 3D) runs only once the owner has approved that exact command. The approval is a hash of the argv, the working directory relative to the repository and the bytes of `scripts/validate-asset.sh` (or `art/tools/model3d.mjs`). The first run stops with exit 8, `error.confirmation.id` holds the hash, and `assetgrove confirm <hash>` approves it. Approve again only after either script changes.
+
 The command writes, in Clockgrove's layout:
 
 - `assets/source/stevie/shelter.png`, the strip;
 - `assets/manifests/stevie/shelter.json`, replacing the placeholder's manifest, with `review.status: "pending"` and the atlas slot, accessibility label, semantic and footprint from `art/stevie/shelter/spec.json` (the family named in the confirmed grouping must be the spec's family);
 - `assets/source/stevie/shelter.png.provenance.json`, the full provenance: models, route, prompt, references, request IDs, costs, provider terms, output grant, identity score, and IPTC Digital Source Type `trainedAlgorithmicMedia`. The PNG also embeds the disclosure in XMP.
 
-It then runs Clockgrove's validator (`bash scripts/validate-asset.sh`). A refusal comes back as exit 6 with Clockgrove's reasons verbatim, and nothing is fixed silently. Frames that failed the matte checks are refused at write time. A licence the profile can't accept is refused with exit 7 before anything is written: MIT needs a commercial grant that allows relabelling, CC-BY-4.0 is accepted with its credit line, and non-commercial or provider-retained output is always refused.
+It then runs Clockgrove's validator (`bash scripts/validate-asset.sh`). A refusal comes back as exit 6 with Clockgrove's reasons verbatim, and nothing is fixed silently. Frames that failed the matte checks are refused at write time. A licence the profile can't accept is refused with exit 7 before anything is written: MIT needs a commercial grant that allows relabelling, CC-BY-4.0 is accepted with its credit line, and non-commercial or provider-retained output is always refused. A call that recorded no output grant is refused the same way. The core default routes all carry one; a role or route in your own settings needs its own (see "Developer settings").
 
-`write-families` also runs the pixel animation QA against the family's motion template (ground contact, anchor and footprint drift, silhouette, loop seam, edge halo; `art/target-profile.json` sets the quadruped gait). It writes the onion skin and looping preview into the import's `preview/`. Then the agent runs the two vision checks, identity flicker and holes, on what was written, within a small cap. A failing check exits 5 and names its frame:
+`write-families` also runs the pixel animation QA against the family's motion template (ground contact, anchor and footprint drift, silhouette, loop seam, edge halo; `art/target-profile.json` sets the quadruped gait). It writes the onion skin and looping preview into the import's `preview/`. Then the two vision checks, identity flicker and holes, run on what was written, within a small cap. They spend, so they run in the owner session. In Assetgrove 0.1 they are advisory: they record and name the frames they question, recorded as `shadow`, and the owner judges them. They don't exit 5:
 
 ```sh
 bash scripts/assetgrove.sh run animation-qa --import .assetgrove/imports/<import> --cap 1 --json

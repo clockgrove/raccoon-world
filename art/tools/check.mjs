@@ -29,10 +29,14 @@
 //                 through the pinned renderer's world-content seam (art/tools/model3d-render.mjs); a
 //                 free-plan grant is refused with exit 7 (issues 39 and 82).
 //
+// Assetgrove runs under throwaway developer settings (headless, only the scripted provider, the
+// proof's provider scripts and validators approved by hash) in a temporary directory outside the
+// checkout. Nothing is written into the checkout, and the check fails if anything new appears there.
+//
 // ASSETGROVE_DIR and CLOCKGROVE_DIR name the pinned checkouts (defaults .assetgrove-src, .clockgrove).
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cp, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -54,6 +58,52 @@ const fail = (check, message) => failures.push(`${check}: ${message}`);
 const json = async (path) => JSON.parse(await readFile(join(root, path), "utf8"));
 const env = { ...process.env, NODE_NO_WARNINGS: "1", CLOCKGROVE_DIR: clockgroveDir };
 delete env.AI_GATEWAY_API_KEY; // no paid call can be made, whatever the caller's environment holds
+// Assetgrove refuses a paid command (scripted ones included) when a proxy or TLS override is set and
+// its settings do not allow it; the proof needs neither.
+for (const name of ["NODE_EXTRA_CA_CERTS", "NODE_TLS_REJECT_UNAUTHORIZED", "NODE_USE_ENV_PROXY", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"])
+  for (const key of [name, name.toLowerCase()]) delete env[key];
+
+/**
+ * Throwaway developer settings (Assetgrove 0.1): headless, only the scripted provider, and the
+ * commands the proof runs approved by hash. They live in a temporary directory outside every project,
+ * never in this repository; `ASSETGROVE_CONFIG` points the child at them.
+ */
+let settingsDir;
+const approved = new Map();
+async function writeSettings(file, routes) {
+  const settings = {
+    format: "assetgrove-settings/1",
+    stateDir: join(settingsDir, "state"),
+    headless: { operator: "ci:clockgrove/raccoon-world" },
+    providers: { scripted: { limit: { kind: "prepaid", usd: 100 } } },
+    ...(routes && { routes }),
+    commands: { approved: [...approved.values()].map(({ hash, kind, argv, cwd }) => ({ hash, kind, argv, cwd })) },
+  };
+  await writeFile(file, `${JSON.stringify(settings, null, 2)}\n`);
+  return file;
+}
+/** The checkout's changed, untracked and ignored entries (ignored directories collapsed). */
+async function checkoutState() {
+  const { stdout } = await run("git", ["status", "--porcelain", "--ignored"], { cwd: root, maxBuffer: 16 << 20 });
+  return stdout.split("\n").filter(Boolean);
+}
+async function setUpSettings() {
+  settingsDir = await mkdtemp(join(tmpdir(), "raccoon-world-assetgrove-settings-"));
+  await mkdir(join(settingsDir, "state"));
+  env.ASSETGROVE_CONFIG = await writeSettings(join(settingsDir, "settings.json"));
+}
+/**
+ * Approves, in the throwaway settings, the provider script and the profile's validator a command
+ * runs: their hashes come from the pinned Assetgrove's own src/approvals.ts, for the very copy used.
+ */
+async function approve({ script, profile, target }) {
+  const { commandIdentity, scriptIdentity } = await import(pathToFileURL(join(assetgroveDir, "src/approvals.ts")).href);
+  const identities = [];
+  if (script) identities.push(scriptIdentity(script));
+  if (profile) identities.push(commandIdentity("validator", (await json(profile)).validator.command, target));
+  for (const identity of identities) approved.set(identity.hash, identity);
+  await writeSettings(env.ASSETGROVE_CONFIG);
+}
 
 async function pinned(dir, pinFile, fetch) {
   const pin = (await readFile(join(root, pinFile), "utf8")).trim();
@@ -85,6 +135,8 @@ async function assetgrove(args, extraEnv = {}, cwd = root) {
 /** A throwaway copy of this repository's working tree: tracked and unignored files only. */
 async function throwawayCopy(label) {
   const dir = await mkdtemp(join(tmpdir(), `raccoon-world-${label}-`));
+  // The copy has no .git, so .assetgrove marks it as the project root the bible's references resolve in.
+  await mkdir(join(dir, ".assetgrove"));
   const { stdout } = await run("git", ["ls-files", "-co", "--exclude-standard", "-z"], {
     cwd: root,
     maxBuffer: 64 << 20,
@@ -238,9 +290,9 @@ async function checkInputs(qaPerCandidateUsd) {
     if (spec.assetId !== "stevie" || spec.animationFamily !== family || spec.kind !== "sprite-sheet")
       fail("inputs", `${dir}/spec.json must be Stevie's ${family} sprite sheet`);
     if (spec.keyPose !== undefined) fail("inputs", `${dir}/spec.json: the sheet path takes no key pose`);
-    if (!(settings.candidates >= 1 && settings.candidates <= MAX_CANDIDATES) || !(settings.capUsd <= MAX_RUN_USD))
-      fail("inputs", `${dir}/run.json: at most ${MAX_CANDIDATES} candidates and $${MAX_RUN_USD}`);
-    const perCandidateCap = settings.capUsd / settings.candidates;
+    if (!(settings.candidates >= 1 && settings.candidates <= MAX_CANDIDATES) || settings.capUsd !== undefined)
+      fail("inputs", `${dir}/run.json: at most ${MAX_CANDIDATES} candidates, and no capUsd (Assetgrove's run options carry none; a run's cap is $${MAX_RUN_USD})`);
+    const perCandidateCap = MAX_RUN_USD / settings.candidates;
     const dry = await assetgrove([
       "generate-sheet", "--spec", `${dir}/spec.json`, "--bible", "art/style-bible.json",
       "--profile", "art/target-profile.json", "--lock-bible", "art/style-bible.md",
@@ -252,8 +304,8 @@ async function checkInputs(qaPerCandidateUsd) {
     }
     const forecast = settings.candidates * (dry.doc.plan.estimateUsd + qaPerCandidateUsd);
     forecasts[family] = Math.round(forecast * 1000) / 1000;
-    if (forecast > settings.capUsd + 1e-9)
-      fail("inputs", `${family}: one run forecasts $${forecast.toFixed(3)}, over its $${settings.capUsd} cap`);
+    if (forecast > MAX_RUN_USD + 1e-9)
+      fail("inputs", `${family}: one run forecasts $${forecast.toFixed(3)}, over its $${MAX_RUN_USD} cap`);
   }
   return forecasts;
 }
@@ -326,15 +378,17 @@ async function proof() {
   const sheetArgs = [
     "generate-sheet", "--spec", "art/stevie/shelter/spec.json", "--bible", "art/style-bible.json",
     "--profile", "art/target-profile.json", "--lock-bible", "art/style-bible.md",
-    "--cap", "1.25", "--imports", imports, "--provider-script", "art/proof/provider.mjs",
+    "--cap", "1.25", "--imports", imports, "--runs", join(imports, "runs"), "--provider-script", "art/proof/provider.mjs",
   ];
   try {
+    await approve({ script: join(root, "art/proof/provider.mjs"), profile: "art/target-profile.json", target });
     // A short sheet is refused loudly (exit 5) and nothing reaches the target.
     const short = await assetgrove(sheetArgs, { PROOF_SHEET_FIGURES: "3" });
     if (short.code !== 5 || short.doc?.error?.code !== "qa_found_nothing")
       fail("proof", `a 3-figure sheet for a 4-frame spec must be refused with exit 5, got ${short.code}`);
 
-    const sheet = await assetgrove(sheetArgs);
+    // Round 2: the same request in round 1 would resume the short sheet's journal, not draw again.
+    const sheet = await assetgrove([...sheetArgs, "--round", "2"]);
     if (sheet.code !== 0) {
       fail("proof", `generate-sheet failed: ${sheet.doc?.error?.message ?? sheet.stderr}`);
       return;
@@ -515,11 +569,11 @@ async function checkModel3d() {
   const base = ["--spec", SPEC, "--bible", "art/style-bible.json", "--profile", PROFILE, "--runs", runs];
   try {
     const dry = await assetgrove([
-      "stage", ...base, "--candidates", String(settings.candidates), "--cap", String(settings.capUsd), "--dry-run",
+      "stage", ...base, "--candidates", String(settings.candidates), "--cap", String(MAX_RUN_USD), "--dry-run",
     ]);
-    if (dry.code !== 0) fail("model3d", `Stevie's 3D run does not fit its $${settings.capUsd} cap: ${dry.doc?.error?.message ?? dry.stderr}`);
-    if (!(settings.candidates <= MAX_CANDIDATES && settings.capUsd <= MAX_RUN_USD))
-      fail("model3d", `art/stevie/character-3d/run.json: at most ${MAX_CANDIDATES} candidates and $${MAX_RUN_USD}`);
+    if (dry.code !== 0) fail("model3d", `Stevie's 3D run does not fit its $${MAX_RUN_USD} cap: ${dry.doc?.error?.message ?? dry.stderr}`);
+    if (!(settings.candidates <= MAX_CANDIDATES) || settings.capUsd !== undefined)
+      fail("model3d", `art/stevie/character-3d/run.json: at most ${MAX_CANDIDATES} candidates, and no capUsd`);
 
     // The hand-off Clockgrove takes (assetgrove#137): Clockgrove's clip fields, look-dev maps embedded.
     const clipFields = { name: "name", durationMs: "durationMs", loop: "loop", generated: "generated" };
@@ -531,7 +585,8 @@ async function checkModel3d() {
     // shared rig generates the walk (model3d.gaits.walk) and the idle, sniff, eat, play and shelter
     // (model3d.motions, #112). The profile's validator, Clockgrove's `clockgrove-assets validate`, accepts it on the first try.
     const scripted = [...base, "--provider-script", "art/proof/model3d-provider.mjs", "--candidates", "1"];
-    const staged = await assetgrove(["stage", ...scripted, "--routes", "art/proof/model3d-routes.json"], {}, target);
+    await approve({ script: join(target, "art/proof/model3d-provider.mjs"), profile: PROFILE, target });
+    const staged = await assetgrove(["stage", ...scripted], {}, target);
     if (staged.code !== 0) {
       const reasons = (staged.doc?.rejections ?? []).flatMap((c) => c.reasons ?? []).filter((r) => !r.passed);
       fail("model3d", `scripted stage failed (exit ${staged.code}): ${reasons.map((r) => `${r.check}: ${r.reason}`).join("; ") || staged.doc?.error?.message || staged.stderr}`);
@@ -630,14 +685,20 @@ async function checkModel3d() {
     }
 
     // A grant the profile can't accept (a free-plan CC BY model) is refused with exit 7, nothing written.
-    const routes = join(runs, "free-plan-routes.json");
+    // The grant is a route in a second throwaway settings file (routes come only from settings); the
+    // same provider and model as the default keep the rest of the default route. Round 2: the request
+    // digest ignores settings, so round 1 would return the paid-plan run above.
     const freePlan = { license: "CC-BY-4.0", plan: "free", commercial: true, relabel: false, attribution: "3D model generated with Meshy (meshy.ai)" };
-    await writeFile(routes, JSON.stringify({ model3d: { forward: "+z", outputGrant: freePlan } }));
-    const free = await assetgrove(["stage", ...scripted, "--routes", routes]);
     const freeTarget = await mkdtemp(join(tmpdir(), "raccoon-world-free-"));
+    await approve({ script: join(root, "art/proof/model3d-provider.mjs"), profile: PROFILE, target: freeTarget });
+    const freeSettings = await writeSettings(join(settingsDir, "free-plan-settings.json"), {
+      model3d: { provider: "scripted", model: "tripo/v2.5-20250123", outputGrant: freePlan },
+    });
+    const freeEnv = { ASSETGROVE_CONFIG: freeSettings };
+    const free = await assetgrove(["stage", ...scripted, "--round", "2"], freeEnv);
     try {
       const refused = free.code === 0
-        ? await assetgrove(["pick", "--run", free.doc.runDir, "--candidate", "c1", "--target", freeTarget])
+        ? await assetgrove(["pick", "--run", free.doc.runDir, "--candidate", "c1", "--target", freeTarget], freeEnv)
         : free;
       if (refused.code !== 7 || refused.doc?.error?.code !== "license_refused")
         fail("model3d", `a free-plan CC BY grant must be refused with exit 7, got ${refused.code}`);
@@ -655,6 +716,8 @@ async function checkModel3d() {
 try {
   await pinned(assetgroveDir, "ASSETGROVE_COMMIT", "bash scripts/assetgrove.sh fetch");
   await pinned(clockgroveDir, "CLOCKGROVE_COMMIT", "bash scripts/clockgrove.sh fetch");
+  await setUpSettings();
+  const before = await checkoutState();
   await checkBible();
   await checkStyle();
   await checkGracie();
@@ -663,6 +726,10 @@ try {
   const placeholders = await checkPlaceholders();
   const licensedManifests = await checkLicences();
   const model3d = await checkModel3d();
+  // Settings, state, approvals and run directories all live outside the checkout.
+  const after = await checkoutState();
+  const added = after.filter((line) => !before.includes(line));
+  if (added.length) fail("checkout", `the check wrote into the checkout: ${added.join(", ")}`);
   if (failures.length) {
     console.error(failures.join("\n"));
     process.exitCode = 1;
@@ -673,4 +740,6 @@ try {
 } catch (error) {
   console.error(error.message);
   process.exitCode = 2;
+} finally {
+  if (settingsDir) await rm(settingsDir, { recursive: true, force: true });
 }

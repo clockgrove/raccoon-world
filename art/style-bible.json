@@ -1,6 +1,8 @@
 {
+  "format": "assetgrove-style-bible/1",
   "$comment": "Derived from art/style-bible.md by art/tools/derive-bible.mjs; do not edit by hand.",
   "version": "1",
+  "referenceLicense": "NOASSERTION",
   "palette": [
     "#1c1b1f",
     "#6b6662",

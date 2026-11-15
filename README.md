@@ -53,6 +53,8 @@ bash scripts/clockgrove.sh fetch
 bash scripts/assetgrove.sh check
 ```
 
+`check` makes its own throwaway developer settings outside the checkout, so it needs none of yours. A paid step (`generate-sheet` and the like) needs developer settings: one per-user file outside every project that declares the provider and its spend limit, and is never committed here. A person confirms each paid run, `pick` and `write-families` (`assetgrove confirm <id>`). Paid steps run only in the owner session; Factory workers run Assetgrove offline only.
+
 The whole path, from the inputs to the live yard, is in [docs/art/author-guide.md](docs/art/author-guide.md).
 
 ## License
