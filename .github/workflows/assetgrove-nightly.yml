@@ -1,0 +1,70 @@
+name: Assetgrove nightly
+
+# Runs Raccoon World's art checks against Assetgrove's current main every night (#119). Assetgrove no longer
+# tests against this world, so this is where a change there that breaks Raccoon World shows up first.
+# A failure opens one issue in this repository, labelled assetgrove-nightly, or comments on the open one.
+# Assetgrove's repository names no other project, so the report stays here; most failures are input
+# changes on this side.
+
+on:
+  schedule:
+    - cron: "17 10 * * *" # 2:17 AM Pacific (PST)
+  workflow_dispatch:
+
+concurrency:
+  group: assetgrove-nightly
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  nightly:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 40
+    steps:
+      - name: Check out with Git LFS objects
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          lfs: true
+
+      - name: Set up Clockgrove's Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.21.0
+          package-manager-cache: false
+
+      - name: Fetch and install the pinned Clockgrove
+        run: bash scripts/clockgrove.sh fetch
+
+      - name: Point the Assetgrove pin at Assetgrove's main (this runner only)
+        id: pin
+        run: |
+          sha=$(git ls-remote https://github.com/clockgrove/assetgrove.git refs/heads/main | cut -f1)
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "could not read Assetgrove's main: '$sha'"; exit 1; }
+          echo "$sha" > ASSETGROVE_COMMIT
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Assetgrove main: $sha (pinned here: $(git show HEAD:ASSETGROVE_COMMIT))"
+
+      - name: Fetch and install Assetgrove's main
+        run: bash scripts/assetgrove.sh fetch
+
+      - name: Check the art inputs and run the offline art proof
+        run: |
+          set -o pipefail
+          bash scripts/assetgrove.sh check 2>&1 | tee "$RUNNER_TEMP/check.log"
+
+      - name: Report the failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.pin.outputs.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Assetgrove nightly: the art checks fail against Assetgrove main"
+          body=$(printf 'The art checks (`bash scripts/assetgrove.sh check`) failed against Assetgrove main `%s`: %s\n\nLast lines of the check:\n\n```\n%s\n```\n\nDecide whether this needs an input change here or is an Assetgrove bug. Report an Assetgrove bug on clockgrove/assetgrove in neutral terms: the failing command, exit code and error, with no project, character or path names.\n' "${SHA:-unknown}" "$RUN_URL" "$(tail -n 60 "$RUNNER_TEMP/check.log" 2>/dev/null || echo 'the check did not start; see the run')")
+          gh label create assetgrove-nightly -R "$GITHUB_REPOSITORY" --color D93F0B --description "Raccoon World's nightly check against Assetgrove main" 2>/dev/null || true
+          open=$(gh issue list -R "$GITHUB_REPOSITORY" --state open --label assetgrove-nightly --json number -q '.[0].number')
+          if [ -n "$open" ]; then gh issue comment "$open" -R "$GITHUB_REPOSITORY" --body "$body"; else gh issue create -R "$GITHUB_REPOSITORY" --title "$title" --label assetgrove-nightly --body "$body"; fi
