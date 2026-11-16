@@ -293,7 +293,7 @@ Every raccoon has a summer and a winter coat (Kirk, 2026-11-10). Both are grooms
 
 ## Anchors
 
-Positive anchors are approved material only: the mockup, Stevie's approved turnaround (the character look anchor) and its views, Jimothy's painted portrait (environment brushwork) and Jimothy's sheet cell 3, Gracie's approved turnaround views and Kirk's photos of Gracie (likeness references scoped to her subject, not style anchors). Unapproved material is listed as negative anchors and is never a positive one: the 3D spike outputs (`references/stevie/77-3d`), the Assetgrove #38 proof outputs (`references/jimothy/assetforge-38-proof`) and the Stevie idle and walk strips made for the 3D comparison (`references/stevie/comparison-candidates`).
+Positive anchors are approved material only: the mockup, Stevie's approved turnaround (the character look anchor) and its views, Jimothy's painted portrait (environment brushwork) and Jimothy's sheet cell 3, Gracie's approved turnaround views and Kirk's photos of Gracie (likeness references scoped to her subject, not style anchors). `references/approved.json` records each approved file by its bytes, and `art/tools/check.mjs` fails on any positive anchor that is not one of them, wherever it lives. Unapproved material is listed as negative anchors and is never a positive one: the 3D spike outputs (`references/stevie/77-3d`), the Assetgrove #38 proof outputs (`references/jimothy/assetforge-38-proof`) and the Stevie idle and walk strips made for the 3D comparison (`references/stevie/comparison-candidates`).
 
 ## Palette and lighting tokens
 

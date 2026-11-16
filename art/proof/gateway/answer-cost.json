@@ -1,0 +1,36 @@
+{
+  "$comment": "The answer itself carries the gateway's cost; no lookup is needed.",
+  "answer": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json",
+      "x-vercel-id": "pdx1::cle1::dxvzs-1794388881145-5974a20aed0c"
+    },
+    "body": {
+      "created": 1794388881,
+      "data": [
+        {
+          "b64_json": "<omitted>"
+        }
+      ],
+      "usage": {
+        "total_tokens": 11620,
+        "input_tokens": 6132,
+        "output_tokens": 5488,
+        "input_tokens_details": {
+          "text_tokens": 408,
+          "image_tokens": 5724
+        }
+      },
+      "providerMetadata": {
+        "gateway": {
+          "cost": "0.212472"
+        }
+      }
+    }
+  },
+  "lookup": null,
+  "expect": {
+    "usd": 0.212472
+  }
+}

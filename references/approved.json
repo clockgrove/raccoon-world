@@ -1,0 +1,115 @@
+{
+  "$comment": "Approved reference material: every positive style anchor in art/style-bible.md must be one of these files by its bytes (sha256), wherever it lives. Each entry names the approval the repository already records. A new anchor needs the owner's approval recorded here first. art/tools/check.mjs checks every entry against its file.",
+  "format": "raccoon-world-approved/1",
+  "files": [
+    {
+      "path": "docs/design/reference/raccoon-world-reference.png",
+      "sha256": "c2162df16789bb754318d4e88bf4ae289bc060ed144a6306d30449250a54615a",
+      "approvedBy": "owner",
+      "record": "the owner's mockup: the bible's perspective reference and the look target (docs/design/3d-look-proof.md; check.mjs requires it as the perspective)"
+    },
+    {
+      "path": "references/stevie/turnaround.png",
+      "sha256": "6fba28c68a9957003cad483861352dd3bfc9ac63078875cf4be7d3d1f1191bba",
+      "approvedBy": "owner",
+      "approvedAt": "2026-11-07",
+      "record": "references/stevie/README.md: Approved reference (owner, 2026-11-07), the four-view turnaround and its sheet"
+    },
+    {
+      "path": "references/stevie/turnaround-front.png",
+      "sha256": "2d0b8263e757d122fc2e8b48a510fcb723b8cb1f022e674df3d9bc6d265b6fa7",
+      "approvedBy": "owner",
+      "approvedAt": "2026-11-07",
+      "record": "references/stevie/README.md: Approved reference (owner, 2026-11-07), the four-view turnaround and its sheet"
+    },
+    {
+      "path": "references/stevie/turnaround-three-quarter.png",
+      "sha256": "a1883f9f3e0a5b293157e6b57c89bed9c880bc72f484cd38a9fd9d9e375b1609",
+      "approvedBy": "owner",
+      "approvedAt": "2026-11-07",
+      "record": "references/stevie/README.md: Approved reference (owner, 2026-11-07), the four-view turnaround and its sheet"
+    },
+    {
+      "path": "references/stevie/turnaround-side.png",
+      "sha256": "638757a486fac5adfa08a0c38b4f9c6b85bdf31308883756c1146f085643cfd0",
+      "approvedBy": "owner",
+      "approvedAt": "2026-11-07",
+      "record": "references/stevie/README.md: Approved reference (owner, 2026-11-07), the four-view turnaround and its sheet"
+    },
+    {
+      "path": "references/stevie/turnaround-back.png",
+      "sha256": "0a50c5fa12a4cd33338e0ffa557da072e95a177a8e7eb79c71cd2b2af5155d06",
+      "approvedBy": "owner",
+      "approvedAt": "2026-11-07",
+      "record": "references/stevie/README.md: Approved reference (owner, 2026-11-07), the four-view turnaround and its sheet"
+    },
+    {
+      "path": "references/jimothy/jimothy-peanut-painted.png",
+      "sha256": "f6dcdcf6f462a645283788d50822385d1a59213e0a94cd998d803bffcc193e42",
+      "approvedBy": "owner",
+      "record": "references/jimothy/README.md: the owner's painted portrait, a positive style anchor and part of Jimothy's identity lock"
+    },
+    {
+      "path": "references/jimothy/sheet-cell-03.png",
+      "sha256": "a4da2475a85a3b15427137f190abe354a3e93e1aaaa9df4daef099799c1506e3",
+      "approvedBy": "owner",
+      "record": "references/jimothy/README.md: cell 3 of the owner's contact sheet, Jimothy's identity lock"
+    },
+    {
+      "path": "references/gracie/gracie-lounging.png",
+      "sha256": "78d6f8ca6c5aba12cbb1e94b1f3b99bb8ce979982ebffe21925af5e288ab53ce",
+      "approvedBy": "Kirk",
+      "approvedAt": "2026-11-10",
+      "record": "references/gracie/README.md: Kirk's own photo of Gracie, her likeness reference"
+    },
+    {
+      "path": "references/gracie/gracie-ice-cube.png",
+      "sha256": "2bda4c09578c8590f089a854c1b302aa4e9ba4a534391be785a67f79bd1dc195",
+      "approvedBy": "Kirk",
+      "approvedAt": "2026-11-10",
+      "record": "references/gracie/README.md: Kirk's own photo of Gracie, her likeness reference"
+    },
+    {
+      "path": "references/gracie/gracie-sleeping.png",
+      "sha256": "6c99e00ddb9d510ad12e84509169d7de8230516e24ccd149e33a5d705d2e9d38",
+      "approvedBy": "Kirk",
+      "approvedAt": "2026-11-10",
+      "record": "references/gracie/README.md: Kirk's own photo of Gracie, her likeness reference"
+    },
+    {
+      "path": "references/gracie/turnaround.png",
+      "sha256": "2286ae2dbaa737229249c3b4d2e46e945e7efe192a892c0d83775edbfa6f2069",
+      "approvedBy": "Kirk",
+      "approvedAt": "2026-11-11",
+      "record": "references/gracie/provenance-turnaround.json: Kirk's pick, c1 (#50)"
+    },
+    {
+      "path": "references/gracie/turnaround-front.png",
+      "sha256": "7ba38660b85aafeef7ec9a0c62e492a0e22cc847423f66f543eb6efe0154bed2",
+      "approvedBy": "Kirk",
+      "approvedAt": "2026-11-11",
+      "record": "references/gracie/provenance-turnaround.json: Kirk's pick, c1 (#50)"
+    },
+    {
+      "path": "references/gracie/turnaround-three-quarter.png",
+      "sha256": "d16dead94a0b9a8eedaa48f1236169450e8be6ee13bc850f9483e12273b4c06e",
+      "approvedBy": "Kirk",
+      "approvedAt": "2026-11-11",
+      "record": "references/gracie/provenance-turnaround.json: Kirk's pick, c1 (#50)"
+    },
+    {
+      "path": "references/gracie/turnaround-side.png",
+      "sha256": "2a9a1877460edb7ff35a970d7aaf4ef3ab81f66c3ae2ae33c7b27f89b4093345",
+      "approvedBy": "Kirk",
+      "approvedAt": "2026-11-11",
+      "record": "references/gracie/provenance-turnaround.json: Kirk's pick, c1 (#50)"
+    },
+    {
+      "path": "references/gracie/turnaround-back.png",
+      "sha256": "449e34f65980aa148073c281c9b7787f4dc23707f9ae1a13628e36ba1d26d941",
+      "approvedBy": "Kirk",
+      "approvedAt": "2026-11-11",
+      "record": "references/gracie/provenance-turnaround.json: Kirk's pick, c1 (#50)"
+    }
+  ]
+}

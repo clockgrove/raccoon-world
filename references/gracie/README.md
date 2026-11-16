@@ -36,7 +36,7 @@ node art/tools/turnaround.mjs gracie             # needs AI_GATEWAY_API_KEY in t
 ```
 
 - **Inputs:** the prompt, the photos, the candidate count (3) and the $5 cap are in `art/gracie/turnaround.json`. Its prompt now asks for the bible's character look for the next run; the prompt c1 to c3 were made with is recorded per call in `turnaround-candidates/provenance.json`.
-- **Budget:** each call reserves $0.50 against the cap before it runs; a call that would pass the cap is refused. The three calls cost $0.62 of the $5 cap.
+- **Budget:** each call reserves $0.50 against the cap before it runs; a call that would pass the cap is refused. The three calls cost $0.62 of the $5 cap, read then from the gateway's credit balance before and after each call. A call now records the cost the gateway reports for its generation instead; when it can read no exact cost, the call's $0.50 reservation stays its committed cost.
 - **Candidates:** `turnaround-candidates/c1`, `c2` and `c3`, each a 2×2 sheet and its four cropped views, with every call recorded in `turnaround-candidates/provenance.json`. They stay as review material; only c1 is approved.
 
 His further photos of her refine the turnaround.

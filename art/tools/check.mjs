@@ -4,7 +4,9 @@
 // scripted (art/proof/provider.mjs).
 //
 // 1. bible:       art/style-bible.json is exactly what art/tools/derive-bible.mjs derives from the
-//                 Markdown bible, and the bible keeps its anchors and identity locks as decided.
+//                 Markdown bible, and the bible keeps its anchors and identity locks as decided. Every
+//                 positive anchor is approved material: its bytes are an entry of references/approved.json,
+//                 wherever it lives, so an unpicked candidate in any folder fails (art/tools/anchors.mjs).
 // 2. style:       the target profile's style matches the Clockgrove style profile
 //                 (reference/asset-style.json), and its palette value is the bible's palette.
 // 3. inputs:      each of Stevie's six families has its spec, brief and run settings, and one run
@@ -13,7 +15,9 @@
 //                 licence report and its approved golden scene (in a throwaway copy).
 // 5. proof:       an offline Assetgrove run writes Stevie's shelter strip into a throwaway copy of
 //                 this repository and Clockgrove's validator accepts it on the first try, with
-//                 review pending and complete provenance; a short sheet is refused, never padded.
+//                 review pending and complete provenance; a short sheet is refused, never padded. The
+//                 validator also ran the matting-fringe QA on the strip, and refuses it once its soft edge
+//                 keeps the matte background its provenance records (issue 140).
 // 6. licences:    every committed manifest's licence is the licence REUSE.toml gives its source file,
 //                 so a CC-BY-4.0 pick can't land under the `**` MIT annotation.
 // 7. gracie:      Gracie's bible subject leads with her signature fur, her photos and approved views
@@ -28,6 +32,13 @@
 //                 Clockgrove refuses the same model over lower budgets (MODEL_BUDGET_EXCEEDED); it renders
 //                 through the pinned renderer's world-content seam (art/tools/model3d-render.mjs); a
 //                 free-plan grant is refused with exit 7 (issues 39 and 82).
+// 9. cost:        recorded gateway answers (art/proof/gateway/) through a local stub of the generation lookup:
+//                 a turnaround call records the cost the gateway reports for its generation (the AI SDK's
+//                 getGenerationInfo), else its reservation stays its committed cost, never free, also when a
+//                 reported cost rounds to 0 in the ledger main() writes (art/tools/turnaround.mjs, issue 140).
+// 10. fringe:     the matting-fringe QA (art/tools/fringe.mjs): every approved frame passes, fringed and
+//                 pale-fur fringed counter-examples fail, soft strands pass, and the profile's recorded
+//                 calibration (animation.matting) is what the repository measures (issue 140).
 //
 // Assetgrove runs under throwaway developer settings (headless, only the scripted provider, the
 // proof's provider scripts and validators approved by hash) in a temporary directory outside the
@@ -36,13 +47,17 @@
 // ASSETGROVE_DIR and CLOCKGROVE_DIR name the pinned checkouts (defaults .assetgrove-src, .clockgrove).
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
+import { createServer } from "node:http";
 import { cp, lstat, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { deriveBible, DERIVED } from "./derive-bible.mjs";
-import { forecast, loadRun, pending, ROUTE, VIEWS } from "./turnaround.mjs";
+import { calibrate, fringed, stripBackgrounds, stripFrames } from "./fringe.mjs";
+import { decodePng, encodePng } from "../../spikes/stevie-3d/scripts/png.mjs";
+import { REGISTER, registerProblems, unapprovedAnchors } from "./anchors.mjs";
+import { committed, costFields, forecast, generationCost, loadRun, pending, ROUTE, VIEWS } from "./turnaround.mjs";
 
 const run = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -170,10 +185,17 @@ async function checkBible() {
     return;
   }
   const bible = described.doc;
-  const unapproved = ["references/stevie/77-3d/", "references/jimothy/assetforge-38-proof/", "references/stevie/comparison-candidates/"];
-  for (const anchor of bible.anchors.positive)
-    if (unapproved.some((prefix) => anchor.path.includes(prefix)))
-      fail("bible", `unapproved material is a positive anchor: ${anchor.path}`);
+  // Approved anchors only (issue 140): by the approved bytes in references/approved.json, wherever a file lives.
+  const register = await json(REGISTER);
+  for (const problem of await registerProblems(root, register)) fail("bible", problem);
+  for (const problem of await unapprovedAnchors(root, bible.anchors.positive, register)) fail("bible", problem);
+  // The check itself: an unpicked Gracie turnaround candidate, outside every folder the old deny-list named, is refused;
+  // c1's copy of her approved view is the approved bytes, so it passes.
+  const unpicked = { path: "../references/gracie/turnaround-candidates/c2/turnaround-front.png" };
+  if ((await unapprovedAnchors(root, [unpicked], register)).length !== 1)
+    fail("bible", `an unpicked Gracie candidate as a positive anchor was not caught: ${unpicked.path}`);
+  if ((await unapprovedAnchors(root, [{ path: "../references/gracie/turnaround-candidates/c1/turnaround-front.png" }], register)).length !== 0)
+    fail("bible", "Kirk's pick c1, the approved bytes, must pass as an anchor wherever it lives");
   if (bible.perspective !== "../docs/design/reference/raccoon-world-reference.png")
     fail("bible", "the perspective reference must be the owner's mockup");
   const locks = bible.identities;
@@ -259,6 +281,89 @@ async function checkGracie() {
   if (ROUTE.outputGrant?.license !== "LicenseRef-openai-api" || ROUTE.outputGrant.relabel !== true || ROUTE.digitalSourceType !== IPTC_GENERATED)
     fail("gracie", "the turnaround route must record OpenAI's relabellable output grant and IPTC trainedAlgorithmicMedia");
   if (VIEWS.join() !== "front,three-quarter,side,back") fail("gracie", `the turnaround views must be the four views: ${VIEWS}`);
+}
+
+/**
+ * Real cost (issue 140): recorded gateway answers (art/proof/gateway/) replayed through a local stub of the gateway's
+ * generation lookup. Each answer's recorded cost comes back as the call's cost; with no exact cost the reservation
+ * stays the committed cost, and the cap still counts it. No paid call: nothing leaves this machine.
+ */
+async function checkCost() {
+  const dir = "art/proof/gateway";
+  const recorded = [];
+  for (const file of (await readdir(join(root, dir))).filter((f) => f.endsWith(".json")).sort())
+    recorded.push({ file, ...(await json(`${dir}/${file}`)) });
+  // The record a finished call gets (costFields, as main() writes it), counted by the run's cap (committed).
+  const committedAs = (cost, expected) => {
+    const call = { status: "done", reservedUsd: 0.5, ...costFields(cost) };
+    const total = committed({ calls: [call] });
+    return total > 0 && total === expected && (call.costUsd === undefined || call.costUsd > 0);
+  };
+  let current;
+  const server = createServer((request, response) => {
+    const url = new URL(request.url, "http://stub");
+    const lookup = current?.lookup;
+    const known = url.pathname === "/v1/generation" && lookup && url.searchParams.get("id") === lookup.body?.data?.id;
+    response.writeHead(known ? lookup.status : 404, { "content-type": "application/json" });
+    response.end(JSON.stringify(known ? lookup.body : { error: { message: "generation not found" } }));
+  });
+  await new Promise((done) => server.listen(0, "127.0.0.1", done));
+  const gateway = `http://127.0.0.1:${server.address().port}/v1`;
+  try {
+    for (const fixture of recorded) {
+      current = fixture;
+      const { answer } = fixture;
+      const cost = await generationCost({ body: answer.body, headers: new Headers(answer.headers), gateway, token: "recorded", waitsMs: [0, 0] });
+      if (cost.usd !== fixture.expect.usd)
+        fail("cost", `${dir}/${fixture.file}: the call's cost must be ${fixture.expect.usd}, got ${cost.usd} (${cost.basis})`);
+      if (fixture.lookup?.status === 200 && fixture.expect.usd !== null && !cost.basis.includes("getGenerationInfo"))
+        fail("cost", `${dir}/${fixture.file}: the cost must come from the AI SDK's getGenerationInfo, got: ${cost.basis}`);
+      // The ledger fields turnaround.mjs's main() records for a finished call, and what the cap then counts.
+      if (!committedAs(cost, cost.usd ?? 0.5)) fail("cost", `${dir}/${fixture.file}: the call must commit ${cost.usd ?? 0.5}, never 0`);
+    }
+    if (!recorded.some((f) => f.expect.usd === null) || !recorded.some((f) => f.lookup && f.expect.usd !== null))
+      fail("cost", `${dir} must record an answer with no exact cost and one whose cost comes from the generation record`);
+    // A positive cost under half a micro-dollar rounds to 0 in the ledger: the reservation must stand, not $0.
+    if (!committedAs({ usd: 4e-7, basis: "a reported cost under half a micro-dollar" }, 0.5))
+      fail("cost", "a reported cost that rounds to 0 must leave the reservation as the committed cost");
+  } finally {
+    server.close();
+  }
+  return recorded.length;
+}
+
+/**
+ * Matting fringe (issue 140): the profile's fringeShare is recomputed from the repository. Every approved frame
+ * passes; a fringed counter-example and a pale-fur one on a pale background fail; soft strands of the figure's own
+ * colour pass; and the profile's recorded calibration is what the repository measures.
+ */
+async function checkFringe() {
+  const matting = (await json("art/target-profile.json")).animation?.matting;
+  const limit = matting?.fringeShare;
+  if (!(limit > 0 && limit < 1)) {
+    fail("fringe", "art/target-profile.json animation.matting.fringeShare must be within 0..1");
+    return;
+  }
+  const measured = await calibrate(root);
+  for (const { source, frame, share } of measured.approved)
+    if (share > limit) fail("fringe", `approved ${source} frame ${frame} is ${share.toFixed(4)} fringe, over ${limit}`);
+  if (!(measured.fringed > limit)) fail("fringe", `the fringed counter-example (${measured.fringed.toFixed(4)}) must fail at ${limit}`);
+  if (!(measured.paleFringed > limit)) fail("fringe", `pale fur fringed on a pale background (${measured.paleFringed.toFixed(4)}) must fail at ${limit}`);
+  if (!(measured.softStrands <= limit)) fail("fringe", `soft strands of the figure's own colour (${measured.softStrands.toFixed(4)}) must pass at ${limit}`);
+  const recorded = matting.calibration ?? {};
+  const round = (n) => Math.round(n * 1e4) / 1e4;
+  const facts = [
+    ["approved.frames", recorded.approved?.frames, measured.approved.length],
+    ["approved.softEdgeFrames", recorded.approved?.softEdgeFrames, measured.softEdgeFrames.length],
+    ["approved.worstShare", recorded.approved?.worstShare, round(measured.worstShare)],
+    ["counterExamples.fringed", recorded.counterExamples?.fringed, round(measured.fringed)],
+    ["counterExamples.paleFringed", recorded.counterExamples?.paleFringed, round(measured.paleFringed)],
+    ["counterExamples.softStrands", recorded.counterExamples?.softStrands, round(measured.softStrands)],
+    ["background", recorded.background, measured.background],
+  ];
+  for (const [what, ours, theirs] of facts)
+    if (ours !== theirs) fail("fringe", `animation.matting.calibration.${what} records ${ours}, the repository measures ${theirs}`);
+  return { limit, worstApproved: round(measured.worstShare), fringed: round(measured.fringed), paleFringed: round(measured.paleFringed), assetgroveHaloPale: round(measured.assetgroveHaloPale) };
 }
 
 async function checkStyle() {
@@ -383,6 +488,40 @@ async function checkLicences() {
   return manifests.length;
 }
 
+/**
+ * Matting fringe on every write (issue 140): the profile's validator ran the world's fringe QA on the strip it just
+ * accepted, each frame against the matte background its provenance records; and the same validator refuses that strip
+ * once its soft edge keeps that background (each soft pixel mixed with it, as a matte that left it in).
+ */
+async function proveFringeOnWrite(target, manifest, provenance, png, validatorOutput) {
+  if (!/^matting-fringe: passed: /m.test(validatorOutput))
+    fail("proof", `the validator must run the matting-fringe QA on the written strip:\n${validatorOutput}`);
+  const count = manifest.frames.count;
+  const backgrounds = stripBackgrounds(provenance, count);
+  if (!backgrounds.every(Boolean)) {
+    fail("proof", "the written strip's provenance must record each frame's matte background");
+    return;
+  }
+  const strip = decodePng(png);
+  const frames = stripFrames(strip, count);
+  const data = new Uint8Array(strip.data);
+  frames.forEach((f, i) => {
+    const kept = fringed(f, backgrounds[i]);
+    for (let y = 0; y < f.height; y++)
+      data.set(kept.data.subarray(y * f.width * 4, (y + 1) * f.width * 4), (y * strip.width + i * f.width) * 4);
+  });
+  await writeFile(join(target, manifest.source.path), encodePng({ width: strip.width, height: strip.height, data }));
+  let refused;
+  try {
+    await run("bash", ["scripts/validate-asset.sh", `assets/manifests/${manifest.assetId}/${manifest.animationFamily}.json`], { cwd: target, env });
+    refused = undefined;
+  } catch (error) {
+    refused = `${error.stdout ?? ""}${error.stderr ?? ""}`;
+  }
+  if (refused === undefined || !/^matting-fringe: FAILED: frame \d+: /m.test(refused))
+    fail("proof", `the validator must refuse the strip with its soft edge kept on the matte background:\n${refused ?? "it accepted it"}`);
+}
+
 async function proof() {
   const target = await throwawayCopy("proof");
   const imports = await mkdtemp(join(tmpdir(), "raccoon-world-imports-"));
@@ -442,6 +581,7 @@ async function proof() {
       ["the strip's frame grid", manifest.frames.width === 32 && manifest.frames.height === 32 && manifest.frames.count === 4],
     ];
     for (const [what, ok] of expectations) if (!ok) fail("proof", `the written strip lacks: ${what}`);
+    await proveFringeOnWrite(target, manifest, provenance, png, family.result.validator.output);
     const { stdout: attr } = await run("git", ["check-attr", "filter", "--", manifest.source.path], { cwd: root });
     if (!attr.trim().endsWith(": lfs")) fail("proof", `${manifest.source.path} is not stored in Git LFS by .gitattributes`);
     const reuse = await readFile(join(root, "REUSE.toml"), "utf8");
@@ -732,6 +872,8 @@ try {
   await checkBible();
   await checkStyle();
   await checkGracie();
+  const recordedAnswers = await checkCost();
+  const fringe = await checkFringe();
   const proved = await proof();
   const forecasts = await checkInputs(proved?.qaPerCandidateUsd ?? 0);
   const placeholders = await checkPlaceholders();
@@ -746,7 +888,7 @@ try {
     process.exitCode = 1;
   } else
     console.log(
-      JSON.stringify({ status: "ok", validator: proved.validator, placeholders, licensedManifests, runForecastUsd: forecasts, model3d }),
+      JSON.stringify({ status: "ok", validator: proved.validator, placeholders, licensedManifests, runForecastUsd: forecasts, recordedAnswers, fringe, model3d }),
     );
 } catch (error) {
   console.error(error.message);

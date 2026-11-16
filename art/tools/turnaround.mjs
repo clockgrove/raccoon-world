@@ -15,14 +15,16 @@
 // reservation, because the provider may still have charged it. The key comes from AI_GATEWAY_API_KEY and is never
 // printed. Nothing here picks: the pick is the owner's.
 //
-// In a Factory worker (FACTORY_GATEWAY_URL set, Factory v0.9.15+) the call goes through Factory's metering relay with
-// the relay token in AI_GATEWAY_API_KEY; the relay prices and caps it. Each call's cost is the gateway's own
-// providerMetadata.gateway.cost in the answer; only a direct call whose answer has none falls back to the credit
-// balance before and after it (the relay refuses /v1/credits).
+// Each call's cost is the one the gateway reports for that generation: providerMetadata.gateway.cost in the answer,
+// else the gateway's generation record (the AI SDK's getGenerationInfo, from the pinned Assetgrove's locked install). There is no credit-balance difference. When
+// no exact cost can be read, the call's reservation stays its committed cost: a call is never recorded as free, so the
+// run's cap holds. In a Factory worker (FACTORY_GATEWAY_URL set) the call goes through Factory's metering relay with
+// the relay token in AI_GATEWAY_API_KEY.
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
+import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { setTimeout as sleep } from "node:timers/promises";
 import { cropRgba, decodePng, encodePng } from "../../spikes/stevie-3d/scripts/png.mjs";
@@ -60,7 +62,8 @@ export async function loadRun(subject) {
   return run;
 }
 
-const committed = (book) => book.calls.reduce((sum, c) => sum + Number(c.costUsd ?? c.reservedUsd ?? 0), 0);
+// A recorded cost counts only when positive; otherwise the call's reservation does, so no call is ever counted as free.
+const committed = (book) => book.calls.reduce((sum, c) => sum + (Number(c.costUsd) > 0 ? Number(c.costUsd) : Number(c.reservedUsd ?? 0)), 0);
 
 /** The candidate numbers a run would make: those without a finished call, up to `count`. */
 export function pending(book, count) {
@@ -81,10 +84,77 @@ async function json(response, what) {
   if (!response.ok) throw new Error(`${what}: HTTP ${response.status} ${text.slice(0, 400)}`);
   return JSON.parse(text);
 }
-async function balance(token) {
-  const body = await json(await fetch(`${GATEWAY}/credits`, { headers: { authorization: `Bearer ${token}` } }), "gateway credits");
-  return Number(body.balance);
+const positive = (v) => {
+  const n = typeof v === "string" && v.trim() !== "" ? Number(v) : v;
+  return typeof n === "number" && Number.isFinite(n) && n > 0 ? n : null;
+};
+
+/**
+ * The AI SDK's gateway provider (`createGateway`, from `ai`), taken from the pinned Assetgrove checkout's locked install
+ * (ASSETGROVE_DIR, default .assetgrove-src; `bash scripts/assetgrove.sh fetch`), the same SDK Assetgrove reads a
+ * generation's cost with. This repository has no package manifest of its own; that install is its one locked copy.
+ */
+export async function gatewaySdk() {
+  const dir = resolve(process.env.ASSETGROVE_DIR ?? join(root, ".assetgrove-src"));
+  const require = createRequire(join(dir, "package.json"));
+  return import(pathToFileURL(require.resolve("ai")).href);
 }
+
+/**
+ * The exact cost the gateway reports for one generation, or null (the reservation then stands). Never throws. The
+ * generation record is read with the AI SDK's `getGenerationInfo` (GET /v1/generation, `totalCost`), retried while
+ * the gateway does not know the generation yet (404), is busy (429) or failing (5xx, no answer).
+ */
+export async function generationCost({ body, headers, gateway, token, fetch = globalThis.fetch, waitsMs = [0, 2000, 5000, 10000], sdk }) {
+  const own = positive(body?.providerMetadata?.gateway?.cost);
+  if (own !== null) return { usd: own, basis: "the gateway's own cost in the answer (providerMetadata.gateway.cost)" };
+  const header = headers?.get?.("x-generation-id");
+  const id = [body?.providerMetadata?.gateway?.generationId, body?.generationId, body?.id, header].find(
+    (v) => typeof v === "string" && v.startsWith("gen_"),
+  );
+  const none = (why) => ({
+    usd: null,
+    basis: `no exact cost from the gateway for this generation (${why}); the reservation stands as its committed cost`,
+    ...(id && { generationId: id }),
+  });
+  if (!id) return none(body?.providerMetadata?.gateway?.cost === undefined ? "the answer has no cost and names no generation" : "the answer's cost is not positive and it names no generation");
+  let provider;
+  try {
+    const { createGateway } = sdk ?? (await gatewaySdk());
+    provider = createGateway({ apiKey: token, baseURL: gateway, fetch });
+  } catch (error) {
+    return none(`the AI SDK could not be loaded from the pinned Assetgrove (bash scripts/assetgrove.sh fetch): ${String(error?.message ?? error).slice(0, 80)}`);
+  }
+  let why = "lookup not tried";
+  for (const wait of waitsMs) {
+    if (wait > 0) await sleep(wait);
+    try {
+      const usd = positive((await provider.getGenerationInfo({ id }))?.totalCost);
+      return usd !== null ? { usd, basis: "the gateway's generation record (AI SDK getGenerationInfo, totalCost)", generationId: id } : none("the generation record has no positive totalCost");
+    } catch (error) {
+      const status = error?.statusCode;
+      why = `generation lookup ${typeof status === "number" ? `HTTP ${status}` : "failed"}: ${String(error?.message ?? error).slice(0, 80)}`;
+      if (typeof status === "number" && !(status === 404 || status === 429 || status >= 500)) break;
+    }
+  }
+  return none(why);
+}
+
+/**
+ * The ledger fields a finished call records for its cost. A cost is kept to the micro-dollar; one that rounds to 0 is
+ * not recorded, so the call's reservation stays its committed cost and it is never counted as free.
+ */
+export function costFields(cost) {
+  const usd = cost.usd === null ? null : Math.round(cost.usd * 1e6) / 1e6;
+  return {
+    ...(cost.generationId && { generationId: cost.generationId }),
+    ...(usd > 0 && { costUsd: usd }),
+    costBasis: usd > 0 || usd === null ? cost.basis : `${cost.basis}; ${cost.usd} USD rounds to 0, so the reservation stands as its committed cost`,
+  };
+}
+
+/** What a run commits: each call's recorded cost, else its reservation. */
+export { committed };
 
 async function main(argv) {
   const subject = argv.find((a) => !a.startsWith("--"));
@@ -143,8 +213,6 @@ async function main(argv) {
     console.log(`${record.id}: reserved ${usd(run.reserveUsd)}; ${usd(committed(book))} of ${usd(run.capUsd)} committed`);
     const start = Date.now();
     try {
-      // The balance is read only where it may be needed: a direct call (the relay refuses /v1/credits).
-      const before = RELAYED ? null : await balance(token);
       const response = await fetch(ROUTE.endpoint, {
         method: "POST",
         headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
@@ -160,20 +228,17 @@ async function main(argv) {
       const b64 = body.data?.[0]?.b64_json;
       if (!b64) throw new Error("images/edits returned no image");
       const sheet = Buffer.from(b64, "base64");
-      const reported = Number.parseFloat(body.providerMetadata?.gateway?.cost);
-      let cost;
-      if (Number.isFinite(reported) && reported >= 0) cost = { usd: reported, basis: "the gateway's own cost in the answer (providerMetadata.gateway.cost)" };
-      else if (RELAYED) cost = { usd: null, basis: "not in the answer; Factory's relay metered the call (the reservation stands in the ledger)" };
-      else {
-        await sleep(process.env.AI_GATEWAY_URL ? 0 : 10_000); // the gateway's balance lags the call by a few seconds
-        cost = { usd: Math.max(0, before - (await balance(token))), basis: "AI Gateway credit balance before and after the call" };
-      }
+      const cost = await generationCost({
+        body,
+        headers: response.headers,
+        gateway: GATEWAY,
+        token,
+        waitsMs: process.env.AI_GATEWAY_URL ? [0, 0, 0] : undefined,
+      });
       Object.assign(record, {
         status: "done",
         ...(requestId && { requestId }),
-        ...(body.generationId && { generationId: body.generationId }),
-        ...(cost.usd !== null && { costUsd: Math.round(cost.usd * 1e6) / 1e6 }),
-        costBasis: cost.basis,
+        ...costFields(cost),
         ...(RELAYED && { via: "Factory gateway relay" }),
         usage: body.usage ?? null,
         minutes: Math.round((Date.now() - start) / 600) / 100,
@@ -201,7 +266,7 @@ async function main(argv) {
           ...(name !== "turnaround.png" && { derivedFrom: `${candidate}/turnaround.png`, view: name.slice(11, -4) }),
         };
       }
-      console.log(`${record.id}: ${record.costUsd === undefined ? "cost metered by the relay, reservation kept" : `${usd(record.costUsd)} spent`}; wrote ${run.out}/${candidate}/`);
+      console.log(`${record.id}: ${record.costUsd === undefined ? "no exact cost; reservation kept" : `${usd(record.costUsd)} spent`}; wrote ${run.out}/${candidate}/`);
     } catch (error) {
       Object.assign(record, { status: "failed", error: String(error.message ?? error).slice(0, 500) });
       throw error;
