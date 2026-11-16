@@ -27,6 +27,7 @@ Raccoon World's art direction and Assetgrove inputs. The author guide, [docs/art
 
 **Gracie** (issue 50)
 - She is the bible subject `gracie`. Her description leads with her signature: long, shaggy, paler grey fur on her lower body.
+- `check` reads the traits her identity lock declares (`identities.gracie.signatureFeatures`, the first her signature) through Assetgrove's `bible describe` and matches her description by the body parts they name (`tools/traits.mjs`), not by wording: it must lead with her signature, name her lower body, mask, brows, muzzle, ears and tail, and negate no declared trait. An accurate rewording passes; "no ringed tail" fails.
 - Kirk's photos of her are positive anchors scoped to her subject. They are likeness references, not the look.
 - Her identity lock is the three-quarter view of her approved turnaround, candidate c1 of the three that `node art/tools/turnaround.mjs gracie` generated (Kirk's pick, 2026-11-11), plus her photos.
 - `references/gracie/README.md` has the run, the budget, the pick and its provenance.
@@ -36,7 +37,7 @@ Raccoon World's art direction and Assetgrove inputs. The author guide, [docs/art
 - Real-time 3D characters target this profile. [docs/art/3d-target-profile.md](../docs/art/3d-target-profile.md) has the budgets per tier, the measured numbers, the format-neutral hand-off next to the shipped format, the rig, the walk, the clip set and the seasonal coats.
 - `rig/raccoon.json` is the shared raccoon skeleton template.
 - `stevie/character-3d/` holds Stevie's `character-3d` spec and run settings.
-- `tools/model3d.mjs` is the 3D profile's validator: it maps the manifest and runs Clockgrove's pinned `clockgrove-assets validate` (platform refusals keep Clockgrove's codes), then this world's own checks, and flags the rest.
+- `tools/model3d.mjs` is the 3D profile's validator: it maps the manifest and runs Clockgrove's pinned `clockgrove-assets validate` (platform refusals keep Clockgrove's codes), then this world's own checks, and flags the rest. A model's height is checked against its own spec's `heightM`, not a fixed band.
 - `tools/model3d-render.mjs` draws a handed-off model and its idle through the pinned renderer's world-content seam (clockgrove/clockgrove#112), on Clockgrove's fixture renderer page under a software GPU; the 3D proof runs it.
 - `proof/model3d-provider.mjs` is the 3D proof's scripted provider. `proof/c3-facing-plus-x.glb` is c3 facing +x, as a Tripo model faces and as Assetgrove's default Tripo route reads it (a settings route can't set `forward`). It is c3 with its root's yaw reset; the approved c3 itself is unchanged. Both are test data, and nothing they make is committed.
 - The 2D `target-profile.json` below still describes the placeholder strips.

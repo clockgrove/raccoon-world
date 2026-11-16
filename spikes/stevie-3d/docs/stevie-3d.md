@@ -8,9 +8,10 @@ hook, so every arm shares one light rig, one fog, one bloom and output pass, and
 - **3d** (`model.ts`): a rigged Stevie playing `idle` and `walk` clips, with `MeshToonMaterial` (a three-step ramp)
   and an inverted-hull outline. CI renders the **procedural stand-in**: 18 joints, two-bone skin weights and
   texture-only fur. Each generated model kept in `media/` (below) adds the arms `3d:<model>` and
-  `3d-sprites:<model>`. A model rigged by its provider keeps its own skeleton and clips (`/idle/`, `/walk/`, or a
-  separate walk file). Where the provider has no moving idle (Tripo ships none; Meshy's `clip0` is one frame), the
-  idle is the spike's keyframed breathing on the provider's own spine, neck and tail bones, named as the spike's
+  `3d-sprites:<model>`. A model rigged by its provider keeps its own skeleton and clips (`/walk/`, or a separate walk file).
+  Its idle is a clip the file declares idle (animation extras `role: "idle"`) or names idle, and only if its keys
+  really move (`src/stevie/idle.ts`). Where there is none (Tripo ships none; Meshy's `clip0` is one frame; a file
+  with only running and walking clips; a held pose with identical keys), the idle is the spike's keyframed breathing on the provider's own spine, neck and tail bones, named as the spike's
   clip in the report. A model marked `fit` gets the stand-in's skeleton and clips fitted to its mesh by `fit.ts`.
 - **2d** (`sheet.ts`): frames cropped from
   [`jimothy-sprite-sheet.png`](../../../docs/design/reference/jimothy-sprite-sheet.png). The grid is 8 columns of 192×230 cells,
@@ -78,7 +79,8 @@ the owner approved this turnaround as Stevie and said not to regenerate it, so `
 overwrite `media/turnaround.png`. The sheet is Jimothy's, so the 2D arm shows a different character.
 
 `scripts/ship.mjs [name…]` converts each kept model, and every other generated mesh as a candidate, to the owner's
-ship form. It writes `media/ship-<name>.glb` (and `-walk.glb`), `media/ship-candidate-<file>.glb` and `media/ship.json`:
+ship form. A generated file is a candidate because of what it holds (`scripts/media-facts.mjs`): triangle geometry and
+no animation, so an armature-only file or a provider's walk or running clip file (`tripo-walk-*.glb`) is never ranked. It writes `media/ship-<name>.glb` (and `-walk.glb`), `media/ship-candidate-<file>.glb` and `media/ship.json`:
 - glTF 2.0 with KTX2 textures (UASTC for normal maps, ETC1S for every other map), meshopt geometry and
   `KHR_xmp_json_ld` provenance;
 - reduced to 10,000 triangles and converted to metres; when the provider's hard-edged normals stall the simplifier,

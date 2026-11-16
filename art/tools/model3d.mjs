@@ -3,10 +3,14 @@
 // (art/target-profile-3d.json -> validator.command), which Assetgrove runs from the target repository
 // root after it writes a model, and check.mjs imports its pure exports.
 //
-//   node art/tools/model3d.mjs validate <manifest> [--profile <path>] [--kind character|prop] [--json]
+//   node art/tools/model3d.mjs validate <manifest> [--profile <path>] [--kind character|prop] [--spec <path>] [--json]
 //
 // Without --kind the kind comes from the manifest's own `kind` (`character-3d` -> character,
 // `prop-3d` -> prop); a manifest with neither is checked as a character.
+// The model's height is checked against its own spec's `heightM` (within 5%), not a fixed band. Without
+// --spec the spec is art/<subject or assetId>/<manifest kind>/spec.json from the working directory (the
+// target repository's root, where Assetgrove runs the validator); with no spec height the height need only
+// be positive and the height:unspecified flag says so.
 //   node art/tools/model3d.mjs map <manifest>      prints the manifest as Clockgrove's model manifest
 //   node art/tools/model3d.mjs profile [<path>]
 //
@@ -34,7 +38,8 @@
 //       not a one-level GLB, or not the declared triangle count; see model3d-sidefiles.mjs)
 //   refusals from Clockgrove carry Clockgrove's codes
 //   flags (accepted, reported)
-//     tier:<tier>:<key> (a level the tier draws is over that tier's budget, level by level), clip-missing:<family>
+//     tier:<tier>:<key> (a level the tier draws is over that tier's budget, level by level), clip-missing:<family>,
+//     height:unspecified (no spec heightM to check the model's height against)
 //   profile problems (checkProfile)
 //     profile:format, profile:units, profile:budgets, profile:tiers, profile:lods,
 //     profile:handoff, profile:rig, profile:clip-sets, profile:groom
@@ -44,7 +49,7 @@ import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { ACCEPTED_MEDIA, BUDGET_KEYS, declaresSideFiles, imageBytes, parseGlb, sha256, sniffMediaType, tierLevelChecks, validateSideFileModel } from "./model3d-sidefiles.mjs";
+import { ACCEPTED_MEDIA, BUDGET_KEYS, declaresSideFiles, heightProblems, imageBytes, parseGlb, sha256, sniffMediaType, tierLevelChecks, validateSideFileModel } from "./model3d-sidefiles.mjs";
 
 export { BUDGET_KEYS };
 
@@ -270,6 +275,10 @@ function clockgroveRefusals({ profile, manifest, glb, kind, readBytes }) {
     });
     if (run.status === 0) return { refusals: [], flags: [] };
     if (run.status !== 1) throw new UsageError(`clockgrove-assets exited ${run.status}: ${run.stderr || run.error?.message || ""}`.trim());
+    // The pinned Clockgrove has no structured result: `clockgrove-assets validate` (and its library
+    // validateModel) give each problem only as a line `<asset>/model: <CODE>: <detail>`. So a pending tier's
+    // MODEL_BUDGET_EXCEEDED is told from a refusal by reading that line, until Clockgrove gives a structured
+    // result (code, tier, metric, actual, limit, level) to read instead (issue 142's Clockgrove follow-up).
     const lines = run.stderr.split("\n").map((l) => l.trim()).filter(Boolean);
     const refusals = [];
     const flags = [];
@@ -300,8 +309,8 @@ class UsageError extends Error {}
  * declares side files (Stevie's committed look-dev model) is refused by Clockgrove until
  * clockgrove/clockgrove#305, so it keeps this world's own checks (model3d-sidefiles.mjs) instead.
  */
-export function validateModel({ profile, manifest, glb, templateBytes, kind = "character", readBytes = () => undefined }) {
-  if (declaresSideFiles(manifest)) return { ...validateSideFileModel({ profile, manifest, glb, templateBytes, kind, readBytes }), route: "world-side" };
+export function validateModel({ profile, manifest, glb, templateBytes, kind = "character", readBytes = () => undefined, heightM }) {
+  if (declaresSideFiles(manifest)) return { ...validateSideFileModel({ profile, manifest, glb, templateBytes, kind, readBytes, heightM }), route: "world-side" };
   const { refusals, flags } = clockgroveRefusals({ profile, manifest, glb, kind, readBytes });
   if (refusals.length > 0) return { accepted: false, refusals, flags, route: "clockgrove" };
   const refuse = (code, detail) => refusals.push({ code, detail });
@@ -320,9 +329,10 @@ export function validateModel({ profile, manifest, glb, templateBytes, kind = "c
   }
 
   const bounds = manifest?.model?.bounds;
-  const height = bounds?.max?.[1] - bounds?.min?.[1];
   if (Math.abs(bounds?.min?.[1]) > 1e-3) refuse("manifest:bounds", `model stands at y ${bounds.min[1]}, expected 0 within 1e-3`);
-  if (!(height >= 0.05 && height <= 5)) refuse("manifest:bounds", `model height ${height} m is outside 0.05 to 5 m`);
+  const checked = heightProblems(bounds, heightM);
+  refusals.push(...checked.refusals);
+  flags.push(...checked.flags);
 
   const provenance = manifest?.provenance ?? {};
   const dst = provenance.digitalSourceType;
@@ -370,7 +380,7 @@ export function validateModel({ profile, manifest, glb, templateBytes, kind = "c
 
 // --- command line ---
 
-const USAGE = `usage: model3d.mjs validate <manifest> [--profile <path>] [--kind character|prop] [--json]
+const USAGE = `usage: model3d.mjs validate <manifest> [--profile <path>] [--kind character|prop] [--spec <path>] [--json]
        model3d.mjs map <manifest>
        model3d.mjs profile [<path>]`;
 const DEFAULT_PROFILE = "art/target-profile-3d.json";
@@ -385,6 +395,15 @@ function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
+/** The model's own spec height: --spec, else art/<subject or assetId>/<manifest kind>/spec.json if present. */
+export function specHeight(manifest, specPath) {
+  const name = manifest?.subject ?? manifest?.assetId;
+  const safe = (v) => typeof v === "string" && /^[A-Za-z0-9_-]+$/.test(v);
+  const path = specPath ?? (safe(name) && safe(manifest?.kind) ? join("art", name, manifest.kind, "spec.json") : undefined);
+  if (path === undefined || (specPath === undefined && !existsSync(path))) return undefined;
+  return readJson(path).heightM;
+}
+
 function readBytes(path) {
   try {
     return new Uint8Array(readFileSync(path));
@@ -396,10 +415,10 @@ function readBytes(path) {
 function cli(argv) {
   const [command, ...rest] = argv;
   const positional = [];
-  const options = { profile: DEFAULT_PROFILE, kind: undefined, json: false };
+  const options = { profile: DEFAULT_PROFILE, kind: undefined, spec: undefined, json: false };
   for (let i = 0; i < rest.length; i++) {
     if (rest[i] === "--json") options.json = true;
-    else if (rest[i] === "--profile" || rest[i] === "--kind") options[rest[i].slice(2)] = rest[++i];
+    else if (rest[i] === "--profile" || rest[i] === "--kind" || rest[i] === "--spec") options[rest[i].slice(2)] = rest[++i];
     else if (rest[i].startsWith("--")) return usage(`unknown option ${rest[i]}`);
     else positional.push(rest[i]);
   }
@@ -422,7 +441,7 @@ function cli(argv) {
     options.kind ??= kindOf(manifest);
     const glb = new Uint8Array(readFileSync(manifest?.source?.path ?? ""));
     const templateBytes = new Uint8Array(readFileSync(resolve(dirname(resolve(options.profile)), profile.model3d?.rig?.template ?? "")));
-    const result = validateModel({ profile, manifest, glb, templateBytes, kind: options.kind, readBytes });
+    const result = validateModel({ profile, manifest, glb, templateBytes, kind: options.kind, readBytes, heightM: specHeight(manifest, options.spec) });
     if (options.json) {
       console.log(JSON.stringify(result, null, 2));
     } else {

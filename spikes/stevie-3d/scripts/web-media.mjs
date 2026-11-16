@@ -1,17 +1,18 @@
 #!/usr/bin/env node
 // Web media: the owner's 3D standard (ship.mjs) applied to a finished model without touching its geometry. Textures
-// become KTX2 (UASTC for normal and groom data maps, ETC1S for colour, mipmapped; 2048 px for the cast, 1024 for the set) and geometry gets
+// become KTX2 (UASTC for normal and groom data maps, ETC1S for colour, mipmapped; the cap comes from the source's manifest) and geometry gets
 // EXT_meshopt_compression. No simplification, no renaming, no re-scaling: the shipped file draws what the source draws.
 // The outputs and references/web-media/web-media.json are committed, so a page build stays fast and needs none of these
 // tools. serve.mjs uses an output only while its recorded source sha256 still matches the source file.
 //
 //   node scripts/web-media.mjs <name>=<source.glb> ...   encode each source to references/web-media/<name>.glb
-//                                                        (cast-<name> or stevie: cast textures; anything else: set)
+//                                                        (texture cap from the source's manifest: its tier and the cast decision,
+//                                                        character-3d 2048 px, else 1024 px; no manifest: 1024 px)
 //   node scripts/web-media.mjs stevie                    the approved Stevie model, his four detail-level files (the phone's at a
 //                                                        1024 px cap) and the manifest's nine maps plus the phone tier's eight at 1024 px
 //   node scripts/web-media.mjs lab                       the quality lab's media (Stevie and the ceiling's props)
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,13 +23,11 @@ import { encodeToKTX2 } from "ktx2-encoder";
 import { ktx2 } from "ktx2-encoder/gltf-transform";
 import { MeshoptDecoder, MeshoptEncoder } from "meshoptimizer";
 import sharp from "sharp";
+import { textureCap } from "./media-facts.mjs";
 
 const repo = fileURLToPath(new URL("../../..", import.meta.url));
 const OUT = path.join(repo, "references/web-media");
 const MANIFEST = path.join(OUT, "web-media.json");
-/** Decision: the cast keeps 2048 px textures (Kirk: the cast rendered at very high quality); set pieces and props get
- * 1024, which is still above their on-screen size in the yard and close-up views (the environment look is painterly). */
-const MAX_TEXTURE = { cast: 2048, set: 1024 };
 const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
 const TOOLS = Object.fromEntries(["@gltf-transform/core", "ktx2-encoder", "meshoptimizer", "sharp"].map((n) => [n, pkg.devDependencies[n]]));
 
@@ -37,8 +36,17 @@ const rel = (file) => path.relative(repo, file).split(path.sep).join("/");
 
 const STEVIE = path.join(repo, "assets/models/stevie/stevie.glb");
 const STEVIE_MANIFEST = path.join(repo, "assets/models/stevie/manifest.json");
-/** Texture cap for Stevie's phone tier (manifest model.tiers.phone: textureMaxPx 1024). */
-const PHONE_TEXTURE = 1024;
+
+/** The model manifest beside a source glb that names it (source.path, a level or a tier's level), or undefined. */
+function manifestFor(file) {
+  const target = rel(file);
+  const manifestPath = path.join(path.dirname(file), "manifest.json");
+  if (!existsSync(manifestPath)) return undefined;
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  const levels = [manifest.model?.levels, ...Object.values(manifest.model?.tiers ?? {}).map((tier) => tier.levels)]
+    .flatMap((group) => Object.values(group ?? {}));
+  return [manifest.source?.path, ...levels.map((level) => level.path)].includes(target) ? manifest : undefined;
+}
 
 /** Stevie plus the level files his manifest declares: desktop levels (2048 px) and the phone tier's (1024 px). */
 async function stevieSources() {
@@ -98,11 +106,12 @@ async function stevieMaps(manifest) {
   ];
   const phone = web.model.tiers.phone;
   const maps = [
-    ...sideMaps(web.model).map(([map, colour]) => [map, colour, MAX_TEXTURE.cast]),
-    ...sideMaps({ textures: phone.textures, eyes: phone.eyes, groom: phone.groom }).filter(([map]) => map)
-      .map(([map, colour]) => [map, colour, PHONE_TEXTURE]),
+    ...sideMaps(web.model),
+    ...sideMaps({ textures: phone.textures, eyes: phone.eyes, groom: phone.groom }).filter(([map]) => map),
   ];
-  for (const [map, colour, cap] of maps) {
+  for (const [map, colour] of maps) {
+    // The cap comes from the source manifest: the phone tier's maps take its cap, the rest the model's (the cast's 2048).
+    const { cap } = textureCap({ manifest: source, file: map.path });
     const bytes = await readFile(path.join(repo, map.path));
     if (sha256(bytes) !== map.sha256) throw new Error(`${map.path}: source hash does not match manifest`);
     const key = map.path.replace(/\.png$/u, ".ktx2");
@@ -144,7 +153,7 @@ async function main() {
     // The picked GLB declares external groom images outside material slots; ship those through the manifest below.
     for (const texture of document.getRoot().listTextures())
       if (texture.listParents().every((parent) => parent === document.getRoot())) texture.dispose();
-    await document.transform(...encodingsFor(name.startsWith("stevie.phone.") ? PHONE_TEXTURE : isStevie || name.startsWith("cast-") ? MAX_TEXTURE.cast : MAX_TEXTURE.set));
+    await document.transform(...encodingsFor(textureCap({ manifest: manifestFor(file), file: rel(file) }).cap));
     await document.transform(functions.meshopt({ encoder: MeshoptEncoder, level: "medium" }));
     const lookdev = document.getRoot().getAsset().extras?.lookdev;
     if (isStevie && lookdev?.images) {
