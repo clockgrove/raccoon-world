@@ -50,6 +50,7 @@
         "native_tokens_completion": 5488,
         "native_tokens_reasoning": 0,
         "native_tokens_cached": 0,
+        "native_tokens_cache_creation": 0,
         "billable_web_search_calls": 0
       }
     }

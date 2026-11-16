@@ -1,6 +1,6 @@
 // World-owned matting-fringe check: a soft edge that is a blend of the figure and the known flat background.
 // Assetgrove's edge-halo only measures distance from nearby opaque pixels and misses pale fur on a pale background.
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { cropRgba, decodePng } from "../../spikes/stevie-3d/scripts/png.mjs";
@@ -100,26 +100,60 @@ export function stripFrames(image, count) {
 
 const pct = (v) => `${(v * 100).toFixed(1)}%`;
 
-/** The `matting-fringe` reasons of a strip: one passing reason, or one failing reason per frame over the limit. */
-export function fringeReasons(frames, background, limit) {
-  const hs = frames.map((f) => frameFringe(f, background));
+/**
+ * The `matting-fringe` reasons of a strip: one passing reason, or one failing reason per frame over the limit.
+ * `backgrounds` is one #rrggbb colour for every frame, or one per frame (null: no flat background recorded, not checked).
+ */
+export function fringeReasons(frames, backgrounds, limit) {
+  const bgs = frames.map((_, i) => (Array.isArray(backgrounds[0]) || backgrounds[0] === null ? backgrounds[i] : backgrounds));
+  const hs = frames.map((f, i) => (bgs[i] ? frameFringe(f, bgs[i]) : { edgePixels: 0, fringePixels: 0 }));
   const failing = hs.map((h, i) => ({ h, i, s: fringeShare(h) })).filter((x) => x.s > limit);
+  const named = [...new Set(bgs.filter(Boolean).map(toHex))].join(", ") || "no recorded";
   if (failing.length === 0) {
     const worst = Math.max(0, ...hs.map(fringeShare));
     return [
       {
         check: "matting-fringe",
         passed: true,
-        reason: `no frame's soft edge is a blend with the ${toHex(background)} background: at most ${pct(worst)} of it is (limit ${pct(limit)})`,
+        reason: `no frame's soft edge is a blend with the ${named} background: at most ${pct(worst)} of it is (limit ${pct(limit)})`,
       },
     ];
   }
   return failing.map(({ h, i, s }) => ({
     check: "matting-fringe",
     passed: false,
-    reason: `frame ${i + 1}: ${h.fringePixels} of ${h.edgePixels} soft edge pixels are a blend of the figure and the ${toHex(background)} background (${pct(s)}, limit ${pct(limit)})`,
+    reason: `frame ${i + 1}: ${h.fringePixels} of ${h.edgePixels} soft edge pixels are a blend of the figure and the ${toHex(bgs[i])} background (${pct(s)}, limit ${pct(limit)})`,
     frames: [i + 1],
   }));
+}
+
+/**
+ * Each frame's known flat background, from a written strip's provenance sidecar: the `background` of the last `matte`
+ * transform Assetgrove recorded for that frame (the import's per-frame background). Null for a frame with none.
+ */
+export function stripBackgrounds(provenance, count) {
+  const out = Array.from({ length: count }, () => null);
+  for (const f of provenance?.frames ?? []) {
+    const matte = (f.transforms ?? []).filter((t) => t?.op === "matte" && typeof t.background === "string").at(-1);
+    if (Number.isInteger(f.index) && f.index >= 0 && f.index < count && matte) out[f.index] = hex(matte.background);
+  }
+  return out;
+}
+
+/**
+ * The matting-fringe QA of one written asset, as the profile's validator runs it (scripts/validate-asset.sh): the
+ * manifest's strip, split into its frames, each against the background its provenance sidecar records. A strip with no
+ * sidecar, or no matte record, was not matted from a flat background: nothing to check.
+ */
+export function manifestReasons(worldRoot, manifestPath, limit) {
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  const strip = join(worldRoot, manifest.source.path);
+  const sidecar = `${strip}.provenance.json`;
+  const count = manifest.frames?.count ?? 1;
+  const backgrounds = existsSync(sidecar) ? stripBackgrounds(JSON.parse(readFileSync(sidecar, "utf8")), count) : [];
+  if (!backgrounds.some(Boolean))
+    return [{ check: "matting-fringe", passed: true, reason: `${manifest.source.path}: no matte background recorded in its provenance, nothing to check` }];
+  return fringeReasons(stripFrames(decodePng(readFileSync(strip)), count), backgrounds, limit);
 }
 
 /** A counter-example: each soft edge pixel's colour mixed with the background, as a matte that kept it. */
@@ -184,6 +218,7 @@ function softStrands(frame) {
 }
 
 const read = (root, p) => decodePng(readFileSync(join(root, p)));
+const softEdge = (frame) => frameFringe(frame, [0, 0, 0]).edgePixels;
 const worst = (frame, backgrounds) => Math.max(...backgrounds.map((b) => fringeShare(frameFringe(frame, b))));
 
 /** Recomputes the calibration numbers from the repository's approved frames and run-time counter-examples. */
@@ -198,14 +233,16 @@ export async function calibrate(root) {
       if (m.review?.status !== "approved") continue;
       const frames = stripFrames(read(root, m.source.path), m.frames.count);
       frames.forEach((f, k) =>
-        approved.push({ source: m.source.path, frame: k + 1, share: worst(f, [sheet, hex("#e0e0e0"), hex("#ffffff")]) }),
+        approved.push({ source: m.source.path, frame: k + 1, softEdge: softEdge(f), share: worst(f, [sheet, hex("#e0e0e0"), hex("#ffffff")]) }),
       );
     }
-  approved.push({ source: "references/jimothy/sheet-cell-03.png", frame: 1, share: worst(cell, [sheet]) });
+  approved.push({ source: "references/jimothy/sheet-cell-03.png", frame: 1, softEdge: softEdge(cell), share: worst(cell, [sheet]) });
   const pale = fringed(paleFur(cell), PALE_BACKGROUND);
   return {
     approved,
     worstShare: Math.max(...approved.map((a) => a.share)),
+    // Frames with any soft edge pixel: only these can score above 0 (fringeShare is 0 with no soft edge).
+    softEdgeFrames: approved.filter((a) => a.softEdge > 0),
     fringed: fringeShare(frameFringe(fringed(cell, sheet), sheet)),
     paleFringed: fringeShare(frameFringe(pale, PALE_BACKGROUND)),
     softStrands: fringeShare(frameFringe(softStrands(cell), sheet)),
@@ -216,16 +253,23 @@ export async function calibrate(root) {
 
 function cli(argv) {
   const args = argv.slice(2);
-  const file = args.find((a) => !a.startsWith("--") && args[args.indexOf(a) - 1] !== "--background" && args[args.indexOf(a) - 1] !== "--frames");
   const opt = (name) => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
+  const profile = JSON.parse(readFileSync(resolve(here, "../target-profile.json"), "utf8"));
+  const limit = profile.animation.matting.fringeShare;
+  const manifest = opt("--manifest");
+  if (manifest !== undefined) {
+    // The validator's form: one line per reason, exit 1 when a frame fails.
+    const reasons = manifestReasons(resolve(here, "../.."), resolve(manifest), limit);
+    for (const r of reasons) console.log(`matting-fringe: ${r.passed ? "passed" : "FAILED"}: ${r.reason}`);
+    return reasons.every((r) => r.passed) ? 0 : 1;
+  }
+  const file = args.find((a) => !a.startsWith("--") && args[args.indexOf(a) - 1] !== "--background" && args[args.indexOf(a) - 1] !== "--frames");
   const bg = opt("--background");
   const count = opt("--frames") === undefined ? 1 : Number(opt("--frames"));
   if (!file || !bg || !/^#[0-9a-f]{6}$/i.test(bg) || !Number.isInteger(count) || count < 1) {
-    console.error("usage: node art/tools/fringe.mjs <png> --background #rrggbb [--frames N]");
+    console.error("usage: node art/tools/fringe.mjs --manifest <manifest.json>\n       node art/tools/fringe.mjs <png> --background #rrggbb [--frames N]");
     return 2;
   }
-  const profile = JSON.parse(readFileSync(resolve(here, "../target-profile.json"), "utf8"));
-  const limit = profile.animation.matting.fringeShare;
   const frames = stripFrames(decodePng(readFileSync(file)), count);
   const reasons = fringeReasons(frames, hex(bg), limit);
   const shares = frames.map((f) => fringeShare(frameFringe(f, hex(bg))));

@@ -15,7 +15,9 @@
 //                 licence report and its approved golden scene (in a throwaway copy).
 // 5. proof:       an offline Assetgrove run writes Stevie's shelter strip into a throwaway copy of
 //                 this repository and Clockgrove's validator accepts it on the first try, with
-//                 review pending and complete provenance; a short sheet is refused, never padded.
+//                 review pending and complete provenance; a short sheet is refused, never padded. The
+//                 validator also ran the matting-fringe QA on the strip, and refuses it once its soft edge
+//                 keeps the matte background its provenance records (issue 140).
 // 6. licences:    every committed manifest's licence is the licence REUSE.toml gives its source file,
 //                 so a CC-BY-4.0 pick can't land under the `**` MIT annotation.
 // 7. gracie:      Gracie's bible subject leads with her signature fur, her photos and approved views
@@ -31,8 +33,9 @@
 //                 through the pinned renderer's world-content seam (art/tools/model3d-render.mjs); a
 //                 free-plan grant is refused with exit 7 (issues 39 and 82).
 // 9. cost:        recorded gateway answers (art/proof/gateway/) through a local stub of the generation lookup:
-//                 a turnaround call records the cost the gateway reports for its generation, else its
-//                 reservation stays its committed cost, never free (art/tools/turnaround.mjs, issue 140).
+//                 a turnaround call records the cost the gateway reports for its generation (the AI SDK's
+//                 getGenerationInfo), else its reservation stays its committed cost, never free, also when a
+//                 reported cost rounds to 0 in the ledger main() writes (art/tools/turnaround.mjs, issue 140).
 // 10. fringe:     the matting-fringe QA (art/tools/fringe.mjs): every approved frame passes, fringed and
 //                 pale-fur fringed counter-examples fail, soft strands pass, and the profile's recorded
 //                 calibration (animation.matting) is what the repository measures (issue 140).
@@ -51,9 +54,10 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { deriveBible, DERIVED } from "./derive-bible.mjs";
-import { calibrate } from "./fringe.mjs";
+import { calibrate, fringed, stripBackgrounds, stripFrames } from "./fringe.mjs";
+import { decodePng, encodePng } from "../../spikes/stevie-3d/scripts/png.mjs";
 import { REGISTER, registerProblems, unapprovedAnchors } from "./anchors.mjs";
-import { forecast, generationCost, loadRun, pending, ROUTE, VIEWS } from "./turnaround.mjs";
+import { committed, costFields, forecast, generationCost, loadRun, pending, ROUTE, VIEWS } from "./turnaround.mjs";
 
 const run = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -289,6 +293,12 @@ async function checkCost() {
   const recorded = [];
   for (const file of (await readdir(join(root, dir))).filter((f) => f.endsWith(".json")).sort())
     recorded.push({ file, ...(await json(`${dir}/${file}`)) });
+  // The record a finished call gets (costFields, as main() writes it), counted by the run's cap (committed).
+  const committedAs = (cost, expected) => {
+    const call = { status: "done", reservedUsd: 0.5, ...costFields(cost) };
+    const total = committed({ calls: [call] });
+    return total > 0 && total === expected && (call.costUsd === undefined || call.costUsd > 0);
+  };
   let current;
   const server = createServer((request, response) => {
     const url = new URL(request.url, "http://stub");
@@ -306,13 +316,16 @@ async function checkCost() {
       const cost = await generationCost({ body: answer.body, headers: new Headers(answer.headers), gateway, token: "recorded", waitsMs: [0, 0] });
       if (cost.usd !== fixture.expect.usd)
         fail("cost", `${dir}/${fixture.file}: the call's cost must be ${fixture.expect.usd}, got ${cost.usd} (${cost.basis})`);
-      // The ledger: a done call keeps its reservation as its committed cost unless an exact cost was read.
-      const call = { status: "done", reservedUsd: 0.5, ...(cost.usd !== null && { costUsd: cost.usd }) };
-      const committed = forecast({ calls: [call] }, { capUsd: 100, reserveUsd: 0.5 }, []);
-      if (!(committed > 0) || committed !== (cost.usd ?? 0.5)) fail("cost", `${dir}/${fixture.file}: the call commits ${committed}, never free`);
+      if (fixture.lookup?.status === 200 && fixture.expect.usd !== null && !cost.basis.includes("getGenerationInfo"))
+        fail("cost", `${dir}/${fixture.file}: the cost must come from the AI SDK's getGenerationInfo, got: ${cost.basis}`);
+      // The ledger fields turnaround.mjs's main() records for a finished call, and what the cap then counts.
+      if (!committedAs(cost, cost.usd ?? 0.5)) fail("cost", `${dir}/${fixture.file}: the call must commit ${cost.usd ?? 0.5}, never 0`);
     }
     if (!recorded.some((f) => f.expect.usd === null) || !recorded.some((f) => f.lookup && f.expect.usd !== null))
       fail("cost", `${dir} must record an answer with no exact cost and one whose cost comes from the generation record`);
+    // A positive cost under half a micro-dollar rounds to 0 in the ledger: the reservation must stand, not $0.
+    if (!committedAs({ usd: 4e-7, basis: "a reported cost under half a micro-dollar" }, 0.5))
+      fail("cost", "a reported cost that rounds to 0 must leave the reservation as the committed cost");
   } finally {
     server.close();
   }
@@ -341,6 +354,7 @@ async function checkFringe() {
   const round = (n) => Math.round(n * 1e4) / 1e4;
   const facts = [
     ["approved.frames", recorded.approved?.frames, measured.approved.length],
+    ["approved.softEdgeFrames", recorded.approved?.softEdgeFrames, measured.softEdgeFrames.length],
     ["approved.worstShare", recorded.approved?.worstShare, round(measured.worstShare)],
     ["counterExamples.fringed", recorded.counterExamples?.fringed, round(measured.fringed)],
     ["counterExamples.paleFringed", recorded.counterExamples?.paleFringed, round(measured.paleFringed)],
@@ -474,6 +488,40 @@ async function checkLicences() {
   return manifests.length;
 }
 
+/**
+ * Matting fringe on every write (issue 140): the profile's validator ran the world's fringe QA on the strip it just
+ * accepted, each frame against the matte background its provenance records; and the same validator refuses that strip
+ * once its soft edge keeps that background (each soft pixel mixed with it, as a matte that left it in).
+ */
+async function proveFringeOnWrite(target, manifest, provenance, png, validatorOutput) {
+  if (!/^matting-fringe: passed: /m.test(validatorOutput))
+    fail("proof", `the validator must run the matting-fringe QA on the written strip:\n${validatorOutput}`);
+  const count = manifest.frames.count;
+  const backgrounds = stripBackgrounds(provenance, count);
+  if (!backgrounds.every(Boolean)) {
+    fail("proof", "the written strip's provenance must record each frame's matte background");
+    return;
+  }
+  const strip = decodePng(png);
+  const frames = stripFrames(strip, count);
+  const data = new Uint8Array(strip.data);
+  frames.forEach((f, i) => {
+    const kept = fringed(f, backgrounds[i]);
+    for (let y = 0; y < f.height; y++)
+      data.set(kept.data.subarray(y * f.width * 4, (y + 1) * f.width * 4), (y * strip.width + i * f.width) * 4);
+  });
+  await writeFile(join(target, manifest.source.path), encodePng({ width: strip.width, height: strip.height, data }));
+  let refused;
+  try {
+    await run("bash", ["scripts/validate-asset.sh", `assets/manifests/${manifest.assetId}/${manifest.animationFamily}.json`], { cwd: target, env });
+    refused = undefined;
+  } catch (error) {
+    refused = `${error.stdout ?? ""}${error.stderr ?? ""}`;
+  }
+  if (refused === undefined || !/^matting-fringe: FAILED: frame \d+: /m.test(refused))
+    fail("proof", `the validator must refuse the strip with its soft edge kept on the matte background:\n${refused ?? "it accepted it"}`);
+}
+
 async function proof() {
   const target = await throwawayCopy("proof");
   const imports = await mkdtemp(join(tmpdir(), "raccoon-world-imports-"));
@@ -533,6 +581,7 @@ async function proof() {
       ["the strip's frame grid", manifest.frames.width === 32 && manifest.frames.height === 32 && manifest.frames.count === 4],
     ];
     for (const [what, ok] of expectations) if (!ok) fail("proof", `the written strip lacks: ${what}`);
+    await proveFringeOnWrite(target, manifest, provenance, png, family.result.validator.output);
     const { stdout: attr } = await run("git", ["check-attr", "filter", "--", manifest.source.path], { cwd: root });
     if (!attr.trim().endsWith(": lfs")) fail("proof", `${manifest.source.path} is not stored in Git LFS by .gitattributes`);
     const reuse = await readFile(join(root, "REUSE.toml"), "utf8");
