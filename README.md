@@ -44,6 +44,18 @@ To move the pin:
 3. Run `bash scripts/clockgrove.sh check`. If a golden differs, review its `.actual.json` and replace the golden only when the new behaviour is intended.
 4. Open a PR; its `ci` check proves the pack against the new commit. Only a maintainer's PR moves the pin: `CLOCKGROVE_COMMIT` is a Factory protected path, so a Factory worker can't change it.
 
+## Visual qualification
+
+[`scripts/qualify.sh`](scripts/qualify.sh) runs Clockgrove's Wave 4 checks on this world, on the same pinned commit (#13):
+
+```sh
+bash scripts/qualify.sh assets    # Clockgrove's asset deploy gate: licence, provenance, review, reviewed atlas, licence report, golden scene
+bash scripts/qualify.sh capture   # the golden states at 1536×864, 1280×720 and 390×844 on WebGPU and WebGL2, into tests/visual
+bash scripts/qualify.sh journey   # the S6 browser journey (tests/journey): boot, rain, puddles, Stevie moves, the feed, Why
+```
+
+`assets` runs in CI's required `ci` job. `capture` and `journey` run in the `visual` job, which uploads the captures. They need Clockgrove's PostgreSQL, pgvector and browser toolchain. [tests/visual/README.md](tests/visual/README.md) covers the captures, their approval and the composition review.
+
 ## Making art with Assetgrove
 
 Art is generated with Assetgrove from a source checkout at the commit in [`ASSETGROVE_COMMIT`](ASSETGROVE_COMMIT), never from npm. [`scripts/assetgrove.sh`](scripts/assetgrove.sh) fetches it into `.assetgrove-src/` (ignored) and runs it. Check the art direction, the target profile against Clockgrove's validator, each family's run forecast and the offline end-to-end proof, with no key and no spend:
