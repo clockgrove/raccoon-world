@@ -543,7 +543,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
         renderSoak(rep);
         continue;
       }
-      const title = rep.kind === "sweep" ? "Sweep" : `Ceiling (budget ${rep.budgetMs.toFixed(1)} ms p95, strict target ${rep.targetMs.toFixed(1)} ms${rep.held ? `; p95 ${rep.ceilingP95Ms?.toFixed(1)} ms, ${rep.heldStrict ? "within" : "over"} the strict target` : ""})`;
+      const title = rep.kind === "sweep" ? "Sweep" : `Ceiling (budget ${rep.budgetMs.toFixed(1)} ms p95, strict target ${rep.targetMs.toFixed(1)} ms${rep.intervals ? ` = ${rep.intervals} × ${rep.refreshMs?.toFixed(2)} ms refresh` : " (refresh not measured)"}; trims ranked by ${rep.rankedBy === "probe" ? "this device's cost probe" : rep.rankedBy === "sweep" ? "the sweep's costs" : "the estimated order"}${rep.held ? `; p95 ${rep.ceilingP95Ms?.toFixed(1)} ms, ${rep.heldStrict ? "within" : "over"} the strict target` : ""})`;
       results.append(el("h3", { textContent: `${title}: ${rep.platform}, ${rep.backend}, ${rep.adapter}` }));
       if (rep.software) results.append(el("p", { class: "sw", textContent: "software, not performance" }));
       const table = el("table");
@@ -679,7 +679,7 @@ export function mountUi(lab: LabHandle, root: HTMLElement): void {
   const doCeiling = (o: CeilingOptions = {}) =>
     track("Ceiling", (opts) => findCeiling(lab, { ...opts, ...costsOf(o), ...(o.maxSteps !== undefined ? { maxSteps: o.maxSteps } : {}) }), o);
 
-  // Run everything: the sweep, then the ceiling (ranked by the sweep's costs), then the triangle budget, then Send.
+  // Run everything: the sweep, then the ceiling (ranked by its own cost probe, the sweep's costs as fallback), then the triangle budget, then Send.
   let chained = false;
   const runAll = async () => {
     chained = true;

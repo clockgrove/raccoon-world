@@ -274,8 +274,9 @@ export function stepDown(config: LabConfig, knob: Knob): LabConfig | null {
 }
 
 /**
- * The order the ceiling search drops effects in when it has no measured costs from a sweep on this device: an
- * estimate of the most expensive first (resolution, then full-screen passes, then shadows, then per-object costs).
+ * The order the ceiling search drops effects in only where nothing was measured: a software GPU, or a knob its cost
+ * probe and the sweep could not measure. An estimate of the most expensive first (resolution, then full-screen
+ * passes, then shadows, then per-object costs).
  */
 export const DEFAULT_COST_ORDER: readonly Knob[] = [
   "dpr",
@@ -300,15 +301,80 @@ export const DEFAULT_COST_ORDER: readonly Knob[] = [
 ];
 
 export type Platform = "desktop" | "phone";
-/** The frame budget the ceiling search holds: p95 frame time within 60 fps on desktop, 30 fps on phones. */
+/** The frame rate the ceiling search aims for: 60 fps on desktop, 30 fps on phones. */
 export const TARGET_FPS: Readonly<Record<Platform, number>> = { desktop: 60, phone: 30 };
 /**
- * A display's frame interval jitters around its refresh period, so a page that holds 60 fps reports a p95 a little
- * above 16.7 ms. The budget allows this much over the target interval.
+ * Only when the display's refresh was not measured: the budget allows this much over the nominal target interval,
+ * since a display's frame interval jitters around its refresh period.
  */
 export const BUDGET_SLACK = 1.1;
-export const targetMs = (platform: Platform) => 1000 / TARGET_FPS[platform];
-export const budgetMs = (platform: Platform) => targetMs(platform) * BUDGET_SLACK;
+
+/** A frame budget fitted to the display: how many refreshes a frame may take, and the p95 line that holds it. */
+export interface FrameBudget {
+  /** The strict target interval: `intervals` display refreshes (or 1000 / fps when the refresh is unknown). */
+  targetMs: number;
+  /** The p95 the run holds: the target plus half a refresh, the line past which a frame has missed its refresh. */
+  budgetMs: number;
+  /** Whole refreshes per frame; null when the refresh was not measured (then the budget is the target plus 10%). */
+  intervals: number | null;
+  /** The measured refresh interval the budget was built from. */
+  refreshMs: number | null;
+}
+
+/**
+ * The frame budget for a target frame rate on a display whose refresh interval was measured. A frame can only be
+ * shown on a refresh, so the target is the longest whole number of refreshes that still meets the target frame rate
+ * (60 fps: 1 refresh at 60 Hz, 2 at 120 Hz, 2 at 144 Hz), and never less than one: a 48 or 50 Hz panel cannot show
+ * 60 fps, so a page that draws on every one of its refreshes holds. The budget adds half a refresh, the same line
+ * `missedPct` counts a missed frame by: a p95 under it means at least 95% of frames landed on the cadence.
+ * With no refresh measured it falls back to the nominal target plus BUDGET_SLACK.
+ */
+export function frameBudget(fps: number, refreshMs: number | null | undefined): FrameBudget {
+  const nominal = 1000 / fps;
+  if (refreshMs == null || !(refreshMs > 0)) return { targetMs: nominal, budgetMs: nominal * BUDGET_SLACK, intervals: null, refreshMs: null };
+  // The 0.05 absorbs the measurement's own jitter: a 120 Hz refresh measured at 8.34 ms is still two per 60 fps frame.
+  const intervals = Math.max(1, Math.floor(nominal / refreshMs + 0.05));
+  return { targetMs: intervals * refreshMs, budgetMs: (intervals + 0.5) * refreshMs, intervals, refreshMs };
+}
+export const targetMs = (platform: Platform, refreshMs?: number | null) => frameBudget(TARGET_FPS[platform], refreshMs).targetMs;
+export const budgetMs = (platform: Platform, refreshMs?: number | null) => frameBudget(TARGET_FPS[platform], refreshMs).budgetMs;
+
+/** What the page can tell about the device, for its tier. */
+export interface TierSignals {
+  /** `?platform=phone|desktop`, which wins. */
+  forced?: string | null;
+  /** The primary pointer is coarse (a finger) and cannot hover: `(pointer: coarse) and (hover: none)`. */
+  touchFirst: boolean;
+  /** The screen's shorter side in CSS pixels. */
+  shortSidePx: number;
+  /** navigator.hardwareConcurrency and (Chromium only) navigator.deviceMemory; null where not reported. */
+  cores: number | null;
+  memoryGb: number | null;
+}
+
+/** A touch-first screen whose shorter side is at least this many CSS pixels is a tablet, not a phone. */
+export const TABLET_MIN_SHORT_SIDE_PX = 600;
+/** A tablet that reports at least this many logical cores, and (where reported) this much memory, is desktop class. */
+export const DESKTOP_TABLET_MIN_CORES = 8;
+export const DESKTOP_TABLET_MIN_MEMORY_GB = 8;
+
+/**
+ * The device's tier, by what it is and what it can do; the user agent is not read (an iPad's Safari says it is a
+ * Mac, and an Android tablet's says Android like a phone). A device whose primary pointer can hover (a mouse or
+ * trackpad: a desktop or laptop, touchscreen or not) is desktop. A touch-first device with a phone-sized screen is a
+ * phone. A touch-first tablet is desktop when it reports laptop-class hardware (8 or more cores and, where the
+ * browser says, 8 GB or more), else phone. `reason` says which rule placed it.
+ */
+export function deviceTier(s: TierSignals): { platform: Platform; reason: string } {
+  if (s.forced === "phone" || s.forced === "desktop") return { platform: s.forced, reason: "?platform= override" };
+  if (!s.touchFirst) return { platform: "desktop", reason: "primary pointer hovers (mouse or trackpad)" };
+  if (s.shortSidePx < TABLET_MIN_SHORT_SIDE_PX) return { platform: "phone", reason: `touch-first, screen ${Math.round(s.shortSidePx)} px on its short side (phone)` };
+  const cores = s.cores ?? 0;
+  const memoryOk = s.memoryGb == null || s.memoryGb >= DESKTOP_TABLET_MIN_MEMORY_GB;
+  const what = `${s.cores ?? "?"} cores${s.memoryGb == null ? "" : `, ${s.memoryGb} GB`}`;
+  if (cores >= DESKTOP_TABLET_MIN_CORES && memoryOk) return { platform: "desktop", reason: `touch-first tablet with laptop-class hardware (${what})` };
+  return { platform: "phone", reason: `touch-first tablet below laptop-class hardware (${what})` };
+}
 
 /** The yard as framed, the close-up, and the yard zoomed out to FAR_ZOOM (Stevie below his phone level 1's 5% of the height). */
 export type ViewName = "yard" | "close" | "far";
@@ -356,6 +422,8 @@ export interface DeviceInfo {
   modelMb: number | null;
   /** Bytes each of Stevie's level sets downloaded (its model files and maps); null until the set is loaded. */
   levelsMb: Record<LevelMode, number | null>;
+  /** Why the page placed the device in its tier (deviceTier's reason). */
+  tier?: string;
 }
 
 /** The Stevie file the page draws now, for the report and the journey. */

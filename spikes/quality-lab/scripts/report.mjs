@@ -60,7 +60,7 @@ function platformSection(platform, title, reports) {
   if (ceiling) {
     const removed = ceiling.steps.filter((s) => s.removed);
     out.push(
-      `Ceiling (budget p95 ≤ ${ms(ceiling.budgetMs ?? budgetMs(platform))} ms, the strict ${ms(ceiling.targetMs ?? targetMs(platform))} ms target plus 10% for display jitter): ${ceiling.held ? `held, p95 ${ms(ceiling.ceilingP95Ms)} ms, ${ceiling.heldStrict ? "within" : "**over**"} the strict target,` : "**not held** even at the cheapest config"} at ${trimmed(ceiling.ceiling).length ? `Ultra trimmed to: ${trimmed(ceiling.ceiling).join(", ")}` : "full Ultra (nothing removed)"}.`,
+      `Ceiling (budget p95 ≤ ${ms(ceiling.budgetMs ?? budgetMs(platform))} ms, the strict ${ms(ceiling.targetMs ?? targetMs(platform))} ms target ${ceiling.intervals ? `(${ceiling.intervals} × the measured ${ms(ceiling.refreshMs)} ms refresh) plus half a refresh` : "plus 10% for display jitter"}${ceiling.rankedBy ? `; trims ranked by ${ceiling.rankedBy === "probe" ? "the cost probe at Ultra" : ceiling.rankedBy === "sweep" ? "the sweep's costs" : "the estimated order"}` : ""}): ${ceiling.held ? `held, p95 ${ms(ceiling.ceilingP95Ms)} ms, ${ceiling.heldStrict ? "within" : "**over**"} the strict target,` : "**not held** even at the cheapest config"} at ${trimmed(ceiling.ceiling).length ? `Ultra trimmed to: ${trimmed(ceiling.ceiling).join(", ")}` : "full Ultra (nothing removed)"}.`,
       "",
     );
     if (removed.length) {

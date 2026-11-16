@@ -10,7 +10,7 @@ import { anchor, placeCamera, STATES, VIEWS } from "../../ceiling-3d/src/look.ts
 import { ground, puddleSky, rippleStrength, wetness } from "../../ceiling-3d/src/materials.ts";
 import { loadProps } from "../../ceiling-3d/src/props.ts";
 import { buildSet, lampStrength, rain } from "../../ceiling-3d/src/set.ts";
-import { FAR_ZOOM, isMotion, type LabConfig, type LabHandle, type LevelMode, type Motion, type LabStatus, type Measurement, type Platform, PRESETS, type PresetName, type StateName, type ViewName } from "./config.ts";
+import { deviceTier, FAR_ZOOM, isMotion, type LabConfig, type LabHandle, type LevelMode, type Motion, type LabStatus, type Measurement, type Platform, PRESETS, type PresetName, type StateName, type ViewName } from "./config.ts";
 import { buildPipeline, grade, type Pipeline } from "./pipeline.ts";
 import { GeometryDetail, sceneTriangles } from "./detail.ts";
 import { webMediaLoader } from "./loader.ts";
@@ -28,14 +28,19 @@ const SOFTWARE = /swiftshader|llvmpipe|lavapipe|softpipe|software|microsoft basi
 const media = (file: string) => new URL(`media/${file}`, document.baseURI).href;
 const model = (key: string) => (query.get("media") === "source" ? `source/${key}` : key);
 
-function detectPlatform(): Platform {
-  const forced = query.get("platform");
-  if (forced === "phone" || forced === "desktop") return forced;
-  const uaData: Any = (navigator as Any).userAgentData;
-  if (uaData && typeof uaData.mobile === "boolean") return uaData.mobile ? "phone" : "desktop";
-  return /Mobi|Android|iPhone|iPad|iPod/u.test(navigator.userAgent) ? "phone" : "desktop";
+/** The device's tier (config.ts deviceTier): by what it is and can do, never by its user agent. */
+function detectTier() {
+  const touchFirst = matchMedia("(pointer: coarse) and (hover: none)").matches && navigator.maxTouchPoints > 0;
+  return deviceTier({
+    forced: query.get("platform"),
+    touchFirst,
+    shortSidePx: Math.min(screen.width, screen.height),
+    cores: navigator.hardwareConcurrency || null,
+    memoryGb: (navigator as Any).deviceMemory ?? null,
+  });
 }
-const platform = detectPlatform();
+const tier = detectTier();
+const platform: Platform = tier.platform;
 /** `?motion=idle|walk|sniff|eat|play|shelter` starts Stevie and the cast on that clip; an unknown name is walk. */
 const defaultMotion: Motion = isMotion(query.get("motion")) ? (query.get("motion") as Motion) : "walk";
 /** The phone platform draws Stevie's phone levels; `?levels=phone|single` overrides, to compare either on any device. */
@@ -405,13 +410,15 @@ async function probeRefresh() {
     const tick = (now: number) => {
       if (prev) times.push(now - prev);
       prev = now;
-      if (times.length < 60) requestAnimationFrame(tick);
+      if (times.length < 120) requestAnimationFrame(tick);
       else resolve();
     };
     requestAnimationFrame(tick);
   });
+  // The lower quartile, not the median: the models decode on this thread meanwhile, and a busy frame only ever skips
+  // whole refreshes, so the shorter intervals are the display's own.
   const sorted = [...times].sort((a, b) => a - b);
-  refreshMs = Math.round(sorted[Math.floor(sorted.length / 2)]! * 100) / 100;
+  refreshMs = Math.round(sorted[Math.floor(sorted.length / 4)]! * 100) / 100;
 }
 /** Seconds each loading step took, and the models' download size. */
 const loadS: { graphics: number | null; models: number | null; shaders: number | null } = { graphics: null, models: null, shaders: null };
@@ -501,6 +508,7 @@ const lab: LabHandle & Record<string, unknown> = {
         loadS: { ...loadS },
         modelMb,
         levelsMb: levelsMb(),
+        tier: tier.reason,
       },
     };
   },
@@ -643,10 +651,73 @@ const lab: LabHandle & Record<string, unknown> = {
     render();
     return renderer.domElement.toDataURL("image/png");
   },
+  /**
+   * CI journey only: spoils one small generated prop (the one covering nearest 2% of the frame) by negating its normals
+   * or scrambling its UVs, so the journey can prove its picture checks see a small break. null puts the geometry back.
+   */
+  breakProp(kind: "normals" | "uvs" | null): { name: string; coverage: number } | null {
+    for (const [mesh, original] of brokenGeometry) {
+      mesh.geometry.dispose();
+      mesh.geometry = original;
+    }
+    brokenGeometry.clear();
+    if (!kind) return null;
+    camera.updateMatrixWorld(true);
+    camera.updateProjectionMatrix();
+    let best: { holder: THREE.Object3D; coverage: number } | null = null;
+    (set.groups.props as THREE.Object3D).traverse((holder) => {
+      if (!holder.name.startsWith("prop-")) return;
+      let shown = true;
+      for (let node: THREE.Object3D | null = holder; node; node = node.parent) shown &&= node.visible;
+      if (!shown) return;
+      holder.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(holder);
+      if (box.isEmpty()) return;
+      const lo = new THREE.Vector2(Infinity, Infinity);
+      const hi = new THREE.Vector2(-Infinity, -Infinity);
+      for (let i = 0; i < 8; i++) {
+        const p = new THREE.Vector3(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).project(camera);
+        lo.min(p);
+        hi.max(p);
+      }
+      const width = Math.min(1, hi.x) - Math.max(-1, lo.x);
+      const height = Math.min(1, hi.y) - Math.max(-1, lo.y);
+      if (width <= 0 || height <= 0) return;
+      const coverage = (width * height) / 4;
+      if (!best || Math.abs(coverage - 0.02) < Math.abs(best.coverage - 0.02)) best = { holder, coverage };
+    });
+    if (!best) return null;
+    const chosen = best as { holder: THREE.Object3D; coverage: number };
+    chosen.holder.traverse((node) => {
+      const mesh = node as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const source = mesh.geometry;
+      const spoiled = source.clone();
+      // Float copies, since the shipped media's attributes may be normalized or quantized integers.
+      const floats = (attribute: THREE.BufferAttribute | THREE.InterleavedBufferAttribute, map: (values: number[]) => number[]) => {
+        const out = new Float32Array(attribute.count * attribute.itemSize);
+        for (let i = 0; i < attribute.count; i++) {
+          const values = [];
+          for (let c = 0; c < attribute.itemSize; c++) values.push(attribute.getComponent(i, c));
+          out.set(map(values), i * attribute.itemSize);
+        }
+        return new THREE.BufferAttribute(out, attribute.itemSize);
+      };
+      const normal = source.getAttribute("normal");
+      if (kind === "normals" && normal) spoiled.setAttribute("normal", floats(normal, (n) => n.map((x) => -x)));
+      const uv = source.getAttribute("uv");
+      if (kind === "uvs" && uv) spoiled.setAttribute("uv", floats(uv, ([u, v]) => [v + 0.5 - Math.floor(v + 0.5), u + 0.5 - Math.floor(u + 0.5)]));
+      brokenGeometry.set(mesh, source);
+      mesh.geometry = spoiled;
+    });
+    return { name: chosen.holder.name.slice("prop-".length), coverage: Math.round(chosen.coverage * 1000) / 1000 };
+  },
   stevie: () => stevie?.metrics ?? null,
   probeError: () => probeError,
 };
 Object.assign(globalThis, { lab });
+/** The geometry `lab.breakProp` swapped out, to put back. */
+const brokenGeometry = new Map<THREE.Mesh, THREE.BufferGeometry>();
 
 // ---- Loading: a checklist of the steps, each with a running timer, so slow never looks like broken ----
 type StepKey = "graphics" | "models" | "shaders";

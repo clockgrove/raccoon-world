@@ -1,10 +1,11 @@
 // Drives the quality lab (issue 45) in a real browser through `globalThis.lab` and `globalThis.labRunner`.
 //
 //   node spikes/quality-lab/scripts/lab.mjs journey [--backend webgpu|webgl2|both]
-//       CI check on SwiftShader: runs tests/media.journey.node.test.mjs (the shipped media), then builds the static site (the one GitHub Pages serves), serves it, and on each backend
+//       CI check on SwiftShader: runs tests/*.node.test.mjs (the shipped media, the picture checks), then builds the static site (the one GitHub Pages serves), serves it, and on each backend
 //       checks the renderer is the software GPU and reports itself so, then applies every preset and every sweep
 //       config and checks each one draws a frame without an error, that the walk moves Stevie, and that the runner's
-//       sweep and ceiling search run and report no times. It ends with the `levels` proof below and a short `motions` proof on the same site.
+//       sweep and ceiling search run and report no times. Pictures are compared tile by tile (scripts/picture.mjs), so a
+//       small prop whose normals or UVs break fails the detail-4× check even at 2% of the frame. It ends with the `levels` proof below and a short `motions` proof on the same site.
 //       Software-GPU times are never reported.
 //   node spikes/quality-lab/scripts/lab.mjs groom [--backend webgpu|webgl2|both]
 //       Focused proof of the groomed coat (#81): the approved Stevie, both coats, Compare fur and its export.
@@ -19,13 +20,14 @@
 //       [--state dusk|night] [--width 1280] [--height 720] [--t 2]   one frame, for working on the look
 //   node spikes/quality-lab/scripts/lab.mjs shots [--out references/quality-lab]   the report's images and provenance
 import { createHash } from "node:crypto";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import http from "node:http";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { buildSite, pinned, repo, SITE } from "./serve.mjs";
+import { clearlyDifferent, notBlank, pictureDetail, pictureDiff, samePicture } from "./picture.mjs";
 
 const SWIFTSHADER_FLAGS = [
   "--enable-unsafe-webgpu",
@@ -111,9 +113,9 @@ async function open(browser, url, { backend, width, height, ui = false, extra = 
   return { page, context, status, errors };
 }
 
-/** Distinct colours in a frame (a blank or failed frame has one or two). */
-function colours(page, png) {
-  return page.evaluate(async (src) => {
+/** A frame's pixels, decoded in the page: { data (RGBA), width, height }. */
+async function pixels(page, src) {
+  const { base64, width, height } = await page.evaluate(async (src) => {
     const image = new Image();
     image.src = src;
     await image.decode();
@@ -121,10 +123,16 @@ function colours(page, png) {
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     ctx.drawImage(image, 0, 0);
     const data = ctx.getImageData(0, 0, image.width, image.height).data;
-    const seen = new Set();
-    for (let i = 0; i < data.length; i += 16) seen.add((data[i] >> 3) * 1024 + (data[i + 1] >> 3) * 32 + (data[i + 2] >> 3));
-    return seen.size;
-  }, png);
+    let binary = "";
+    for (let i = 0; i < data.length; i += 0x8000) binary += String.fromCharCode(...data.subarray(i, i + 0x8000));
+    return { base64: btoa(binary), width: image.width, height: image.height };
+  }, src);
+  return { data: new Uint8ClampedArray(Buffer.from(base64, "base64")), width, height };
+}
+
+/** What a frame shows: its colours and the share of it that has detail. A blank or failed frame has few of either. */
+async function detailOf(page, png) {
+  return pictureDetail(await pixels(page, png));
 }
 
 function differing(page, a, b) {
@@ -170,19 +178,19 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
       const t0 = Date.now();
       await page.evaluate((config) => globalThis.lab.apply(config), step.config);
       const png = await page.evaluate(() => globalThis.lab.frame());
-      const distinct = await colours(page, png);
+      const detail = await detailOf(page, png);
       const after = await page.evaluate(() => globalThis.lab.status());
       check(!after.failure, `${name}: ${step.id} failed: ${after.failure}`);
-      check(distinct > 20, `${name}: ${step.id} drew only ${distinct} colours`);
+      check(notBlank(detail), `${name}: ${step.id} looks blank (${detail.colours} colours, ${(detail.detailedShare * 100).toFixed(1)}% of it with detail)`);
       check(errors.length === 0, `${name}: ${step.id} raised ${errors.join("; ")}`);
       frames[step.id] = png;
-      log(`${step.id} renders (${distinct} colours, ${Math.round((Date.now() - t0) / 1000)} s)`);
+      log(`${step.id} renders (${detail.colours} colours, ${(detail.detailedShare * 100).toFixed(0)}% detailed, ${Math.round((Date.now() - t0) / 1000)} s)`);
     }
     const probeError = await page.evaluate(() => globalThis.lab.probeError());
     check(!probeError || !steps.some((step) => step.config.probes), `${name}: light probes could not bake, so the probe configs drew without them: ${probeError}`);
     if (frames["preset:ultra"] && frames["preset:low"]) {
-      const differ = await differing(page, frames["preset:ultra"], frames["preset:low"]);
-      check(differ > 200, `${name}: Ultra and Low differ by only ${differ} px`);
+      const diff = pictureDiff(await pixels(page, frames["preset:ultra"]), await pixels(page, frames["preset:low"]));
+      check(clearlyDifferent(diff), `${name}: Ultra and Low look the same: ${diff.changedTiles} of ${diff.tiles} tiles differ, worst ${diff.worstTile.score.toFixed(1)}`);
     }
     if (walk) {
       // The walk: Stevie moves along his loop between two clock times in the close-up; night differs from dusk.
@@ -219,38 +227,43 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
       );
       const soak = await page.evaluate(() => globalThis.labRunner.runSoak({ seconds: 2, windowS: 1, warmupMs: 50, holdMs: 150 }));
       check(soak.software === true && soak.steps.length === 2 && soak.steps.every((s) => s.measurement === null && !s.error), `${name}: the soak did not run cleanly on a software GPU: ${JSON.stringify(soak).slice(0, 300)}`);
-      // Geometry detail must really add triangles: the scene count at 4× is above the art as made.
-      // ...and draw the same yard: midpoint splits keep every shape, so a frozen frame barely changes.
-      const counts = await page.evaluate(async () => {
+      // Geometry detail must really add triangles, and draw the same yard: midpoint splits keep every shape. The
+      // comparison is region by region, so it also catches a small prop whose normals or UVs break, and the same frames
+      // with one prop deliberately spoiled prove the comparison sees that.
+      const counts = await page.evaluate(async (medium) => {
         const lab = globalThis.lab;
         const base = lab.status().config;
-        const frame = async (detail) => {
-          await lab.apply({ ...base, detail });
-          return { triangles: lab.status().triangles, shot: await lab.screenshot(320) };
-        };
+        const shots = {};
+        await lab.apply({ ...medium, coat: base.coat, furMode: base.furMode, detail: 1 });
         lab.freeze(4);
-        const plain = await frame(1);
-        const four = await frame(4);
+        shots.plain = lab.frame();
+        const plain = lab.status().triangles;
+        await lab.apply({ ...medium, coat: base.coat, furMode: base.furMode, detail: 4 });
+        shots.four = lab.frame();
+        const four = lab.status().triangles;
+        await lab.apply({ ...medium, coat: base.coat, furMode: base.furMode, detail: 1 });
+        const broken = {};
+        for (const kind of ["normals", "uvs"]) {
+          broken[kind] = lab.breakProp(kind);
+          shots[kind] = lab.frame();
+          lab.breakProp(null);
+        }
         lab.freeze(null);
         await lab.apply(base);
-        const pixels = async (url) => {
-          const img = new Image();
-          img.src = url;
-          await img.decode();
-          const c = document.createElement("canvas");
-          c.width = img.width;
-          c.height = img.height;
-          const g = c.getContext("2d");
-          g.drawImage(img, 0, 0);
-          return g.getImageData(0, 0, c.width, c.height).data;
-        };
-        const [a, b] = await Promise.all([pixels(plain.shot), pixels(four.shot)]);
-        let sum = 0;
-        for (let i = 0; i < a.length; i += 4) sum += (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2])) / 3;
-        return { plain: plain.triangles, four: four.triangles, meanDiff: sum / (a.length / 4) };
-      });
-      check(counts.four > counts.plain, `${name}: Geometry detail 4× did not add triangles (${JSON.stringify(counts)})`);
-      check(counts.meanDiff < 3, `${name}: Geometry detail 4× changed the picture (mean difference ${counts.meanDiff.toFixed(2)} of 255)`);
+        return { plain, four, shots, broken };
+      }, PRESETS.medium);
+      check(counts.four > counts.plain, `${name}: Geometry detail 4× did not add triangles (${counts.plain} → ${counts.four})`);
+      const plainPixels = await pixels(page, counts.shots.plain);
+      const fourDiff = pictureDiff(plainPixels, await pixels(page, counts.shots.four));
+      const where = (d) => `worst tile ${d.worstTile.score.toFixed(1)} of 255 at (${d.worstTile.x}, ${d.worstTile.y}), ${d.changedTiles} of ${d.tiles} tiles changed, whole-frame mean ${d.meanDiff.toFixed(2)}`;
+      check(samePicture(fourDiff), `${name}: Geometry detail 4× changed the picture: ${where(fourDiff)}`);
+      const spoiled = {};
+      for (const kind of ["normals", "uvs"]) {
+        check(counts.broken[kind], `${name}: no prop on screen to break the ${kind} of`);
+        spoiled[kind] = pictureDiff(plainPixels, await pixels(page, counts.shots[kind]));
+        check(!samePicture(spoiled[kind]), `${name}: the picture check missed a prop (${counts.broken[kind].name}, ${(counts.broken[kind].coverage * 100).toFixed(1)}% of the frame) with broken ${kind}: ${where(spoiled[kind])}`);
+      }
+      const brokenNote = ["normals", "uvs"].map((kind) => `broken ${kind} of ${counts.broken[kind].name} (${(counts.broken[kind].coverage * 100).toFixed(1)}% of the frame) caught, worst tile ${spoiled[kind].worstTile.score.toFixed(1)}, ${(spoiled[kind].changedShare * 100).toFixed(1)}% of tiles changed`).join("; ");
       const copy = await page.evaluate(() => {
         const button = [...document.querySelectorAll(".ql button")].find((b) => b.textContent === "Copy results");
         return { enabled: Boolean(button && !button.disabled), text: globalThis.labRunner.copied() };
@@ -263,7 +276,7 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
       check(slim.reports.length === 5 && slim.reports.every((r) => r.steps.every((row) => timeColumns.every((i) => row[i] == null))), `${name}: Copy results carries software frame times`);
       check(!times.test(JSON.stringify([sweep, ceiling, triangles, cast, soak])), `${name}: the runner's reports carry software frame times`);
       check(errors.length === 0, `${name}: the runner raised ${errors.join("; ")}`);
-      log(`runner: sweep ${sweep.steps.length} step, ceiling ${ceiling.steps.length} steps, triangle budget ${triangles.steps.length} steps, cast ${cast.steps.length} steps (${cast.steps[0].triangles} → ${cast.steps[1].triangles} triangles), soak ${soak.steps.length} windows, software, no times; detail 4× ${counts.plain} → ${counts.four} triangles, same picture (mean difference ${counts.meanDiff.toFixed(2)}); copied ${copy.text.length} chars`);
+      log(`runner: sweep ${sweep.steps.length} step, ceiling ${ceiling.steps.length} steps, triangle budget ${triangles.steps.length} steps, cast ${cast.steps.length} steps (${cast.steps[0].triangles} → ${cast.steps[1].triangles} triangles), soak ${soak.steps.length} windows, software, no times; detail 4× ${counts.plain} → ${counts.four} triangles, same picture (worst tile ${fourDiff.worstTile.score.toFixed(1)}, ${(fourDiff.changedShare * 100).toFixed(1)}% of tiles changed, whole-frame mean ${fourDiff.meanDiff.toFixed(2)}); ${brokenNote}; copied ${copy.text.length} chars`);
     }
     if (runner || backend === "webgl2") await checkGroom(page, backend, errors);
   } finally {
@@ -315,7 +328,7 @@ async function checkGroom(page, backend, errors, out) {
     return { expected: Math.round(bytes / 1e5) / 10, actual: globalThis.lab.status().device.modelMb };
   });
   check(download.actual === download.expected, `${backend}: groom downloads missing from load report: ${JSON.stringify(download)}`);
-  check((await colours(page, await page.evaluate(() => globalThis.lab.frame()))) > 20, `${backend}: yard is blank`);
+  check(notBlank(await detailOf(page, await page.evaluate(() => globalThis.lab.frame()))), `${backend}: yard is blank`);
   await page.evaluate(() => globalThis.lab.setView("close"));
   const frames = {};
   for (const [coat, furMode, maxLengthM] of [["summer", "groomed", 0.04], ["winter", "groomed", 0.08], ["summer", "uniform", 0.012]]) {
@@ -344,7 +357,7 @@ async function checkGroom(page, backend, errors, out) {
     await globalThis.lab.apply({ ...globalThis.lab.status().config, coat: "winter", furMode: "groomed", antialias: "traa" });
     globalThis.lab.freeze(1.1);
   });
-  check((await colours(page, await page.evaluate(() => globalThis.lab.frame()))) > 20, `${backend}: temporal groom rendering is blank`);
+  check(notBlank(await detailOf(page, await page.evaluate(() => globalThis.lab.frame()))), `${backend}: temporal groom rendering is blank`);
   console.log(`lab groom (${backend}): winter fins and temporal antialiasing render`);
   // The controls edit the draft, Apply updates both the scene and its reported config.
   await page.getByRole("group", { name: "Coat", exact: true }).getByRole("button", { name: "Winter", exact: true }).click();
@@ -391,7 +404,7 @@ async function groomJourney(args) {
     const source = await open(browser, site.url, { backend: args.backend === "webgl2" ? "webgl2" : "webgpu", width: Number(args.width ?? 640), height: Number(args.height ?? 360), extra: { t: "1", preset: "medium", idle: "1", media: "source" } });
     const sourceMetrics = await source.page.evaluate(() => globalThis.lab.stevie());
     check(sourceMetrics.triangles === 59847 && sourceMetrics.groom.length === "assets/models/stevie/stevie.groom.summer.length.png" && sourceMetrics.baseColor === "assets/models/stevie/stevie.baseColor.png", "source media did not retain the uncompressed model and maps");
-    check((await colours(source.page, await source.page.evaluate(() => globalThis.lab.frame()))) > 20 && source.errors.length === 0, "source media failed to render");
+    check(notBlank(await detailOf(source.page, await source.page.evaluate(() => globalThis.lab.frame()))) && source.errors.length === 0, "source media failed to render");
     check((await loadedSha256(source.page)) === STEVIE_SHA256, "source media did not load the approved GLB");
     // Both files are the same raccoon in metres: the source's units are metres, and the bind-pose sizes agree.
     check(sourceMetrics.metresPerUnit.every((m) => near(m, 1, 1e-3)), `source media is not in metres: ${JSON.stringify(sourceMetrics.metresPerUnit)}`);
@@ -467,7 +480,7 @@ async function checkLevels(browser, siteUrl, backend, chain) {
   }
   await drawn(page, "close");
   const frame = await page.evaluate(() => globalThis.lab.frame());
-  check((await colours(page, frame)) > 20, `${backend}: the phone close-up is blank`);
+  check(notBlank(await detailOf(page, frame)), `${backend}: the phone close-up is blank`);
   console.log(`lab levels (${backend}): phone draws ${near.file} (${close.triangles} triangles, height ${close.screenHeight}) in the close-up, ${framed.file} in the yard as framed (height ${framed.screenHeight}) and ${far.file} (${yard.triangles}, height ${yard.screenHeight}) zoomed out, ${close.textureMaxPx} px`);
   // The panel's control: level 0 only, then back to the phone levels.
   if (await page.locator(".ql.collapsed").count()) await page.locator(".ql-head").click();
@@ -592,7 +605,7 @@ async function checkMotions(browser, siteUrl, backend, { full }) {
     check(a.clip === motion && b.clip === motion && a.motion === motion && a.config.motion === motion, `${backend}: asking for ${motion} plays ${a.clip}`);
     check(a.clipSeconds > 0 && Number.isFinite(a.clipSeconds), `${backend}: ${motion} reports no clip length`);
     clipSeconds[motion] = a.clipSeconds;
-    check((await colours(page, a.frame)) > 20 && (await colours(page, b.frame)) > 20, `${backend}: ${motion} draws a blank frame`);
+    check(notBlank(await detailOf(page, a.frame)) && notBlank(await detailOf(page, b.frame)), `${backend}: ${motion} draws a blank frame`);
     check(Array.isArray(a.pose) && a.pose.length === 30 * 4 && b.pose?.length === a.pose.length, `${backend}: ${motion} reports no 30-joint pose`);
     // The pose is rounded to 1e-5 a component (about 0.002°), so 0.05° is the pose moving, not noise; the idle is the subtlest at about 0.4°.
     const turned = poseChangeDegrees(a.pose, b.pose);
@@ -669,10 +682,12 @@ async function motionsJourney(args) {
   }
 }
 
-/** The shipped media's own tests (#81): compressed model and maps, manifest and provenance, as the site serves them. */
+/** The quality lab's own node tests (tests/*.node.test.mjs): the shipped media (#81) and the picture checks. */
 function mediaTests() {
-  const result = spawnSync(process.execPath, ["--test", path.join(repo, "spikes/quality-lab/tests/media.journey.node.test.mjs")], { stdio: "inherit", env: process.env });
-  if (result.status !== 0) throw new Error("the quality lab's media tests failed (see output above)");
+  const dir = path.join(repo, "spikes/quality-lab/tests");
+  const files = readdirSync(dir).filter((f) => f.endsWith(".node.test.mjs")).sort().map((f) => path.join(dir, f));
+  const result = spawnSync(process.execPath, ["--test", ...files], { stdio: "inherit", env: process.env });
+  if (result.status !== 0) throw new Error("the quality lab's node tests failed (see output above)");
 }
 
 async function journey(args) {
