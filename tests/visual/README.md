@@ -74,6 +74,17 @@ a world input. The fix is clockgrove/clockgrove#361; a later repin picks it up. 
 the owner's two CI runs disagree on a file, re-run that state and approve only a digest the
 re-runs agree on.
 
+Once approvals are committed, the same flip can also fail the `visual` job on a tree that changed
+nothing: `scripts/qualify.sh capture` exits non-zero when an approved file's digest differs. Until
+the repin that picks up clockgrove/clockgrove#361, treat such a failure this way:
+
+- If the only changed file is a WebGL2 1536×864 capture and its pixel difference from the approved
+  PNG is confined to the "Arrival: scene ready…" text fringe (around x=351, y=189–190), it is the
+  known flip: re-run the job, and do not re-approve the flipped digest.
+- Any other changed file, or a difference anywhere else, is a real change: review it as below.
+
+The journey step runs even when the capture step fails, so a flip never hides the journey's result.
+
 Moving `CLOCKGROVE_COMMIT`, or changing the art, the shell or the pack, can change a digest. Its
 approval then stops matching, CI fails, and the file needs reviewing again.
 
