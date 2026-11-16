@@ -66,6 +66,13 @@ inspecting each one at its declared viewport and backend.
    }
    ```
 
+There is a known nondeterminism at Clockgrove `1e4b8b9` (#13). Repeated local runs agreed on 75 of
+the 78 files and on every WebGPU file. In each run, one WebGL2 1536×864 capture differed by two
+pixels: the anti-aliased left fringe of the "A" in "Arrival: scene ready…", at x=351, y=189–190,
+just outside its paragraph. That is Chromium's text repaint inside Clockgrove's capture suite, not
+a world input. Until Clockgrove fixes it and the pin moves, a file the two runs disagree on can't
+be approved at a stable digest.
+
 Moving `CLOCKGROVE_COMMIT`, or changing the art, the shell or the pack, can change a digest. Its
 approval then stops matching, CI fails, and the file needs reviewing again.
 
