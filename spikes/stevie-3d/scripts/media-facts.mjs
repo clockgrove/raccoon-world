@@ -1,17 +1,15 @@
 // Facts the art and model tools decide from, read from a file's own structure or its manifest rather than its name.
-// Dependency-free (node built-ins only, no side effects) so CI can import it without the spike's devDependencies.
+// Dependency-free (node built-ins and the world's own GLB reader, no side effects) so CI can import it without the
+// spike's devDependencies.
+import { parseGlb } from "../../../art/tools/model3d-sidefiles.mjs";
 
 /** Decision: the cast keeps 2048 px textures (Kirk: the cast rendered at very high quality); set pieces and props get
  * 1024, which is still above their on-screen size in the yard and close-up views (the environment look is painterly). */
 export const MAX_TEXTURE = { cast: 2048, set: 1024 };
 
-/** The JSON chunk of a GLB, parsed. Throws when the bytes are not a glTF 2 binary. */
+/** The JSON chunk of a GLB, parsed by the world's one GLB reader (art/tools/model3d-sidefiles.mjs). Throws on a non-GLB. */
 export function glbJson(bytes) {
-  const buffer = Buffer.from(bytes.buffer ?? bytes, bytes.byteOffset ?? 0, bytes.byteLength);
-  if (buffer.length < 20 || buffer.toString("latin1", 0, 4) !== "glTF") throw new Error("not a glTF binary");
-  if (buffer.readUInt32LE(4) !== 2) throw new Error("not glTF version 2");
-  if (buffer.readUInt32LE(16) !== 0x4e4f534a) throw new Error("first GLB chunk is not JSON");
-  return JSON.parse(buffer.toString("utf8", 20, 20 + buffer.readUInt32LE(12)));
+  return parseGlb(new Uint8Array(bytes.buffer ?? bytes, bytes.byteOffset ?? 0, bytes.byteLength)).json;
 }
 
 /** True when the GLB holds a mesh with triangles and declares no animations: a mesh to rank, not an armature-only

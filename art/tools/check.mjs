@@ -799,6 +799,7 @@ async function checkFacts() {
     ["a provider's walk file (tripo-walk-model.glb)", glb({ ...mesh, ...walk }), false],
     ["a running clip file named like a model (model.glb)", glb({ ...mesh, animations: [{ name: "Armature|Running", channels: [], samplers: [] }] }), false],
     ["an armature-only file", glb({ nodes: [{ name: "hips" }], skins: [{ joints: [0] }] }), false],
+    ["a committed generated prop (references/ceiling-3d/props/mailbox.glb)", new Uint8Array(await readFile(join(root, "references/ceiling-3d/props/mailbox.glb"))), true],
     ["a points-only file", glb({ meshes: [{ primitives: [{ attributes: { POSITION: 0 }, mode: 0 }] }] }), false],
   ];
   for (const [what, bytes, expected] of candidates)
