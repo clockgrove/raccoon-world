@@ -1,0 +1,60 @@
+{
+  "$comment": "No cost in the answer, but a generation id; the generation record gives total_cost.",
+  "answer": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json",
+      "x-vercel-id": "pdx1::cle1::dxvzs-1794388881145-5974a20aed0c"
+    },
+    "body": {
+      "created": 1794388881,
+      "data": [
+        {
+          "b64_json": "<omitted>"
+        }
+      ],
+      "usage": {
+        "total_tokens": 11620,
+        "input_tokens": 6132,
+        "output_tokens": 5488,
+        "input_tokens_details": {
+          "text_tokens": 408,
+          "image_tokens": 5724
+        }
+      },
+      "providerMetadata": {
+        "gateway": {
+          "generationId": "gen_01K9X3J7Q2V8M4T6R1B5N0C9DE"
+        }
+      }
+    }
+  },
+  "lookup": {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "gen_01K9X3J7Q2V8M4T6R1B5N0C9DE",
+        "total_cost": 0.212555,
+        "upstream_inference_cost": 0.2125,
+        "market_cost": 0.212555,
+        "usage": 0,
+        "created_at": "2026-11-11T09:21:21.145Z",
+        "model": "openai/gpt-image-2",
+        "is_byok": false,
+        "provider_name": "openai",
+        "streamed": false,
+        "finish_reason": "stop",
+        "latency": 1200,
+        "generation_time": 84300,
+        "native_tokens_prompt": 6132,
+        "native_tokens_completion": 5488,
+        "native_tokens_reasoning": 0,
+        "native_tokens_cached": 0,
+        "billable_web_search_calls": 0
+      }
+    }
+  },
+  "expect": {
+    "usd": 0.212555
+  }
+}

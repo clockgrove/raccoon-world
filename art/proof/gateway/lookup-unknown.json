@@ -1,0 +1,44 @@
+{
+  "$comment": "A generation id the gateway does not know (404 on every attempt). The reservation stands.",
+  "answer": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json",
+      "x-vercel-id": "pdx1::cle1::dxvzs-1794388881145-5974a20aed0c"
+    },
+    "body": {
+      "created": 1794388881,
+      "data": [
+        {
+          "b64_json": "<omitted>"
+        }
+      ],
+      "usage": {
+        "total_tokens": 11620,
+        "input_tokens": 6132,
+        "output_tokens": 5488,
+        "input_tokens_details": {
+          "text_tokens": 408,
+          "image_tokens": 5724
+        }
+      },
+      "providerMetadata": {
+        "gateway": {
+          "generationId": "gen_01K9X3J7Q2V8M4T6R1B5N0C9DE"
+        }
+      }
+    }
+  },
+  "lookup": {
+    "status": 404,
+    "body": {
+      "error": {
+        "message": "Generation not found",
+        "type": "not_found"
+      }
+    }
+  },
+  "expect": {
+    "usd": null
+  }
+}

@@ -56,7 +56,7 @@ The owner's file looks like this:
 - **Proxies.** A paid command exits 2 `settings_invalid` when `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, `NODE_USE_ENV_PROXY`, `NODE_EXTRA_CA_CERTS` or `NODE_TLS_REJECT_UNAUTHORIZED` is set and the settings' `environment.allow` doesn't list it.
 - **No `headless`** in a person's file. Headless settings let `pick`, `write-families` and `apply` run without a person. Only `check`'s throwaway settings use it.
 
-**Factory workers never run a paid Assetgrove step** (the owner's decision, 2026-11-15, on issue #131). Paid generation (`generate-sheet`, `look-dev`, `rig`, a paid `stage` and the like) runs only in the owner session, which has its own settings outside every checkout. A worker runs Assetgrove offline only: `bash scripts/assetgrove.sh check` and `--dry-run` forecasts. No provider settings, keys or approvals for paid routes are committed or handed to a worker. Assetgrove reads a provider endpoint only from `providers.<id>.baseURL` in the settings. `art/tools/turnaround.mjs` calls the gateway itself and is not an Assetgrove step.
+**Factory workers never run a paid Assetgrove step** (the owner's decision, 2026-11-15, on issue #131). Paid generation (`generate-sheet`, `look-dev`, `rig`, a paid `stage` and the like) runs only in the owner session, which has its own settings outside every checkout. A worker runs Assetgrove offline only: `bash scripts/assetgrove.sh check` and `--dry-run` forecasts. No provider settings, keys or approvals for paid routes are committed or handed to a worker. Assetgrove reads a provider endpoint only from `providers.<id>.baseURL` in the settings. `art/tools/turnaround.mjs` calls the gateway itself and is not an Assetgrove step. Each of its calls records the cost the gateway reports for that generation (the answer's `providerMetadata.gateway.cost`, else the gateway's generation record); with no exact cost, the call's reservation stays its committed cost, so a call is never recorded as free and the run's cap holds. `check` proves this with recorded gateway answers (`art/proof/gateway/`) and no paid call.
 
 ## 1. Forecast the run
 
@@ -99,6 +99,7 @@ Agent QA runs first. Each candidate's import already carries Assetgrove's import
 
 - the frame count;
 - each frame's matte checks (edge halo, leftover background);
+- the world's matting-fringe check on each frame against the background the import recorded for it (`node art/tools/fringe.mjs <frame.png> --background <hex>`; `art/README.md` has the threshold and its calibration). It flags a soft edge that is a blend of the figure and the flat background, the pale fringe Assetgrove's edge halo misses;
 - the shadow-mode identity score.
 
 The deterministic checks (frame count, transparency) filter. Model-backed checks (vision verdicts, identity flicker, holes, style score) are advisory in Assetgrove 0.1. They are recorded as `shadow` in the result's `filtering` list, never fail a candidate, and a person judges what they report.

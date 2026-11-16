@@ -4,7 +4,9 @@
 // scripted (art/proof/provider.mjs).
 //
 // 1. bible:       art/style-bible.json is exactly what art/tools/derive-bible.mjs derives from the
-//                 Markdown bible, and the bible keeps its anchors and identity locks as decided.
+//                 Markdown bible, and the bible keeps its anchors and identity locks as decided. Every
+//                 positive anchor is approved material: its bytes are an entry of references/approved.json,
+//                 wherever it lives, so an unpicked candidate in any folder fails (art/tools/anchors.mjs).
 // 2. style:       the target profile's style matches the Clockgrove style profile
 //                 (reference/asset-style.json), and its palette value is the bible's palette.
 // 3. inputs:      each of Stevie's six families has its spec, brief and run settings, and one run
@@ -28,6 +30,12 @@
 //                 Clockgrove refuses the same model over lower budgets (MODEL_BUDGET_EXCEEDED); it renders
 //                 through the pinned renderer's world-content seam (art/tools/model3d-render.mjs); a
 //                 free-plan grant is refused with exit 7 (issues 39 and 82).
+// 9. cost:        recorded gateway answers (art/proof/gateway/) through a local stub of the generation lookup:
+//                 a turnaround call records the cost the gateway reports for its generation, else its
+//                 reservation stays its committed cost, never free (art/tools/turnaround.mjs, issue 140).
+// 10. fringe:     the matting-fringe QA (art/tools/fringe.mjs): every approved frame passes, fringed and
+//                 pale-fur fringed counter-examples fail, soft strands pass, and the profile's recorded
+//                 calibration (animation.matting) is what the repository measures (issue 140).
 //
 // Assetgrove runs under throwaway developer settings (headless, only the scripted provider, the
 // proof's provider scripts and validators approved by hash) in a temporary directory outside the
@@ -36,13 +44,16 @@
 // ASSETGROVE_DIR and CLOCKGROVE_DIR name the pinned checkouts (defaults .assetgrove-src, .clockgrove).
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
+import { createServer } from "node:http";
 import { cp, lstat, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { deriveBible, DERIVED } from "./derive-bible.mjs";
-import { forecast, loadRun, pending, ROUTE, VIEWS } from "./turnaround.mjs";
+import { calibrate } from "./fringe.mjs";
+import { REGISTER, registerProblems, unapprovedAnchors } from "./anchors.mjs";
+import { forecast, generationCost, loadRun, pending, ROUTE, VIEWS } from "./turnaround.mjs";
 
 const run = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -170,10 +181,17 @@ async function checkBible() {
     return;
   }
   const bible = described.doc;
-  const unapproved = ["references/stevie/77-3d/", "references/jimothy/assetforge-38-proof/", "references/stevie/comparison-candidates/"];
-  for (const anchor of bible.anchors.positive)
-    if (unapproved.some((prefix) => anchor.path.includes(prefix)))
-      fail("bible", `unapproved material is a positive anchor: ${anchor.path}`);
+  // Approved anchors only (issue 140): by the approved bytes in references/approved.json, wherever a file lives.
+  const register = await json(REGISTER);
+  for (const problem of await registerProblems(root, register)) fail("bible", problem);
+  for (const problem of await unapprovedAnchors(root, bible.anchors.positive, register)) fail("bible", problem);
+  // The check itself: an unpicked Gracie turnaround candidate, outside every folder the old deny-list named, is refused;
+  // c1's copy of her approved view is the approved bytes, so it passes.
+  const unpicked = { path: "../references/gracie/turnaround-candidates/c2/turnaround-front.png" };
+  if ((await unapprovedAnchors(root, [unpicked], register)).length !== 1)
+    fail("bible", `an unpicked Gracie candidate as a positive anchor was not caught: ${unpicked.path}`);
+  if ((await unapprovedAnchors(root, [{ path: "../references/gracie/turnaround-candidates/c1/turnaround-front.png" }], register)).length !== 0)
+    fail("bible", "Kirk's pick c1, the approved bytes, must pass as an anchor wherever it lives");
   if (bible.perspective !== "../docs/design/reference/raccoon-world-reference.png")
     fail("bible", "the perspective reference must be the owner's mockup");
   const locks = bible.identities;
@@ -259,6 +277,79 @@ async function checkGracie() {
   if (ROUTE.outputGrant?.license !== "LicenseRef-openai-api" || ROUTE.outputGrant.relabel !== true || ROUTE.digitalSourceType !== IPTC_GENERATED)
     fail("gracie", "the turnaround route must record OpenAI's relabellable output grant and IPTC trainedAlgorithmicMedia");
   if (VIEWS.join() !== "front,three-quarter,side,back") fail("gracie", `the turnaround views must be the four views: ${VIEWS}`);
+}
+
+/**
+ * Real cost (issue 140): recorded gateway answers (art/proof/gateway/) replayed through a local stub of the gateway's
+ * generation lookup. Each answer's recorded cost comes back as the call's cost; with no exact cost the reservation
+ * stays the committed cost, and the cap still counts it. No paid call: nothing leaves this machine.
+ */
+async function checkCost() {
+  const dir = "art/proof/gateway";
+  const recorded = [];
+  for (const file of (await readdir(join(root, dir))).filter((f) => f.endsWith(".json")).sort())
+    recorded.push({ file, ...(await json(`${dir}/${file}`)) });
+  let current;
+  const server = createServer((request, response) => {
+    const url = new URL(request.url, "http://stub");
+    const lookup = current?.lookup;
+    const known = url.pathname === "/v1/generation" && lookup && url.searchParams.get("id") === lookup.body?.data?.id;
+    response.writeHead(known ? lookup.status : 404, { "content-type": "application/json" });
+    response.end(JSON.stringify(known ? lookup.body : { error: { message: "generation not found" } }));
+  });
+  await new Promise((done) => server.listen(0, "127.0.0.1", done));
+  const gateway = `http://127.0.0.1:${server.address().port}/v1`;
+  try {
+    for (const fixture of recorded) {
+      current = fixture;
+      const { answer } = fixture;
+      const cost = await generationCost({ body: answer.body, headers: new Headers(answer.headers), gateway, token: "recorded", waitsMs: [0, 0] });
+      if (cost.usd !== fixture.expect.usd)
+        fail("cost", `${dir}/${fixture.file}: the call's cost must be ${fixture.expect.usd}, got ${cost.usd} (${cost.basis})`);
+      // The ledger: a done call keeps its reservation as its committed cost unless an exact cost was read.
+      const call = { status: "done", reservedUsd: 0.5, ...(cost.usd !== null && { costUsd: cost.usd }) };
+      const committed = forecast({ calls: [call] }, { capUsd: 100, reserveUsd: 0.5 }, []);
+      if (!(committed > 0) || committed !== (cost.usd ?? 0.5)) fail("cost", `${dir}/${fixture.file}: the call commits ${committed}, never free`);
+    }
+    if (!recorded.some((f) => f.expect.usd === null) || !recorded.some((f) => f.lookup && f.expect.usd !== null))
+      fail("cost", `${dir} must record an answer with no exact cost and one whose cost comes from the generation record`);
+  } finally {
+    server.close();
+  }
+  return recorded.length;
+}
+
+/**
+ * Matting fringe (issue 140): the profile's fringeShare is recomputed from the repository. Every approved frame
+ * passes; a fringed counter-example and a pale-fur one on a pale background fail; soft strands of the figure's own
+ * colour pass; and the profile's recorded calibration is what the repository measures.
+ */
+async function checkFringe() {
+  const matting = (await json("art/target-profile.json")).animation?.matting;
+  const limit = matting?.fringeShare;
+  if (!(limit > 0 && limit < 1)) {
+    fail("fringe", "art/target-profile.json animation.matting.fringeShare must be within 0..1");
+    return;
+  }
+  const measured = await calibrate(root);
+  for (const { source, frame, share } of measured.approved)
+    if (share > limit) fail("fringe", `approved ${source} frame ${frame} is ${share.toFixed(4)} fringe, over ${limit}`);
+  if (!(measured.fringed > limit)) fail("fringe", `the fringed counter-example (${measured.fringed.toFixed(4)}) must fail at ${limit}`);
+  if (!(measured.paleFringed > limit)) fail("fringe", `pale fur fringed on a pale background (${measured.paleFringed.toFixed(4)}) must fail at ${limit}`);
+  if (!(measured.softStrands <= limit)) fail("fringe", `soft strands of the figure's own colour (${measured.softStrands.toFixed(4)}) must pass at ${limit}`);
+  const recorded = matting.calibration ?? {};
+  const round = (n) => Math.round(n * 1e4) / 1e4;
+  const facts = [
+    ["approved.frames", recorded.approved?.frames, measured.approved.length],
+    ["approved.worstShare", recorded.approved?.worstShare, round(measured.worstShare)],
+    ["counterExamples.fringed", recorded.counterExamples?.fringed, round(measured.fringed)],
+    ["counterExamples.paleFringed", recorded.counterExamples?.paleFringed, round(measured.paleFringed)],
+    ["counterExamples.softStrands", recorded.counterExamples?.softStrands, round(measured.softStrands)],
+    ["background", recorded.background, measured.background],
+  ];
+  for (const [what, ours, theirs] of facts)
+    if (ours !== theirs) fail("fringe", `animation.matting.calibration.${what} records ${ours}, the repository measures ${theirs}`);
+  return { limit, worstApproved: round(measured.worstShare), fringed: round(measured.fringed), paleFringed: round(measured.paleFringed), assetgroveHaloPale: round(measured.assetgroveHaloPale) };
 }
 
 async function checkStyle() {
@@ -732,6 +823,8 @@ try {
   await checkBible();
   await checkStyle();
   await checkGracie();
+  const recordedAnswers = await checkCost();
+  const fringe = await checkFringe();
   const proved = await proof();
   const forecasts = await checkInputs(proved?.qaPerCandidateUsd ?? 0);
   const placeholders = await checkPlaceholders();
@@ -746,7 +839,7 @@ try {
     process.exitCode = 1;
   } else
     console.log(
-      JSON.stringify({ status: "ok", validator: proved.validator, placeholders, licensedManifests, runForecastUsd: forecasts, model3d }),
+      JSON.stringify({ status: "ok", validator: proved.validator, placeholders, licensedManifests, runForecastUsd: forecasts, recordedAnswers, fringe, model3d }),
     );
 } catch (error) {
   console.error(error.message);

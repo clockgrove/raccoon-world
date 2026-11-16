@@ -98,6 +98,24 @@
     "gait": "quadruped",
     "thresholds": {
       "edgeHaloShare": 0.3
+    },
+    "matting": {
+      "check": "art/tools/fringe.mjs",
+      "fringeShare": 0.15,
+      "calibration": {
+        "$comment": "Recomputed by art/tools/check.mjs (calibrate in art/tools/fringe.mjs). The limit sits between the worst approved frame and the lowest fringed counter-example, both made at run time from the approved cell (no new material): fringed keeps the background in its soft edge; paleFringed is the cell turned pale fur on a pale #f2efe8 background, which Assetgrove's 64-distance edge-halo check passes; softStrands adds soft strands of the figure's own colour, which must pass. The unapproved real Assetgrove strips in references/stevie/comparison-candidates score at most 0.07.",
+        "approved": {
+          "frames": 114,
+          "worstShare": 0.0115,
+          "sources": "every approved manifest's strip (assets/manifests/*/*.json with review approved, split into its frames, against the cell's background, #e0e0e0 and #ffffff) and Jimothy's approved soft-alpha identity-lock cell references/jimothy/sheet-cell-03.png against its contact sheet's background"
+        },
+        "counterExamples": {
+          "fringed": 0.6493,
+          "paleFringed": 0.6555,
+          "softStrands": 0.0051
+        },
+        "background": "#e5f0ee"
+      }
     }
   }
 }
