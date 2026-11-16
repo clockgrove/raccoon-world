@@ -46,7 +46,19 @@ const DETAILS = ["tip", "tips", "palms", "soles", "bands", "rings", "rims", "str
 /** Words that end a part's trailing qualities ("ears rimmed in pale fur" ends at "and a banded tail"; "mask with pale brows"). */
 const BREAKS = ["a", "an", "the", "her", "his", "its", "their", "with", "and", "than", "on", "over"];
 
-const NEGATIONS = ["no", "not", "without", "never", "lacks", "lacking", "lack", "missing", "none", "nor", "isn't", "doesn't", "hasn't"];
+/**
+ * Words that deny what follows them in the segment, or, at a segment's end, the part last named ("a ringed tail is
+ * absent"). A word ending in "less" whose stem names a part or quality ("ringless", "tailless") negates it.
+ */
+const NEGATIONS = [
+  "no", "not", "without", "never", "nor", "neither", "none", "nothing", "nowhere",
+  "lack", "lacks", "lacked", "lacking", "missing", "absent", "gone", "devoid", "minus", "sans", "free",
+  "lose", "loses", "lost", "losing", "shed", "sheds", "hardly", "barely", "scarcely", "less",
+  "isn't", "aren't", "wasn't", "weren't", "doesn't", "don't", "didn't", "hasn't", "haven't", "hadn't", "can't", "cannot", "won't",
+];
+
+/** Words that open a relative clause about the part named just before them ("than her back, which is lighter"). */
+const RELATIVES = ["which", "that", "who", "whose"];
 
 const PART_OF = new Map(Object.entries(PARTS).flatMap(([part, words]) => words.map((w) => [w, part])));
 const QUALITY_OF = new Map(Object.entries(QUALITIES).flatMap(([q, { words }]) => words.map((w) => [w, q])));
@@ -61,12 +73,14 @@ function clauses(text) {
 
 /**
  * The structured facts a text states: `{ parts: Map<part, { qualities: Set, negated: Set, negatedPart: boolean }>, order: [part] }`.
- * A quality attaches to the next part in its segment, else to the part last named in its clause (carried
- * across commas, so a list "lighter, greyer and shaggier than her back" stays with its subject), else to the
- * clause's next part ("a pale, faint eye mask"). A quality right after a part, before any article, "with" or
- * "and", is said of that part ("ears rimmed in pale fur", "a tail that is not ringed"). A part after "than" is a comparator and takes only the
- * qualities between "than" and it. A negation applies to the next quality or part in its segment, else to
- * the part last named; two negations in a row cancel.
+ * A quality said before a part is carried across commas to the next part its clause names ("a pale, faint eye
+ * mask", "pale-rimmed, rounded ears"), or, at "than" or the clause's end, to the clause's subject (so a list
+ * "lighter, greyer and shaggier fur than her back" stays with its subject). A quality right after a part, before
+ * any article, "with" or "and", is said of that part ("ears rimmed in pale fur", "a tail that is not ringed"), as
+ * is a quality in a relative clause after it ("than her back, which is lighter"). A detail that is a quality
+ * (rims, bands) is said of the part it follows ("ears with pale rims"). A part after "than" is a comparator,
+ * across commas, and takes only the qualities between "than" and it. A negation applies to the next quality or
+ * part in its segment, else to the part last named; two negations in a row cancel.
  */
 export function factsOf(text) {
   const parts = new Map();
@@ -79,63 +93,78 @@ export function factsOf(text) {
     return parts.get(part);
   };
   for (const clause of clauses(text)) {
-  let current;
-  let pending = []; // [{ quality, negated }]
-  const flush = (part) => {
-    if (part === undefined) return;
-    const facts = entry(part);
-    for (const { quality, negated } of pending) (negated ? facts.negated : facts.qualities).add(quality);
-    pending = [];
-  };
-  for (const words of clause) {
-    let negation = false;
-    let comparator = false;
-    let trailing; // the part just named in this segment, until a break word
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i];
-      if (BREAKS.includes(word)) trailing = undefined;
-      const pair = i + 1 < words.length ? `${word} ${words[i + 1]}` : undefined;
-      const part = (pair && PART_OF.get(pair)) ?? PART_OF.get(word);
-      if (pair && PART_OF.has(pair)) i++;
-      if (NEGATIONS.includes(word)) {
-        negation = !negation;
-        continue;
-      }
-      if (word === "than") {
-        flush(current);
-        comparator = true;
-        continue;
-      }
-      if (DETAILS.includes(word)) {
-        // The detail's own qualities are dropped; a detail that is itself a quality (bands, rims) stays pending.
-        pending = [];
+    let current; // the clause's subject: the part last named outside a comparison
+    let last; // the part last named, comparators included
+    let comparator = false; // after "than", until the part it compares with
+    let pending = []; // qualities said before their part: [{ quality, negated }]
+    const flush = (part) => {
+      if (part === undefined) return;
+      const facts = entry(part);
+      for (const { quality, negated } of pending) (negated ? facts.negated : facts.qualities).add(quality);
+      pending = [];
+    };
+    for (const words of clause) {
+      let negation = false;
+      // the part just named, until a break word; a segment opening with "which" or "that" is about the part before it
+      let trailing = RELATIVES.includes(words[0]) ? last : undefined;
+      for (let i = 0; i < words.length; i++) {
+        let word = words[i];
+        if (BREAKS.includes(word)) trailing = undefined;
+        if (word.endsWith("less") && word.length > 4) {
+          const stem = word.slice(0, -4);
+          if (PART_OF.has(stem) || QUALITY_OF.has(stem)) {
+            negation = !negation;
+            word = stem;
+          }
+        }
+        const pair = i + 1 < words.length ? `${word} ${words[i + 1]}` : undefined;
+        const part = (pair && PART_OF.get(pair)) ?? PART_OF.get(word);
+        if (pair && PART_OF.has(pair)) i++;
+        if (NEGATIONS.includes(word)) {
+          negation = !negation;
+          continue;
+        }
+        if (word === "than") {
+          flush(current);
+          comparator = true;
+          continue;
+        }
+        if (DETAILS.includes(word)) {
+          // The detail's own qualities are dropped; a detail that is itself a quality (bands, rims) is said of the
+          // part it follows ("ears with pale rims"), else of the next part ("rimmed ears").
+          pending = [];
+          const quality = QUALITY_OF.get(word);
+          const owner = trailing ?? current;
+          if (quality && owner !== undefined) (negation ? entry(owner).negated : entry(owner).qualities).add(quality);
+          else if (quality) pending.push({ quality, negated: negation });
+          negation = false;
+          continue;
+        }
+        if (part) {
+          flush(part);
+          if (negation) entry(part).negatedPart = true;
+          negation = false;
+          if (comparator) comparator = false;
+          else current = part;
+          trailing = part;
+          last = part;
+          continue;
+        }
         const quality = QUALITY_OF.get(word);
-        if (quality) pending.push({ quality, negated: negation });
-        negation = false;
-        continue;
+        if (quality && trailing !== undefined) {
+          const facts = entry(trailing);
+          (negation ? facts.negated : facts.qualities).add(quality);
+          negation = false;
+        } else if (quality) {
+          pending.push({ quality, negated: negation });
+          negation = false;
+        }
       }
-      if (part) {
-        flush(part);
-        if (negation) entry(part).negatedPart = true;
-        negation = false;
-        if (comparator) comparator = false;
-        else current = part;
-        trailing = part;
-        continue;
-      }
-      const quality = QUALITY_OF.get(word);
-      if (quality && trailing !== undefined) {
-        const facts = entry(trailing);
-        (negation ? facts.negated : facts.qualities).add(quality);
-        negation = false;
-      } else if (quality) {
-        pending.push({ quality, negated: negation });
-        negation = false;
-      }
+      // A negation with nothing after it in its segment denies the part last named ("a ringed tail is absent").
+      if (negation && (trailing ?? current) !== undefined) entry(trailing ?? current).negatedPart = true;
     }
-    if (negation && current !== undefined) entry(current).negatedPart = true;
+    // Qualities still pending at the clause's end are said of its subject ("has lighter, greyer fur").
     flush(current);
-  }
   }
   return { parts, order };
 }

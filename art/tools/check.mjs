@@ -235,13 +235,27 @@ async function checkGracie() {
   const reworded =
     "Gracie, a raccoon whose belly, flanks, hindquarters and legs carry paler, greyer, longer and shaggier fur than her sleeker back; " +
     "a full dark mask across her eyes, pale eyebrows and a pale snout, round ears rimmed in pale fur and a banded tail";
-  for (const accurate of [reworded, `${description}, never without her ringed tail`])
+  const accurates = [
+    reworded,
+    `${description}, never without her ringed tail`,
+    description.replace("rounded pale-rimmed ears", "rounded ears with pale rims"), // the declared trait's own wording
+    description.replace("rounded pale-rimmed ears", "pale-rimmed, rounded ears"),
+    description.replace("than her back", "than her short, dark grey-brown back"), // the declared back trait
+  ];
+  if (accurates.slice(2).some((a) => a === description)) fail("gracie", "the rewordings of her description must change it");
+  for (const accurate of accurates)
     if (traitProblems(accurate, traits, GRACIE_PARTS).length) fail("gracie", `an accurate rewording of her description must pass: ${traitProblems(accurate, traits, GRACIE_PARTS)}: ${accurate}`);
   const wrong = [
     ["a ringed tail", "no ringed tail", "negates"],
     ["a ringed tail", "a tail that is not ringed", "negates"],
     ["a ringed tail", "a plain tail with no rings", "negates"],
     ["a ringed tail", "an unringed tail", "negates"],
+    ["a ringed tail", "a ringless tail", "negates"],
+    ["a ringed tail", "a tail that has lost its rings", "negates"],
+    ["a ringed tail", "a tail free of rings", "negates"],
+    ["a ringed tail", "a tail with hardly any rings", "negates"],
+    ["a ringed tail", "a ringed tail is absent", "negates"],
+    ["than her back", "than her back, which is lighter", "negates"],
     ["a full dark eye mask", "no eye mask", "negates"],
     ["a full dark eye mask", "without a dark eye mask, but", "negates"],
     ["a full dark eye mask", "a pale, faint eye mask", "negates"],
