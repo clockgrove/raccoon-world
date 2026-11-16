@@ -66,22 +66,10 @@ inspecting each one at its declared viewport and backend.
    }
    ```
 
-There is a known nondeterminism at Clockgrove `1e4b8b9` (#13). Repeated local runs agreed on 75 of
-the 78 files and on every WebGPU file. In each run, one WebGL2 1536×864 capture differed by two
-pixels: the anti-aliased left fringe of the "A" in "Arrival: scene ready…", at x=351, y=189–190,
-just outside its paragraph. That is Chromium's text repaint inside Clockgrove's capture suite, not
-a world input. The fix is clockgrove/clockgrove#361; a later repin picks it up. Until then, when
-the owner's two CI runs disagree on a file, re-run that state and approve only a digest the
-re-runs agree on.
-
-Once approvals are committed, the same flip can also fail the `visual` job on a tree that changed
-nothing: `scripts/qualify.sh capture` exits non-zero when an approved file's digest differs. Until
-the repin that picks up clockgrove/clockgrove#361, treat such a failure this way:
-
-- If the only changed file is a WebGL2 1536×864 capture and its pixel difference from the approved
-  PNG is confined to the "Arrival: scene ready…" text fringe (around x=351, y=189–190), it is the
-  known flip: re-run the job, and do not re-approve the flipped digest.
-- Any other changed file, or a difference anywhere else, is a real change: review it as below.
+Captures are byte-identical on repeat. Clockgrove's capture renders text with grayscale
+antialiasing (clockgrove/clockgrove#336), so the subpixel text fringe that flipped between runs at
+Clockgrove `1e4b8b9` no longer occurs. A `visual` failure on a tree that changed nothing is a real
+regression to report, not a re-run.
 
 The journey step runs even when the capture step fails, so a flip never hides the journey's result.
 
@@ -118,4 +106,13 @@ Reviewer: the Clockgrove owner agent session, on Kirk's delegation of 2026-11-16
 7. **The selection ring hides what it selects.** It's drawn over Stevie and over the den's mouth, where the reference rings the character at its feet. *Follow-up:* clockgrove/clockgrove#378.
 8. **The phone Why panel is cut off.** At 390×844 the panel cuts its second resource cause mid-line. *Follow-up:* clockgrove/clockgrove#378.
 
-**Determinism.** All 78 digests agree between the two CI runs, and each WebGL2 file shows everything its WebGPU twin shows. Clockgrove `1e4b8b9` still captures text with LCD antialiasing. Clockgrove fixed that on main in d5a077d (#336, `--disable-lcd-text`), so the next Clockgrove repin changes nearly every text pixel, and the approvals are redone then.
+**Determinism.** All 78 digests agree between the two CI runs, and each WebGL2 file shows everything its WebGPU twin shows.
+
+### Re-approval, 2026-11-16 (#147)
+
+The pin moved to Clockgrove `aa9c8c4` (#147). CI run 43908122491's `visual` job, attempts 1 and 2, agrees on all 78 digests. Each file was inspected at its viewport and backend, and pixel-diffed against the files approved above. Three changes:
+- Text is antialiased in grayscale.
+- One paragraph in `event-why-inspector` at 1536×864 wraps one word earlier.
+- That state's first wall-clock mask is 1 px wider.
+
+The 3D canvas, the event feed and the rail content are bit-identical, so every departure above still stands. Item 5 now needs the world's side: Clockgrove now projects a pack's declared `clockgrove.conversation-mode` (clockgrove/clockgrove#354), but this pack doesn't yet declare it for Stevie, so the rail still says "Deterministic/reactive object".
