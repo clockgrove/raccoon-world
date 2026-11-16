@@ -93,8 +93,8 @@
         "height": 864
       },
       "file": "daylight-dry@1536x864.png",
-      "sha256": "sha256:e2c39004f14066d820495ce71fdc50f36b08a5e77f22921bcf9c06320a99c02a",
-      "bytes": 120261,
+      "sha256": "sha256:aa0c4edff9dd2bf1fa6479c357effb29054a2848fc6a3d2d73c15ce5b3b05d0e",
+      "bytes": 115498,
       "announced": "Observation: ready. Observing revision 48. Canonical time 8683200000. Rain intensity 0. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8500, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -104,8 +104,8 @@
         "height": 720
       },
       "file": "daylight-dry@1280x720.png",
-      "sha256": "sha256:74b779fce99462c229e0843abf7edac60c666eb00cf77a0fb2ec44663a60febf",
-      "bytes": 99470,
+      "sha256": "sha256:ebdea8a17a32ccf0c9c1011647b31b125b4f9cc28907bb10631d0712e634d044",
+      "bytes": 95376,
       "announced": "Observation: ready. Observing revision 48. Canonical time 8683200000. Rain intensity 0. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8500, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -115,8 +115,8 @@
         "height": 844
       },
       "file": "daylight-dry@390x844.png",
-      "sha256": "sha256:3b1dda55c283ce48f5c8eb7ba6996f3602cbc4db5a4407df9b9b894fbf3bd848",
-      "bytes": 53510,
+      "sha256": "sha256:c4b77b6f76bc14cba9d571c4250d38ae2ba7b59e6d7991fe1b0b754fd925d79f",
+      "bytes": 48270,
       "announced": "Observation: ready. Observing revision 48. Canonical time 8683200000. Rain intensity 0. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8500, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -126,8 +126,8 @@
         "height": 864
       },
       "file": "dusk-rain-low@1536x864.png",
-      "sha256": "sha256:b287581b54f4f9de092d05681c945ca711cbb192a82aac0d80e23b723faabd90",
-      "bytes": 126438,
+      "sha256": "sha256:4290eb14ced2521c3de354687f554c16cbd9558af651135b9bc9194886aa9bdb",
+      "bytes": 122002,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -137,8 +137,8 @@
         "height": 720
       },
       "file": "dusk-rain-low@1280x720.png",
-      "sha256": "sha256:39a091dc6bddf644caa26f2a1240c14c017e9cf27f00c469695b416bba05853f",
-      "bytes": 104879,
+      "sha256": "sha256:9a66fa306617a997346c94385575f84586cd515ff1822f8fea042e44e28589ef",
+      "bytes": 99516,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -148,8 +148,8 @@
         "height": 844
       },
       "file": "dusk-rain-low@390x844.png",
-      "sha256": "sha256:6fff25580d3dd2e27f64cfb3063c526cf838f54461d3e81126a6a4a4264156f6",
-      "bytes": 35723,
+      "sha256": "sha256:cdfaeee0b239ddccae32fa1ccc7352c210da78753fa71214f478b2488d1880d6",
+      "bytes": 33194,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -159,8 +159,8 @@
         "height": 864
       },
       "file": "dusk-rain-medium@1536x864.png",
-      "sha256": "sha256:748d45584aadbd71d8bb98a45b1b5dd26161d3d2d124dd741b7e2c45d408276c",
-      "bytes": 100157,
+      "sha256": "sha256:1c7c4cbb4bf9460b1671705f7974a9fa73902de10fc0f9cf72a7ec8c836f5b46",
+      "bytes": 95140,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -170,8 +170,8 @@
         "height": 720
       },
       "file": "dusk-rain-medium@1280x720.png",
-      "sha256": "sha256:de4035cb436042adaf9979959c88274045b5e7ee342d5b47288366a3435902f7",
-      "bytes": 88277,
+      "sha256": "sha256:6b41dc3f3360e371d59e04dc465dc2cff0d649b50f02ef90954c876473c5d991",
+      "bytes": 82738,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -181,8 +181,8 @@
         "height": 844
       },
       "file": "dusk-rain-medium@390x844.png",
-      "sha256": "sha256:546a9df0373e02a907e8ef1663054407cf6a31c3aca9bb2884afbff302696b31",
-      "bytes": 33360,
+      "sha256": "sha256:728b3e50f3b7ee7aa72d426093ba6279b555d34e8c3737f313b24d05e8d6cca5",
+      "bytes": 30834,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -192,8 +192,8 @@
         "height": 864
       },
       "file": "dusk-rain-high@1536x864.png",
-      "sha256": "sha256:15ee7d1f926bcfa80210854bf12415804593e7ec619cd8f26f26e7598ae71940",
-      "bytes": 102929,
+      "sha256": "sha256:df161559206f86c35967185a1902ea1e135464e229d36b8f9165706c4f0ba06f",
+      "bytes": 97943,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -203,8 +203,8 @@
         "height": 720
       },
       "file": "dusk-rain-high@1280x720.png",
-      "sha256": "sha256:af8d3c67da86892bd415663b299eacee1a1f2af9f76e868957a8ce88c39a2551",
-      "bytes": 90282,
+      "sha256": "sha256:856bd70a0174b64aefcb50723fb97d4eaa47cda987c76d82cdcbbe5daefadaaa",
+      "bytes": 84773,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -214,8 +214,8 @@
         "height": 844
       },
       "file": "dusk-rain-high@390x844.png",
-      "sha256": "sha256:0748f8e1eee31c1282afe4cee722a4a27d5a3bb16b19fd3ccab6506ea33d69e8",
-      "bytes": 34491,
+      "sha256": "sha256:cae3fcf7ab3217b6cf1deef4469d0baf41e009d59b5432c43d3e713cae5c65a9",
+      "bytes": 31950,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -225,8 +225,8 @@
         "height": 864
       },
       "file": "dusk-rain@1536x864.png",
-      "sha256": "sha256:f8954754fee0cad6f0eb4b4f491d4df76d604fc2828b8fe7c7dee6bcd3829133",
-      "bytes": 110870,
+      "sha256": "sha256:31b03c0b6407c6b045482862d9afddce601ef547a5e8e42f408a095073064ad2",
+      "bytes": 106196,
       "announced": "Observation: ready. Observing revision 195. Canonical time 8708400000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -236,8 +236,8 @@
         "height": 720
       },
       "file": "dusk-rain@1280x720.png",
-      "sha256": "sha256:6b17147a396705350b3643e1cb79a6cb9a0d7352158835717f1108bc59320746",
-      "bytes": 95960,
+      "sha256": "sha256:3625470f7e4dc8435fdf34a85adbaec84052bfadbf35a999a89e4dd9a3545436",
+      "bytes": 91548,
       "announced": "Observation: ready. Observing revision 195. Canonical time 8708400000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -247,8 +247,8 @@
         "height": 844
       },
       "file": "dusk-rain@390x844.png",
-      "sha256": "sha256:098ea8de13f42021d0c9325e682fa140161ddb907231e644e0c1960910e8b96d",
-      "bytes": 55765,
+      "sha256": "sha256:3d7f7850dfbea0810a7cc2447b3a98d2dad0224f67f81d2ab1fde3942f122071",
+      "bytes": 50460,
       "announced": "Observation: ready. Observing revision 195. Canonical time 8708400000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -258,8 +258,8 @@
         "height": 864
       },
       "file": "night-rain-low@1536x864.png",
-      "sha256": "sha256:4847801cea2169cd5882a7786e4498d7406c57213efd4f74f15b83a0d30b4807",
-      "bytes": 122861,
+      "sha256": "sha256:3e1aa68b1b0b61eb8b768f7100104fe91c63f9f48633feb826680d05d155e770",
+      "bytes": 118296,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -269,8 +269,8 @@
         "height": 720
       },
       "file": "night-rain-low@1280x720.png",
-      "sha256": "sha256:984456cae58dd0c6a4dc412c3c6325150777aa91c5ec273a073ebd241cce8ce7",
-      "bytes": 102271,
+      "sha256": "sha256:daf52dcc2a6475e5b92434cf4ad40b00f09e78de12b23c5ef339a0077a62bf56",
+      "bytes": 96972,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -280,8 +280,8 @@
         "height": 844
       },
       "file": "night-rain-low@390x844.png",
-      "sha256": "sha256:456f2a1030f7b85e3e7a600bb6a9db6ebc2b99a568ef15fc1316335ed4d2a8f1",
-      "bytes": 35170,
+      "sha256": "sha256:3584790f7a30cda19608005e4935e0d64616862037f0112a07e1576afa99e91a",
+      "bytes": 32695,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -291,8 +291,8 @@
         "height": 864
       },
       "file": "night-rain-medium@1536x864.png",
-      "sha256": "sha256:9ad94df70a2108b9f851b27c8f021bf1344a5d038f2798099b599da9df39a0de",
-      "bytes": 104199,
+      "sha256": "sha256:bfac1bcf377aacd9d525c97b57cf7480102326dc73289912b5285dcbc7304729",
+      "bytes": 99316,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -302,8 +302,8 @@
         "height": 720
       },
       "file": "night-rain-medium@1280x720.png",
-      "sha256": "sha256:e87d7e7f77f599b2d639e633ee57fdc712f682b133d1b8e6990539e9eb502091",
-      "bytes": 90916,
+      "sha256": "sha256:1276ca9bb39247a79905474ac7c175b3904891b1c1749f951934aab6f2e07eb3",
+      "bytes": 85428,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -313,8 +313,8 @@
         "height": 844
       },
       "file": "night-rain-medium@390x844.png",
-      "sha256": "sha256:d9afabef35e189e396c0fcb91634b7c95ee1b583c02b5b8c1e9a46be11d80c0a",
-      "bytes": 34870,
+      "sha256": "sha256:2483a56bc430f694b6ddb5d4d7ac9f26426e7d5da51014be645e426068f975fa",
+      "bytes": 32403,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -324,8 +324,8 @@
         "height": 864
       },
       "file": "night-rain-high@1536x864.png",
-      "sha256": "sha256:01fe513786328bf6cb91dd96788c527a44e6dce8f230ea3ea65cafdc1d8f1df6",
-      "bytes": 108015,
+      "sha256": "sha256:0b28579e3afaa12e6fa0461b142e431a6c44f6670a3194fe095d01658e93f7d3",
+      "bytes": 103271,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -335,8 +335,8 @@
         "height": 720
       },
       "file": "night-rain-high@1280x720.png",
-      "sha256": "sha256:b59a93c44c2f7837485e52145bb714ecfc21bb2684cc8aa7c3d9fa11730fff0a",
-      "bytes": 93734,
+      "sha256": "sha256:e3eecec9b199abc8ecb04d815e76a0c52d4c4891baae19ae65de15a2e7a74c2c",
+      "bytes": 88274,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -346,8 +346,8 @@
         "height": 844
       },
       "file": "night-rain-high@390x844.png",
-      "sha256": "sha256:7e6deb240d76c1e0582e5840f4656c6ca96e731e0b04bfd1dc8d5a419e42ce0a",
-      "bytes": 36925,
+      "sha256": "sha256:a2f732eb80b0d13a3a1e1807a3d3ffe6b068be1e9cde142e3eaa6011575a62b7",
+      "bytes": 34410,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -357,8 +357,8 @@
         "height": 864
       },
       "file": "selected-actor-rail@1536x864.png",
-      "sha256": "sha256:e3f9015da108d8e95f2ed032f143a8ef7eaf51b66fb81d306ce0b113d9d0b110",
-      "bytes": 197705,
+      "sha256": "sha256:7346d84fc3b36a3e3bf1cd3e6ba7b262da0e7d372339794cbad75200c43e3816",
+      "bytes": 186564,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -368,8 +368,8 @@
         "height": 720
       },
       "file": "selected-actor-rail@1280x720.png",
-      "sha256": "sha256:504406a42367583da61e8b723fcf383d5c0eb013a89c7829591512e8cd7612ba",
-      "bytes": 151109,
+      "sha256": "sha256:fbbba8651d3eae050ca3299836048cbad1f7e53b9e4ff2c0fa35974b857f8b0c",
+      "bytes": 142838,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -379,8 +379,8 @@
         "height": 844
       },
       "file": "selected-actor-rail@390x844.png",
-      "sha256": "sha256:1156db4aec8c238a03b710224e989ef5e302f0e7d608b6a8f54845b8442ddfeb",
-      "bytes": 71149,
+      "sha256": "sha256:3678ec45bfe8e6b263f5b29c5ac7cb49dc2c3318d792c41cbb4f3309998a1f42",
+      "bytes": 62891,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -390,8 +390,8 @@
         "height": 864
       },
       "file": "event-why-inspector@1536x864.png",
-      "sha256": "sha256:6b6acd4ae554bd5d94bb8eecde3d4f76d934c122be1880d8113ee600b93bdef7",
-      "bytes": 278692,
+      "sha256": "sha256:19da94829c48a67cb4924e989977b53f10019b0aa9df91d6924fc36d664408fc",
+      "bytes": 254193,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -401,8 +401,8 @@
         "height": 720
       },
       "file": "event-why-inspector@1280x720.png",
-      "sha256": "sha256:03673b762d7aea28ac0d022700fb80a75e19ab8bf55f4fa5a19ad4e9e4889e48",
-      "bytes": 195554,
+      "sha256": "sha256:6d60ff1c1076b175ea30dc1a4a5ddd1e7fb03a0c445fb2f426bab5d1a0cd63db",
+      "bytes": 176824,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -412,8 +412,8 @@
         "height": 844
       },
       "file": "event-why-inspector@390x844.png",
-      "sha256": "sha256:cc9d42be3eb8665438c48b9050bf8fab364be7c0db362843bc4a8d871ce019d7",
-      "bytes": 78111,
+      "sha256": "sha256:a180c31a089223eb3097e15aaf734f3198f8115ebaeb0fbf9847f03fdf3e788d",
+      "bytes": 69586,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -423,8 +423,8 @@
         "height": 864
       },
       "file": "selected-inspectable-object@1536x864.png",
-      "sha256": "sha256:6db1420efc9366f2a068d8b34dc76c758fede50f400dcb95ab7a331cab8648a0",
-      "bytes": 199006,
+      "sha256": "sha256:17e1f56c01f2fc48ceaa3f368e6a875120e33e54e39c55ade770030b907eba2f",
+      "bytes": 187636,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -434,8 +434,8 @@
         "height": 720
       },
       "file": "selected-inspectable-object@1280x720.png",
-      "sha256": "sha256:4b4084e2f6a198642a96d956a47c471a3890dc5aeb26d6f6a310c506766dc5b5",
-      "bytes": 146194,
+      "sha256": "sha256:40a7324be88ce2bdf663131e65dec23dc237270598321ff4bf3f008fa0e688d6",
+      "bytes": 138186,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -445,8 +445,8 @@
         "height": 844
       },
       "file": "selected-inspectable-object@390x844.png",
-      "sha256": "sha256:70ed5fe7ae118057b35db5d74368af54d30bb6c2825147c869b09afbbeef673d",
-      "bytes": 66584,
+      "sha256": "sha256:db44350fe988f86e465574e409513e216e97b2e43b2016607a95a4d398b94d88",
+      "bytes": 58651,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -456,8 +456,8 @@
         "height": 864
       },
       "file": "disconnected-recovering@1536x864.png",
-      "sha256": "sha256:b3991a831b62b35867dfe545ef7f6f1a74f9ec530d98483946f59e138687e7d3",
-      "bytes": 201829,
+      "sha256": "sha256:edf438fc33799209529efd4dd863db4f7b85eb182623d38d590f78a910a20b21",
+      "bytes": 189957,
       "announced": "Observation: degraded. Recovering committed scene. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -467,8 +467,8 @@
         "height": 720
       },
       "file": "disconnected-recovering@1280x720.png",
-      "sha256": "sha256:eafafc27ce66f1be2966d757fcb32a745f85b858826be1819ab8422f87044448",
-      "bytes": 148781,
+      "sha256": "sha256:cb87f5a847afdd95c39f349cf3f728c62e7d1fdff43500d3dd94595146d201a3",
+      "bytes": 140599,
       "announced": "Observation: degraded. Recovering committed scene. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -478,8 +478,8 @@
         "height": 844
       },
       "file": "disconnected-recovering@390x844.png",
-      "sha256": "sha256:e432e5095f74c1209f20df9725a51c28fa06217d9e56bc17ca5c7acc2e1409cf",
-      "bytes": 69231,
+      "sha256": "sha256:8f9b83cd2602e1a5a414ac07ffde7dd2d76d74007c3d124b9405868a25f6fd6a",
+      "bytes": 60916,
       "announced": "Observation: degraded. Recovering committed scene. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -489,8 +489,8 @@
         "height": 864
       },
       "file": "text-access@1536x864.png",
-      "sha256": "sha256:b823fac26df5836c0aba58610c63fad9c6b7ba909fe5f9facd53a3790b960ffd",
-      "bytes": 206279,
+      "sha256": "sha256:8e277ed728ce7e113bd3553b321fc497096724bed581a351287255f91a4325e5",
+      "bytes": 188813,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -500,8 +500,8 @@
         "height": 720
       },
       "file": "text-access@1280x720.png",
-      "sha256": "sha256:d5c638d6a03949272ac5e63f17bb9cf93d0f28aaa4dea5f5b91c8502ab5b7cdb",
-      "bytes": 205331,
+      "sha256": "sha256:4c9fc19586f81ef3aaeb6550d2be679a6953aa16ac81013d028a4797f940eb38",
+      "bytes": 187713,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     },
     {
@@ -511,8 +511,8 @@
         "height": 844
       },
       "file": "text-access@390x844.png",
-      "sha256": "sha256:30d4f439247ffb36521d6e7169014a4e7f95b285c8eba66efd62c75c4836b388",
-      "bytes": 102248,
+      "sha256": "sha256:b22fefa7e863b56b3171bfde9217f9f2bc51a121a89ed32ab0ef268efb871341",
+      "bytes": 87785,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000"
     }
   ],
@@ -900,9 +900,9 @@
       },
       "text": false,
       "cls": 0.0015961349225093308,
-      "ttfbMs": 33.199999999953434,
-      "fcpMs": 412,
-      "lcpMs": 412
+      "ttfbMs": 20.89999999999418,
+      "fcpMs": 328,
+      "lcpMs": 328
     },
     {
       "viewport": {
@@ -911,9 +911,9 @@
       },
       "text": false,
       "cls": 0.0018635512193044027,
-      "ttfbMs": 3.800000000046566,
-      "fcpMs": 228,
-      "lcpMs": 228
+      "ttfbMs": 3.6999999999970896,
+      "fcpMs": 208,
+      "lcpMs": 208
     },
     {
       "viewport": {
@@ -921,10 +921,10 @@
         "height": 844
       },
       "text": false,
-      "cls": 0.016830831983854926,
-      "ttfbMs": 4.299999999930151,
-      "fcpMs": 228,
-      "lcpMs": 228
+      "cls": 0.001151650203048086,
+      "ttfbMs": 5.19999999999709,
+      "fcpMs": 188,
+      "lcpMs": 188
     },
     {
       "viewport": {
@@ -933,9 +933,9 @@
       },
       "text": true,
       "cls": 0,
-      "ttfbMs": 9.100000000093132,
-      "fcpMs": 288,
-      "lcpMs": 288
+      "ttfbMs": 5.400000000023283,
+      "fcpMs": 212,
+      "lcpMs": 212
     },
     {
       "viewport": {
@@ -944,9 +944,9 @@
       },
       "text": true,
       "cls": 0,
-      "ttfbMs": 4.200000000069849,
-      "fcpMs": 312,
-      "lcpMs": 312
+      "ttfbMs": 4.600000000005821,
+      "fcpMs": 244,
+      "lcpMs": 244
     },
     {
       "viewport": {
@@ -955,9 +955,9 @@
       },
       "text": true,
       "cls": 0,
-      "ttfbMs": 5.5,
-      "fcpMs": 272,
-      "lcpMs": 272
+      "ttfbMs": 5.2999999999883585,
+      "fcpMs": 204,
+      "lcpMs": 204
     }
   ],
   "backendCaptures": [
@@ -968,8 +968,8 @@
         "height": 864
       },
       "file": "webgl2/daylight-dry@1536x864.png",
-      "sha256": "sha256:60f6c2297cd7e7ae04259113da663460ca97ff3505f0d248ae66c238f39ec039",
-      "bytes": 120256,
+      "sha256": "sha256:88cf986b959c68f7e84c1a8d5eba40d1887d01516994f541ea9ec9a401b9b4d9",
+      "bytes": 115493,
       "announced": "Observation: ready. Observing revision 48. Canonical time 8683200000. Rain intensity 0. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8500, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -980,8 +980,8 @@
         "height": 720
       },
       "file": "webgl2/daylight-dry@1280x720.png",
-      "sha256": "sha256:9c76c3237834c03d0b50491302b202b499a269d0dd06afdb813b9f32c5f9f1e6",
-      "bytes": 99394,
+      "sha256": "sha256:6a6457e227c53315fa96219d15591157ae7e15811ce352c192f55d7df2e65c87",
+      "bytes": 95283,
       "announced": "Observation: ready. Observing revision 48. Canonical time 8683200000. Rain intensity 0. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8500, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -992,8 +992,8 @@
         "height": 844
       },
       "file": "webgl2/daylight-dry@390x844.png",
-      "sha256": "sha256:69b975300ad46cbb4dda4867b7809ebedb5930ddd878b310c7a1b94e9da7e490",
-      "bytes": 53512,
+      "sha256": "sha256:64f8f951052cb2b6fdb2d869760ffbbec93d4a601eca69ce486d93bcbd3e918a",
+      "bytes": 48272,
       "announced": "Observation: ready. Observing revision 48. Canonical time 8683200000. Rain intensity 0. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8500, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1004,8 +1004,8 @@
         "height": 864
       },
       "file": "webgl2/dusk-rain-low@1536x864.png",
-      "sha256": "sha256:aff029265bac41698ecb84c7340dfdbfacd8a5610468f88c93a8e0ba503955be",
-      "bytes": 126436,
+      "sha256": "sha256:987276d4fd6564c33b428faae3a62f29c11c52ed1088b3bd90efee231ea3dfdd",
+      "bytes": 122002,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1016,8 +1016,8 @@
         "height": 720
       },
       "file": "webgl2/dusk-rain-low@1280x720.png",
-      "sha256": "sha256:11a89d92d76a08fb657963fa93532025b3e8e7f606cc90717c95d88a40cc2178",
-      "bytes": 104800,
+      "sha256": "sha256:a50129de667fad34934dd56b907317f4c8b74d174885b59ebb3ddb4b299a1d5c",
+      "bytes": 99433,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1028,8 +1028,8 @@
         "height": 844
       },
       "file": "webgl2/dusk-rain-low@390x844.png",
-      "sha256": "sha256:cbfb1df9a6b87eb87d4e22cc9a94cc3e7ebf1c575ff6ccdf48f78efe9f253051",
-      "bytes": 35725,
+      "sha256": "sha256:cb08b199244296d4a298b69b40bddd21bd6ccdeb81b897952525e2717faa539a",
+      "bytes": 33195,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1040,8 +1040,8 @@
         "height": 864
       },
       "file": "webgl2/dusk-rain-medium@1536x864.png",
-      "sha256": "sha256:2665e9a63193b377bb5882116d8f9fb9a52d4b7d6d58e91f87ba89506b22d141",
-      "bytes": 100012,
+      "sha256": "sha256:e5a1f2bc5e647282df360a8610385abc47ee46ee4bdb638a01b71b1a7c1cd56e",
+      "bytes": 94999,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1052,8 +1052,8 @@
         "height": 720
       },
       "file": "webgl2/dusk-rain-medium@1280x720.png",
-      "sha256": "sha256:85cbcbb03f3d5796a29e7daaac13d6ee8bf47cafc0c9cade4bb9273df28bfca5",
-      "bytes": 88080,
+      "sha256": "sha256:3208052c5014f14fe7924dd6eca5867bfd7cfb88da1c7c3188a3eb3047b93c62",
+      "bytes": 82534,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1064,8 +1064,8 @@
         "height": 844
       },
       "file": "webgl2/dusk-rain-medium@390x844.png",
-      "sha256": "sha256:390fe628bd266472ab8d01b4f58b0102802c96ae689bf1430d92e8c314015d98",
-      "bytes": 33356,
+      "sha256": "sha256:4612d6099b5fe65a28e4e84ce2ffa54c545d4aab4a77b721ee25898bb85babb5",
+      "bytes": 30830,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1076,8 +1076,8 @@
         "height": 864
       },
       "file": "webgl2/dusk-rain-high@1536x864.png",
-      "sha256": "sha256:55d96985a7f3afa62905e6139dfb4ef306f3bedb9a9cae775df7cbea8f8e5477",
-      "bytes": 102613,
+      "sha256": "sha256:465fc588fe22186b2d08664dbaeb96f86ad28c3eefb13d7ef2b723ed7139c120",
+      "bytes": 97639,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1088,8 +1088,8 @@
         "height": 720
       },
       "file": "webgl2/dusk-rain-high@1280x720.png",
-      "sha256": "sha256:9e7b58549d63ef74110f0d5090c6df4a0090b859ed6a7c4885884c06bc5fe3dc",
-      "bytes": 90147,
+      "sha256": "sha256:bbb6e379a3604021aca7c3303f5b7412d886e63393c4f65416b18b58dd87f05b",
+      "bytes": 84641,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1100,8 +1100,8 @@
         "height": 844
       },
       "file": "webgl2/dusk-rain-high@390x844.png",
-      "sha256": "sha256:9b3d645236913f4b3ac5c317671e9a3449d587eac64f90d9af0237f891e38e22",
-      "bytes": 34445,
+      "sha256": "sha256:46e6fe85a6bf6279431575c395e2b6ed72f8e55a5e92524458f05755e85291a1",
+      "bytes": 31906,
       "announced": "Observation: ready. Observing revision 166. Canonical time 8703900000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1112,8 +1112,8 @@
         "height": 864
       },
       "file": "webgl2/dusk-rain@1536x864.png",
-      "sha256": "sha256:8866b3ccc7d968914c5d77a0bf2e63dbdaa60f9be61add620bd1a3d570e2a689",
-      "bytes": 110653,
+      "sha256": "sha256:0dad0641075f491786e56abf5801cc970688624ca5d9734b39aed0a865c192b0",
+      "bytes": 105979,
       "announced": "Observation: ready. Observing revision 195. Canonical time 8708400000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1124,8 +1124,8 @@
         "height": 720
       },
       "file": "webgl2/dusk-rain@1280x720.png",
-      "sha256": "sha256:edb72b22f5c8f1a92e6908446965201201a3806d4e403ea0c79cfa6e4cf73ac2",
-      "bytes": 95717,
+      "sha256": "sha256:42f238a6dcb79affe7b028f0eac098fae26369a201c8925aa33dc49c4519a008",
+      "bytes": 91304,
       "announced": "Observation: ready. Observing revision 195. Canonical time 8708400000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1136,8 +1136,8 @@
         "height": 844
       },
       "file": "webgl2/dusk-rain@390x844.png",
-      "sha256": "sha256:4a80a58f8be64d38d1f3abc1b4010c8bb669d13c886fc372cf684497d832cbdc",
-      "bytes": 55720,
+      "sha256": "sha256:59bb816bd43d2829efe0c03cf61e1d38c54fdf2893a44f2424e1b069203b7c37",
+      "bytes": 50415,
       "announced": "Observation: ready. Observing revision 195. Canonical time 8708400000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1148,8 +1148,8 @@
         "height": 864
       },
       "file": "webgl2/night-rain-low@1536x864.png",
-      "sha256": "sha256:8c35b4fedb6484d944efdcd1723af5ad2bc12e37a4dc7a072b8f9ef610d76784",
-      "bytes": 122854,
+      "sha256": "sha256:6505fbe1128a0b2f60bbacf049f18595dbccc6d83788799f6cfa874e2a576eb2",
+      "bytes": 118289,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1160,8 +1160,8 @@
         "height": 720
       },
       "file": "webgl2/night-rain-low@1280x720.png",
-      "sha256": "sha256:ef61ef017408d28594c2160df702e0ed2c1f198a81508ee84bcb18fe31c06497",
-      "bytes": 102209,
+      "sha256": "sha256:b18a820036d770ee4549bdd5a8ea9ef2e14452a0fbfbdffa0953336ceb11c767",
+      "bytes": 96904,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1172,8 +1172,8 @@
         "height": 844
       },
       "file": "webgl2/night-rain-low@390x844.png",
-      "sha256": "sha256:91f694a0db9e4ed247a38ff5c3d965871cb53e77f2848fbb3865bfb80973562b",
-      "bytes": 35169,
+      "sha256": "sha256:a9406d2073b19aa1cda595066d621df2d2a2fb37972d73c6fcccf3fcde20d5c9",
+      "bytes": 32696,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1184,8 +1184,8 @@
         "height": 864
       },
       "file": "webgl2/night-rain-medium@1536x864.png",
-      "sha256": "sha256:865fc1db68f7c425c7dd00735d290cb96c8aec496ea5527aa01a4762483eba6f",
-      "bytes": 104042,
+      "sha256": "sha256:82c7fc8230a4b6c9a8db2568173a16a34ddba4a1444a5c83323572d220a62dd6",
+      "bytes": 99154,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1196,8 +1196,8 @@
         "height": 720
       },
       "file": "webgl2/night-rain-medium@1280x720.png",
-      "sha256": "sha256:1bd5b76dde8f2684a5e0d302b8f82fec7651c07e4658b88146e14dfdc731e86f",
-      "bytes": 90630,
+      "sha256": "sha256:ab41bd9d1d55e2159d60434ac606f55b634417c53b9c39efa3e1088910bbb8c6",
+      "bytes": 85133,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1208,8 +1208,8 @@
         "height": 844
       },
       "file": "webgl2/night-rain-medium@390x844.png",
-      "sha256": "sha256:8e5a1287403bca9b6fab7f35cc6c345b98b09887ad0695f6a3795d066c95b080",
-      "bytes": 34820,
+      "sha256": "sha256:e40df8440edfe1e209ef3dfd18a9329c765163723a0371e2e7411aae9fed30f9",
+      "bytes": 32355,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1220,8 +1220,8 @@
         "height": 864
       },
       "file": "webgl2/night-rain-high@1536x864.png",
-      "sha256": "sha256:749723caf20122981378eb7dba6da6a890c22c8f1a8962380d79721d4f99afa1",
-      "bytes": 107820,
+      "sha256": "sha256:a0a86cd69d8266d47cd9e25cb750308d144e5c1c19dd46e6808382801f7d7c64",
+      "bytes": 103085,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1232,8 +1232,8 @@
         "height": 720
       },
       "file": "webgl2/night-rain-high@1280x720.png",
-      "sha256": "sha256:c0a07a421134a3396ab8157699294b91b52fb6859f36b697250a1575c38fb510",
-      "bytes": 93457,
+      "sha256": "sha256:48e2de0d56e654615dc2d23fb014de1fb2d7d95b56f55ff0bf53c2dbf1831657",
+      "bytes": 87989,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1244,8 +1244,8 @@
         "height": 844
       },
       "file": "webgl2/night-rain-high@390x844.png",
-      "sha256": "sha256:3ec40779c8e315484642e45796b3532ab83a90dd01ecad6e7b94cb08c647c586",
-      "bytes": 36873,
+      "sha256": "sha256:8207d9b83014c5ae4e1305e2fa9e0407b0b05abdf9b780b15d19fe4a06904011",
+      "bytes": 34357,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1256,8 +1256,8 @@
         "height": 864
       },
       "file": "webgl2/selected-actor-rail@1536x864.png",
-      "sha256": "sha256:8262653b8848755fcac3018d0653813a079c2695a786ba84688d2081eec37801",
-      "bytes": 197694,
+      "sha256": "sha256:e0754fc40695dfe3a8304bcc19d85007e8d16c0eef68e28c0e87a299be5906f9",
+      "bytes": 186555,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1268,8 +1268,8 @@
         "height": 720
       },
       "file": "webgl2/selected-actor-rail@1280x720.png",
-      "sha256": "sha256:aac307b38af8e012b0d518ede6fd5197bea332b361bab4aa6fe184c857cf84dc",
-      "bytes": 151055,
+      "sha256": "sha256:cf4f2badf9cc9502ef12f27f0c5368441aa27779dcf5679f39a1657676487ee7",
+      "bytes": 142782,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1280,8 +1280,8 @@
         "height": 844
       },
       "file": "webgl2/selected-actor-rail@390x844.png",
-      "sha256": "sha256:1156db4aec8c238a03b710224e989ef5e302f0e7d608b6a8f54845b8442ddfeb",
-      "bytes": 71149,
+      "sha256": "sha256:3678ec45bfe8e6b263f5b29c5ac7cb49dc2c3318d792c41cbb4f3309998a1f42",
+      "bytes": 62891,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1292,8 +1292,8 @@
         "height": 864
       },
       "file": "webgl2/event-why-inspector@1536x864.png",
-      "sha256": "sha256:6b6acd4ae554bd5d94bb8eecde3d4f76d934c122be1880d8113ee600b93bdef7",
-      "bytes": 278692,
+      "sha256": "sha256:19da94829c48a67cb4924e989977b53f10019b0aa9df91d6924fc36d664408fc",
+      "bytes": 254193,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1304,8 +1304,8 @@
         "height": 720
       },
       "file": "webgl2/event-why-inspector@1280x720.png",
-      "sha256": "sha256:03673b762d7aea28ac0d022700fb80a75e19ab8bf55f4fa5a19ad4e9e4889e48",
-      "bytes": 195554,
+      "sha256": "sha256:6d60ff1c1076b175ea30dc1a4a5ddd1e7fb03a0c445fb2f426bab5d1a0cd63db",
+      "bytes": 176824,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1316,8 +1316,8 @@
         "height": 844
       },
       "file": "webgl2/event-why-inspector@390x844.png",
-      "sha256": "sha256:cc9d42be3eb8665438c48b9050bf8fab364be7c0db362843bc4a8d871ce019d7",
-      "bytes": 78111,
+      "sha256": "sha256:a180c31a089223eb3097e15aaf734f3198f8115ebaeb0fbf9847f03fdf3e788d",
+      "bytes": 69586,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1328,8 +1328,8 @@
         "height": 864
       },
       "file": "webgl2/selected-inspectable-object@1536x864.png",
-      "sha256": "sha256:7cac750745bd52ed51603e5eac8253c955f39d2431e38cc396a33e8f013c9c18",
-      "bytes": 199005,
+      "sha256": "sha256:0d1c1863872cd2d91054e9bfcb8d4353bf41249ef46f31dd880a2daa2dfdddaa",
+      "bytes": 187628,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1340,8 +1340,8 @@
         "height": 720
       },
       "file": "webgl2/selected-inspectable-object@1280x720.png",
-      "sha256": "sha256:ce7507fe56ab70bb1a4a067b795ae9ac5c88d03f2d9f21b59b70b1b1ae93f5bd",
-      "bytes": 146129,
+      "sha256": "sha256:7aace105a239abd1b053986afcd76862f28dbd5869f18389a1741c0314606710",
+      "bytes": 138124,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1352,8 +1352,8 @@
         "height": 844
       },
       "file": "webgl2/selected-inspectable-object@390x844.png",
-      "sha256": "sha256:70ed5fe7ae118057b35db5d74368af54d30bb6c2825147c869b09afbbeef673d",
-      "bytes": 66584,
+      "sha256": "sha256:db44350fe988f86e465574e409513e216e97b2e43b2016607a95a4d398b94d88",
+      "bytes": 58651,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1364,8 +1364,8 @@
         "height": 864
       },
       "file": "webgl2/disconnected-recovering@1536x864.png",
-      "sha256": "sha256:3b964161a6d24f2d3041377e382b41b54568ec68477f968d7660f07d68f105b9",
-      "bytes": 201828,
+      "sha256": "sha256:9b432bab431d0beac11fe2a8bc10036a238dfb7b0e22e8ca8ff3102d997f4d0e",
+      "bytes": 189955,
       "announced": "Observation: degraded. Recovering committed scene. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1376,8 +1376,8 @@
         "height": 720
       },
       "file": "webgl2/disconnected-recovering@1280x720.png",
-      "sha256": "sha256:5b8fc883e941f5c4152f0c03d3a0b13fa23213ed75739373e7a9aa6c5ef0eee5",
-      "bytes": 148714,
+      "sha256": "sha256:58fe76bef2d02cea663f36842614d8246516da033c76da3df659ca1454a44d86",
+      "bytes": 140536,
       "announced": "Observation: degraded. Recovering committed scene. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1388,8 +1388,8 @@
         "height": 844
       },
       "file": "webgl2/disconnected-recovering@390x844.png",
-      "sha256": "sha256:e432e5095f74c1209f20df9725a51c28fa06217d9e56bc17ca5c7acc2e1409cf",
-      "bytes": 69231,
+      "sha256": "sha256:8f9b83cd2602e1a5a414ac07ffde7dd2d76d74007c3d124b9405868a25f6fd6a",
+      "bytes": 60916,
       "announced": "Observation: degraded. Recovering committed scene. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1400,8 +1400,8 @@
         "height": 864
       },
       "file": "webgl2/text-access@1536x864.png",
-      "sha256": "sha256:b823fac26df5836c0aba58610c63fad9c6b7ba909fe5f9facd53a3790b960ffd",
-      "bytes": 206279,
+      "sha256": "sha256:8e277ed728ce7e113bd3553b321fc497096724bed581a351287255f91a4325e5",
+      "bytes": 188813,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1412,8 +1412,8 @@
         "height": 720
       },
       "file": "webgl2/text-access@1280x720.png",
-      "sha256": "sha256:d5c638d6a03949272ac5e63f17bb9cf93d0f28aaa4dea5f5b91c8502ab5b7cdb",
-      "bytes": 205331,
+      "sha256": "sha256:4c9fc19586f81ef3aaeb6550d2be679a6953aa16ac81013d028a4797f940eb38",
+      "bytes": 187713,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     },
@@ -1424,8 +1424,8 @@
         "height": 844
       },
       "file": "webgl2/text-access@390x844.png",
-      "sha256": "sha256:30d4f439247ffb36521d6e7169014a4e7f95b285c8eba66efd62c75c4836b388",
-      "bytes": 102248,
+      "sha256": "sha256:b22fefa7e863b56b3171bfde9217f9f2bc51a121a89ed32ab0ef268efb871341",
+      "bytes": 87785,
       "announced": "Observation: ready. Observing revision 251. Canonical time 8719200000. Rain intensity 9000. grove.cat-food-bowl, grove.cat-food-bowl, position 8000, 22000; grove.cedar, grove.cedar, position 22000, 20000; grove.cedar-hollow, grove.cedar-hollow, position 22000, 20000; grove.den, grove.den, position 8000, 22000; grove.den-stash, grove.den-stash, position 8000, 22000; grove.fence-gate, grove.fence-gate, position 27000, 15000; grove.fruit-tree, grove.fruit-tree, position 20000, 20000; grove.garden-berries, grove.garden-berries, position 22000, 8000; grove.gracie, grove.gracie, position 8000, 22000; grove.herb, grove.herb, position 23000, 8000; grove.kit, grove.kit, position 8000, 22000; grove.pantry-bin, grove.pantry-bin, position 38000, 28000; grove.porch, grove.porch, position 8000, 8000; grove.rain-puddle, grove.rain-puddle, position 22000, 8000; grove.sky, grove.sky, position 20000, 15000; grove.snack-dish, grove.snack-dish, position 30000, 13000; grove.snack-house-bowl, grove.snack-house-bowl, position 30000, 13000; grove.stevie, grove.stevie, position 15000, 8000; grove.trash-can, grove.trash-can, position 15000, 8000; grove.water-bowl, grove.water-bowl, position 8000, 22000; grove.yard-compost, grove.yard-compost, position 10000, 23000",
       "backend": "webgl2"
     }
