@@ -89,7 +89,7 @@ The hand-off may carry 1 to 3 levels (`budgets.lods`, counted as 1 plus `MSFT_lo
 | --- | --- | --- |
 | Container | `.glb`, uncompressed | `.glb` with `EXT_meshopt_compression` |
 | Textures | PNG or JPEG, embedded, within the pixel limit | KTX2, mipmapped: UASTC for normal maps, ETC1S for the rest |
-| Size | 2048 px for the cast, 1024 px for set pieces | the same; `web-media.mjs` takes each output's cap from its manifest (the tier that draws the file, else the model's `textureMaxPx`) within the cast decision (a `character-3d` manifest: 2048 px; anything else, or no manifest: 1024 px), never from its file name |
+| Size | 2048 px for the cast, 1024 px for set pieces | the same; `web-media.mjs` takes each output's cap from its manifest (the tier that draws the file, its own or its levels' `textureMaxPx`, and a tier that declares none is refused rather than given the desktop cap; else the model's `textureMaxPx`) within the cast decision (a `character-3d` manifest: 2048 px; anything else, or no manifest: 1024 px), never from its file name |
 
 The shipped format is decided: source and compressed renders differ by a mean of 0.1–0.3 out of 255 (#79). It is a **target-side build step**: `spikes/stevie-3d/scripts/web-media.mjs` encodes whatever is handed over.
 
@@ -206,7 +206,7 @@ The pinned Clockgrove's pack format has no coat field yet (clockgrove/clockgrove
 - **Flagged** (accepted and reported):
   - `tier:<tier>:<key>`: a level the tier draws is over that tier's budget. The detail names the level and its file. A manifest with no chain is checked as its main file against each tier;
   - `clip-missing:<family>`: a required clip that is not there yet;
-  - `height:unspecified`: no spec `heightM` was found, so the height was only checked to be positive.
+  - `height:unspecified`: no spec `heightM` was found; the height must then lie in the earlier 0.05 to 5 m band, so a missing spec never accepts a character exported ten times too big.
 
 Stevie's chain (#113) is checked level by level. A tier draws its own `model.tiers.<tier>.levels` files when it has them (and they must cover every level `model.chain.tiers` lists for it), else the levels `model.chain.tiers` lists for it (0 is the main file). Each level's triangles, materials, bones and texture size (its embedded textures or the side maps the tier draws, whichever is larger) and the number of levels drawn are compared with that tier's budget. Stevie's phone levels and maps fit the phone budget, so it carries no `tier:phone` flag. `model3d.handoff.lods` is `"embedded"` or `"files"`.
 

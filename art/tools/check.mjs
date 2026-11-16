@@ -16,8 +16,8 @@
 //                 review pending and complete provenance; a short sheet is refused, never padded.
 // 6. licences:    every committed manifest's licence is the licence REUSE.toml gives its source file,
 //                 so a CC-BY-4.0 pick can't land under the `**` MIT annotation.
-// 7. gracie:      Gracie's bible subject, matched against her identity lock's declared traits by the parts they
-//                 name (traits.mjs; a rewording passes, a negated trait fails), leads with her signature fur, her photos and approved views
+// 7. gracie:      Gracie's bible subject, matched against her identity lock's declared traits as facts (each part and
+//                 its qualities, traits.mjs; a rewording passes, a negated, contradicted or dropped trait fails), leads with her signature fur, her photos and approved views
 //                 are her subject's references, her approved turnaround is Kirk's pick (c1) with its
 //                 hashes and output grant, her character-3d spec names her subject and gait and the
 //                 pinned Assetgrove's character-3d reader accepts it, and her turnaround run forecasts within its $5 cap (issue 50).
@@ -224,19 +224,37 @@ async function checkGracie() {
   const bible = await json("art/style-bible.json");
   const description = bible.subjects?.gracie?.description ?? "";
   // Her description against the traits her identity lock declares (signatureFeatures, the first her
-  // signature), matched by the parts they name, not by wording: it leads with her signature lower-body
-  // fur, names each of GRACIE_PARTS, and negates no declared trait.
+  // signature), read as facts (each part and the qualities said of it), not wording: it leads with her
+  // signature lower-body fur, names each of GRACIE_PARTS with the qualities declared for it, and negates
+  // or contradicts no declared trait (art/tools/traits.mjs).
   const described = await assetgrove(["bible", "describe", "--bible", "art/style-bible.md"]);
   const traits = described.doc?.identities?.gracie?.signatureFeatures;
   for (const problem of traitProblems(description, traits, GRACIE_PARTS)) fail("gracie", `${problem}: ${description}`);
-  // The check itself: an accurate rewording passes, and a description that negates a trait fails.
+  // The check itself: an accurate rewording passes, and a description that negates, contradicts or drops a
+  // declared trait fails, wherever the negation stands against the part.
   const reworded =
     "Gracie, a raccoon whose belly, flanks, hindquarters and legs carry paler, greyer, longer and shaggier fur than her sleeker back; " +
-    "a dark mask across her eyes, pale eyebrows and a pale snout, round ears rimmed in pale fur and a banded tail";
-  if (traitProblems(reworded, traits, GRACIE_PARTS).length) fail("gracie", `an accurate rewording of her description must pass: ${traitProblems(reworded, traits, GRACIE_PARTS)}`);
-  for (const [from, to] of [["a ringed tail", "no ringed tail"], ["a full dark eye mask", "without a dark eye mask, but"], ["has lighter", "has no lighter"]])
-    if (!traitProblems(description.replace(from, to), traits, GRACIE_PARTS).some((p) => p.includes("negates")))
-      fail("gracie", `a description that negates a trait must fail: ${description.replace(from, to)}`);
+    "a full dark mask across her eyes, pale eyebrows and a pale snout, round ears rimmed in pale fur and a banded tail";
+  for (const accurate of [reworded, `${description}, never without her ringed tail`])
+    if (traitProblems(accurate, traits, GRACIE_PARTS).length) fail("gracie", `an accurate rewording of her description must pass: ${traitProblems(accurate, traits, GRACIE_PARTS)}: ${accurate}`);
+  const wrong = [
+    ["a ringed tail", "no ringed tail", "negates"],
+    ["a ringed tail", "a tail that is not ringed", "negates"],
+    ["a ringed tail", "a plain tail with no rings", "negates"],
+    ["a ringed tail", "an unringed tail", "negates"],
+    ["a full dark eye mask", "no eye mask", "negates"],
+    ["a full dark eye mask", "without a dark eye mask, but", "negates"],
+    ["a full dark eye mask", "a pale, faint eye mask", "negates"],
+    ["has lighter", "has no lighter", "negates"],
+    ["has lighter, greyer, noticeably longer and shaggier", "has darker, shorter and sleeker", "negates"],
+    ["a ringed tail", "a tail", "does not say"],
+    ["a full dark eye mask", "an eye mask", "does not say"],
+  ];
+  for (const [from, to, problem] of wrong) {
+    const changed = description.replace(from, to);
+    if (changed === description || !traitProblems(changed, traits, GRACIE_PARTS).some((p) => p.includes(problem)))
+      fail("gracie", `a description that ${problem === "negates" ? "negates" : "drops"} a trait must fail: ${changed}`);
+  }
   const references = bible.references.filter((r) => r.subject === "gracie").map((r) => r.path).sort();
   const expected = [
     "gracie-ice-cube.png", "gracie-lounging.png", "gracie-sleeping.png",
@@ -586,6 +604,11 @@ async function checkModel3d() {
     if (heightProblems(bounds, heightM).refusals.length > 0 !== refused) fail("model3d", `${what} must be ${refused ? "refused" : "accepted"}`);
   if (!heightProblems(box(8), undefined).flags.some((f) => f.code === "height:unspecified"))
     fail("model3d", "a model with no spec height must carry the height:unspecified flag");
+  for (const [what, bounds, refused] of [
+    ["a 45 m model with no spec height", box(45), true],
+    ["a 0.45 m model with no spec height", box(0.45), false],
+  ])
+    if (heightProblems(bounds, undefined).refusals.length > 0 !== refused) fail("model3d", `${what} must be ${refused ? "refused" : "accepted"}`);
   if (!chained.accepted || chained.flags.some((f) => f.code.startsWith("tier:")))
     fail("model3d", `Stevie's chain must be accepted with no tier flag: ${JSON.stringify([...chained.refusals, ...chained.flags.filter((f) => f.code.startsWith("tier:"))])}`);
   // His motions (#112): every family of the clip set is generated, so none is missing, and each declared motion is
@@ -680,6 +703,8 @@ async function checkModel3d() {
     if (!validator.includes("tier:phone:triangles")) fail("model3d", `the validator should flag tier:phone:triangles:\n${validator}`);
     // The shared rig generates every family of the clip set (#112), so none is missing.
     if (validator.includes("clip-missing:")) fail("model3d", `no clip should be missing:\n${validator}`);
+    // The CLI found the picked model's own spec (art/<subject>/<kind>/spec.json) and checked its height against it.
+    if (validator.includes("height:unspecified")) fail("model3d", `the validator CLI must find the model's spec height:\n${validator}`);
     for (const family of required)
       if (!manifest.model?.clips?.some((c) => c.name === family && c.generated === true)) fail("model3d", `the written model lacks the generated ${family}`);
     const { stdout: attr } = await run("git", ["check-attr", "filter", "--", manifest.source.path], { cwd: root });
@@ -821,6 +846,26 @@ async function checkFacts() {
   const phoneTier = structuredClone(stevie);
   for (const level of Object.values(phoneTier.model.tiers.phone.levels)) level.textureMaxPx = 512;
   caps.push(["a phone tier whose manifest caps it at 512", phoneTier, phoneTier.model.tiers.phone.levels.lod2.path, 512]);
+  const tierCapped = structuredClone(stevie);
+  delete tierCapped.model.tiers.phone.levels;
+  tierCapped.model.tiers.phone.textureMaxPx = 512;
+  caps.push(["a phone tier with no levels that declares its own 512 cap", tierCapped, phoneMap, 512]);
+  // A phone tier that declares no cap anywhere is refused, never given the desktop cap.
+  const uncapped = structuredClone(stevie);
+  delete uncapped.model.tiers.phone.levels;
+  for (const [what, manifest] of [["no levels", uncapped], ["levels with no textureMaxPx", (() => {
+    const m = structuredClone(stevie);
+    for (const level of Object.values(m.model.tiers.phone.levels)) delete level.textureMaxPx;
+    return m;
+  })()]]) {
+    let cap;
+    try {
+      cap = facts.textureCap({ manifest, file: phoneMap }).cap;
+    } catch {
+      continue;
+    }
+    fail("facts", `a phone tier with ${what} declares no cap and must be refused, not given ${cap} px`);
+  }
   for (const [what, manifest, file, expected] of caps) {
     const { cap } = facts.textureCap({ manifest, file });
     if (cap !== expected) fail("facts", `${what} must get a ${expected} px texture cap, not ${cap}`);

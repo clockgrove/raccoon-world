@@ -29,17 +29,24 @@ const pathsIn = (value) => {
 /**
  * Texture cap in pixels for the output made from `file` (repository-relative path of a glb or map, or undefined),
  * from its model `manifest` (or undefined). The cast decision is the manifest's kind (character-3d: MAX_TEXTURE.cast,
- * otherwise MAX_TEXTURE.set). A file a `model.tiers.<tier>` entry names takes that tier's cap, the largest
- * `textureMaxPx` over the tier's levels; any other file takes `model.textureMaxPx`. A cap never exceeds the cast cap.
- * Returns `{ cap, tier, cast }`: `tier` is the tier name or undefined, `cast` the cast decision's cap.
+ * otherwise MAX_TEXTURE.set). A file a `model.tiers.<tier>` entry names takes that tier's declared cap: the tier's own
+ * `textureMaxPx`, else the largest `textureMaxPx` over its levels; a tier that declares neither throws, so a tier file
+ * never falls back to the desktop cap. Any other file takes `model.textureMaxPx`, else the cast decision. A cap never
+ * exceeds the cast cap. Returns `{ cap, tier, cast }`: `tier` is the tier name or undefined, `cast` the cast decision's cap.
  */
 export function textureCap({ manifest, file } = {}) {
   const cast = manifest?.kind === "character-3d" ? MAX_TEXTURE.cast : MAX_TEXTURE.set;
   const model = manifest?.model;
   const tier = file === undefined ? undefined
     : Object.keys(model?.tiers ?? {}).find((name) => pathsIn(model.tiers[name]).includes(file));
-  const declared = tier === undefined
-    ? model?.textureMaxPx
-    : Math.max(...Object.values(model.tiers[tier].levels ?? {}).map((l) => l.textureMaxPx ?? 0));
-  return { cap: Math.min(declared > 0 ? declared : cast, cast), tier, cast };
+  if (tier === undefined) {
+    const declared = model?.textureMaxPx;
+    return { cap: Math.min(declared > 0 ? declared : cast, cast), tier, cast };
+  }
+  const entry = model.tiers[tier];
+  const levelCaps = Object.values(entry.levels ?? {}).map((l) => l?.textureMaxPx).filter((px) => px > 0);
+  const declared = entry.textureMaxPx > 0 ? entry.textureMaxPx : levelCaps.length ? Math.max(...levelCaps) : undefined;
+  if (declared === undefined)
+    throw new Error(`${file}: the manifest's ${tier} tier declares no textureMaxPx (on the tier or its levels), so its texture cap is unknown`);
+  return { cap: Math.min(declared, cast), tier, cast };
 }

@@ -9,8 +9,8 @@
 // `prop-3d` -> prop); a manifest with neither is checked as a character.
 // The model's height is checked against its own spec's `heightM` (within 5%), not a fixed band. Without
 // --spec the spec is art/<subject or assetId>/<manifest kind>/spec.json from the working directory (the
-// target repository's root, where Assetgrove runs the validator); with no spec height the height need only
-// be positive and the height:unspecified flag says so.
+// target repository's root, where Assetgrove runs the validator); with no spec height found the
+// height:unspecified flag says so and the height must lie in the earlier 0.05 to 5 m band.
 //   node art/tools/model3d.mjs map <manifest>      prints the manifest as Clockgrove's model manifest
 //   node art/tools/model3d.mjs profile [<path>]
 //

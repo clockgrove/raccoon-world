@@ -40,10 +40,14 @@ export function declaresSideFiles(manifest) {
 /** A model's height may differ from its spec's heightM by this fraction (Assetgrove scales it to exactly heightM). */
 export const HEIGHT_TOLERANCE = 0.05;
 
+/** With no spec height found, the earlier fixed band still holds, so a model whose spec is missing is never waved through. */
+export const UNSPECIFIED_HEIGHT_BAND = [0.05, 5];
+
 /**
  * The model's height (bounds max y minus min y) against its own spec's `heightM`, not a fixed band: an 8 m
  * cedar passes against an 8 m spec, and a 0.45 m character exported ten times too big is refused. With no
- * spec height the height need only be positive, and the result carries the height:unspecified flag.
+ * spec height found the result carries the height:unspecified flag and the height must lie in the earlier
+ * fixed band (UNSPECIFIED_HEIGHT_BAND), so a missing spec never accepts a character exported at 45 m.
  * Returns { refusals, flags } with code manifest:bounds and height:unspecified.
  */
 export function heightProblems(bounds, heightM) {
@@ -51,7 +55,12 @@ export function heightProblems(bounds, heightM) {
   const flags = [];
   const height = bounds?.max?.[1] - bounds?.min?.[1];
   if (!(height > 0)) refusals.push({ code: "manifest:bounds", detail: `model height ${height} m is not positive` });
-  else if (!(heightM > 0)) flags.push({ code: "height:unspecified", detail: `model height ${height} m; no spec heightM to check it against` });
+  else if (!(heightM > 0)) {
+    flags.push({ code: "height:unspecified", detail: `model height ${height} m; no spec heightM to check it against` });
+    const [low, high] = UNSPECIFIED_HEIGHT_BAND;
+    if (height < low || height > high)
+      refusals.push({ code: "manifest:bounds", detail: `model height ${height} m is outside ${low} to ${high} m, and no spec heightM was found to allow it` });
+  }
   else if (Math.abs(height - heightM) > HEIGHT_TOLERANCE * heightM)
     refusals.push({ code: "manifest:bounds", detail: `model height ${height} m is not its spec's ${heightM} m (within ${HEIGHT_TOLERANCE * 100}%)` });
   return { refusals, flags };
