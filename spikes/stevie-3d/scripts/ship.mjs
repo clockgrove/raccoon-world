@@ -26,6 +26,7 @@ import validator from "gltf-validator";
 import { ktx2 } from "ktx2-encoder/gltf-transform";
 import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from "meshoptimizer";
 import sharp from "sharp";
+import { isCandidateMesh } from "./media-facts.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const media = path.join(root, "media");
@@ -263,7 +264,7 @@ async function main() {
   for (const name of names)
     if (!ledger.models?.[name]) throw new Error(`no model "${name}" in media/provenance.json`);
   // Candidates: every other generated mesh (the dropped fal outputs, Tripo's unrigged model), shipped the same way
-  // so the ranking in the ADR rests on validated files too. Armature-only and extra clips are not meshes to rank.
+  // so the ranking in the ADR rests on validated files too. A generated file is a candidate mesh because of what it contains: armature-only files and a provider's walk or running clip files are not.
   const used = new Set(Object.values(ledger.models ?? {}).flatMap((m) => [m.glb, m.walk]));
   const candidates = wanted.length
     ? []
@@ -271,8 +272,8 @@ async function main() {
         (file) =>
           file.endsWith(".glb") &&
           !used.has(file) &&
-          !/_armature|running|walking/u.test(file) &&
-          existsSync(path.join(media, file)),
+          existsSync(path.join(media, file)) &&
+          isCandidateMesh(readFileSync(path.join(media, file))),
       );
 
   const report = existsSync(path.join(media, "ship.json"))

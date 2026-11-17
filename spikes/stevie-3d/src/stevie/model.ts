@@ -11,6 +11,7 @@ import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { fitRig, type Joint, type V3 } from "./fit.js";
+import { pickIdle } from "./idle.js";
 
 // biome-ignore lint/suspicious/noExplicitAny: three ships no type declarations (see three-shim.d.ts)
 type Any = any;
@@ -647,8 +648,6 @@ function restClip(scene: Any): Any {
   return new THREE.AnimationClip("rest pose", 0.001, tracks);
 }
 
-/** An idle clip shorter than this (Meshy's one-frame `clip0`) is a held pose, not an idle. */
-const HELD_POSE_SECONDS = 0.05;
 /**
  * A moving idle for a provider rig that ships none (Tripo) or only a held pose (Meshy): the spike keyframes slow
  * breathing on the provider's own spine and chest bones, a nod on the neck or head, and a tail sway, each a small
@@ -689,7 +688,7 @@ function breathingIdle(scene: Any): Any {
 /**
  * A generated model (glTF binary), re-shaded with the shared toon ramp and the same inverted-hull outline, at
  * the stand-in's height. With `rig: "provider"` it keeps the provider's skeleton and clips, matched by name
- * (/idle/i, else the rigged file's own clip; /walk/i, else `walkUrl`'s first clip). With `rig: "fit"` its
+ * (the clip the file declares idle or names /idle/i and whose keys move, else the spike's breathing idle; /walk/i, else `walkUrl`'s first clip). With `rig: "fit"` its
  * first mesh is moved into yard axes and given the stand-in's skeleton and clips by `fitRig`. Resolves null
  * when the file is absent.
  */
@@ -727,11 +726,9 @@ export async function generatedStevie(
   const find = (clips: Any[], pattern: RegExp) =>
     clips.find((a: Any) => pattern.test(a.name)) ?? null;
   const walk = find(gltf.animations, /walk/iu) ?? walkGltf?.animations[0] ?? null;
-  // Without a moving idle (Tripo's quadruped presets have none; Meshy's clip0 is one frame) the spike keyframes
-  // breathing on the provider's bones (breathingIdle), so the idle can be judged; the clip name says whose it is.
-  const provided = find(gltf.animations, /idle/iu) ?? gltf.animations.find((a: Any) => a !== walk);
-  const idle =
-    provided && provided.duration > HELD_POSE_SECONDS ? provided : breathingIdle(gltf.scene);
+  // The idle is a clip the file declares (extras role idle) or names idle and whose keys move; otherwise the
+  // spike keyframes breathing on the provider's bones (breathingIdle), and the clip name says whose it is.
+  const idle = pickIdle(gltf.animations) ?? breathingIdle(gltf.scene);
   if (!idle || !walk) throw new Error(`${model.url} has no idle or walk clip`);
   // Normalise height so the generated model and the stand-in share one scale (cohesion criterion 5).
   const box = new THREE.Box3().setFromObject(gltf.scene);

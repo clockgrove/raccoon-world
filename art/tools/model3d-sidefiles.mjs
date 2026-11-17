@@ -19,7 +19,7 @@
 //     clip:not-generated:<family>, clip:mismatch
 //   flags (accepted, reported)
 //     tier:<tier>:<key> (a level the tier draws is over that tier's budget; the detail names the level),
-//       clip-missing:<family>
+//       clip-missing:<family>, height:unspecified (no spec heightM to check the model's height against)
 import { createHash } from "node:crypto";
 import { isAbsolute } from "node:path";
 
@@ -33,6 +33,37 @@ export const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex"
 export function declaresSideFiles(manifest) {
   const model = manifest?.model ?? {};
   return ["groom", "textures", "eyes"].some((key) => model[key] !== undefined && model[key] !== null);
+}
+
+// --- height against the model's own spec ---
+
+/** A model's height may differ from its spec's heightM by this fraction (Assetgrove scales it to exactly heightM). */
+export const HEIGHT_TOLERANCE = 0.05;
+
+/** With no spec height found, the earlier fixed band still holds, so a model whose spec is missing is never waved through. */
+export const UNSPECIFIED_HEIGHT_BAND = [0.05, 5];
+
+/**
+ * The model's height (bounds max y minus min y) against its own spec's `heightM`, not a fixed band: an 8 m
+ * cedar passes against an 8 m spec, and a 0.45 m character exported ten times too big is refused. With no
+ * spec height found the result carries the height:unspecified flag and the height must lie in the earlier
+ * fixed band (UNSPECIFIED_HEIGHT_BAND), so a missing spec never accepts a character exported at 45 m.
+ * Returns { refusals, flags } with code manifest:bounds and height:unspecified.
+ */
+export function heightProblems(bounds, heightM) {
+  const refusals = [];
+  const flags = [];
+  const height = bounds?.max?.[1] - bounds?.min?.[1];
+  if (!(height > 0)) refusals.push({ code: "manifest:bounds", detail: `model height ${height} m is not positive` });
+  else if (!(heightM > 0)) {
+    flags.push({ code: "height:unspecified", detail: `model height ${height} m; no spec heightM to check it against` });
+    const [low, high] = UNSPECIFIED_HEIGHT_BAND;
+    if (height < low || height > high)
+      refusals.push({ code: "manifest:bounds", detail: `model height ${height} m is outside ${low} to ${high} m, and no spec heightM was found to allow it` });
+  }
+  else if (Math.abs(height - heightM) > HEIGHT_TOLERANCE * heightM)
+    refusals.push({ code: "manifest:bounds", detail: `model height ${height} m is not its spec's ${heightM} m (within ${HEIGHT_TOLERANCE * 100}%)` });
+  return { refusals, flags };
 }
 
 // --- GLB measures ---
@@ -302,7 +333,7 @@ export function tierLevelChecks({ profile, manifest, kind = "character", measure
 // --- one side-file model against the profile ---
 
 /** Validates a model with side files, world-side only: refusals stop the hand-off, flags are accepted and reported. */
-export function validateSideFileModel({ profile, manifest, glb, templateBytes, kind = "character", readBytes = () => undefined }) {
+export function validateSideFileModel({ profile, manifest, glb, templateBytes, kind = "character", readBytes = () => undefined, heightM }) {
   const refusals = [];
   const flags = [];
   const refuse = (code, detail) => refusals.push({ code, detail });
@@ -338,9 +369,10 @@ export function validateSideFileModel({ profile, manifest, glb, templateBytes, k
   if (!finite(bounds?.min) || !finite(bounds?.max)) {
     refuse("manifest:bounds", "model.bounds is missing or not finite");
   } else {
-    const height = bounds.max[1] - bounds.min[1];
     if (Math.abs(bounds.min[1]) > 1e-3) refuse("manifest:bounds", `model stands at y ${bounds.min[1]}, expected 0 within 1e-3`);
-    if (!(height >= 0.05 && height <= 5)) refuse("manifest:bounds", `model height ${height} m is outside 0.05 to 5 m`);
+    const checked = heightProblems(bounds, heightM);
+    refusals.push(...checked.refusals);
+    flags.push(...checked.flags);
   }
   const provenance = manifest?.provenance ?? {};
   for (const field of PROVENANCE_FIELDS) {
