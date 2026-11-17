@@ -243,6 +243,10 @@ it("S6: the world boots in the Clockgrove shell, rains, and Stevie moves and exp
         button.click();
       }, STEVIE);
       if ((await opener.count()) > 0) await opener.click();
+      // Gracie was selected in step 2; the panel is Stevie's once its heading names him.
+      await page
+        .getByRole("heading", { name: `Selected entity: ${STEVIE}`, exact: true })
+        .waitFor();
       const selected = page.getByRole("region", { name: "Selected entity", exact: true });
       await selected.getByText(/^Selected entity at canonical revision /u).waitFor();
       await selected.getByRole("button", { name: /^Why action / }).first().click();
