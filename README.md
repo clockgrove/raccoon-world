@@ -27,7 +27,7 @@ What's here:
 
 ## Checking the pack against Clockgrove
 
-Raccoon World uses Clockgrove from a source checkout at one pinned commit, with no npm packages. The commit is in [`CLOCKGROVE_COMMIT`](CLOCKGROVE_COMMIT), and nowhere else. CI's required `ci` check, Factory's validation and a local run all use [`scripts/clockgrove.sh`](scripts/clockgrove.sh), which runs Clockgrove's [external world-pack check](https://github.com/clockgrove/clockgrove/blob/main/packages/simulator/docs/conformance.md#external-worlds-from-a-pinned-checkout) on `worlds/raccoons` with the manifests in `assets/manifests`.
+Raccoon World uses Clockgrove from a source checkout at one pinned commit, with no npm packages. The commit is in [`CLOCKGROVE_COMMIT`](CLOCKGROVE_COMMIT), and nowhere else. CI's required `ci` check, Pendulum's validation and a local run all use [`scripts/clockgrove.sh`](scripts/clockgrove.sh), which runs Clockgrove's [external world-pack check](https://github.com/clockgrove/clockgrove/blob/main/packages/simulator/docs/conformance.md#external-worlds-from-a-pinned-checkout) on `worlds/raccoons` with the manifests in `assets/manifests`.
 
 Run it locally with the Node.js version the pinned commit names in its `package.json` `engines` and Corepack:
 
@@ -35,14 +35,14 @@ Run it locally with the Node.js version the pinned commit names in its `package.
 bash scripts/clockgrove.sh check
 ```
 
-The first run clones the pinned commit into `.clockgrove/` in this repository, which Git ignores (set `CLOCKGROVE_DIR` to use another directory), and installs its locked dependencies with lifecycle scripts off. Later runs reuse that checkout. It sits in the repository, not your home directory, so it also works in sandboxes that may write only the clone, like Factory's local mode. pnpm is the version Clockgrove pins in `packageManager`, through Corepack; where Corepack can't fetch it, the script uses the pnpm on your `PATH` and says so. A golden mismatch writes `<scenario>.actual.json` beside the golden for review; Git ignores it.
+The first run clones the pinned commit into `.clockgrove/` in this repository, which Git ignores (set `CLOCKGROVE_DIR` to use another directory), and installs its locked dependencies with lifecycle scripts off. Later runs reuse that checkout. It sits in the repository, not your home directory, so it also works in sandboxes that may write only the clone, like Pendulum's local mode. pnpm is the version Clockgrove pins in `packageManager`, through Corepack; where Corepack can't fetch it, the script uses the pnpm on your `PATH` and says so. A golden mismatch writes `<scenario>.actual.json` beside the golden for review; Git ignores it.
 
 To move the pin:
 
 1. Put the new full Clockgrove commit in `CLOCKGROVE_COMMIT`.
-2. If that commit pins a different Node.js, update `node-version` in `.github/workflows/ci.yml` and `FACTORY_NODE_VERSION` in `.github/workflows/factory.yml` to match. The script stops with a message when they differ.
+2. If that commit pins a different Node.js, update `node-version` in `.github/workflows/ci.yml` and `PENDULUM_NODE_VERSION` in `.github/workflows/pendulum.yml` to match. The script stops with a message when they differ.
 3. Run `bash scripts/clockgrove.sh check`. If a golden differs, review its `.actual.json` and replace the golden only when the new behaviour is intended.
-4. Open a PR; its `ci` check proves the pack against the new commit. Only a maintainer's PR moves the pin: `CLOCKGROVE_COMMIT` is a Factory protected path, so a Factory worker can't change it.
+4. Open a PR; its `ci` check proves the pack against the new commit. Only a maintainer's PR moves the pin: `CLOCKGROVE_COMMIT` is a Pendulum protected path, so a Pendulum worker can't change it.
 
 ## Visual qualification
 
@@ -65,7 +65,7 @@ bash scripts/clockgrove.sh fetch
 bash scripts/assetgrove.sh check
 ```
 
-`check` makes its own throwaway developer settings outside the checkout, so it needs none of yours. A paid step (`generate-sheet` and the like) needs developer settings: one per-user file outside every project that declares the provider and its spend limit, and is never committed here. A person confirms each paid run, `pick` and `write-families` (`assetgrove confirm <id>`). Paid steps run only in the owner session; Factory workers run Assetgrove offline only.
+`check` makes its own throwaway developer settings outside the checkout, so it needs none of yours. A paid step (`generate-sheet` and the like) needs developer settings: one per-user file outside every project that declares the provider and its spend limit, and is never committed here. A person confirms each paid run, `pick` and `write-families` (`assetgrove confirm <id>`). Paid steps run only in the owner session; Pendulum workers run Assetgrove offline only.
 
 The whole path, from the inputs to the live yard, is in [docs/art/author-guide.md](docs/art/author-guide.md).
 

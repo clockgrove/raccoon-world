@@ -80,7 +80,7 @@ Raccoon World's art direction and Assetgrove inputs. The author guide, [docs/art
 **Runs**
 - `run.json` uses Assetgrove 0.1's run-options shape (`candidates`, `strictness`, `exploration`; `--run-options`): up to 4 candidates. Run options can't carry a cap, so a run's $5 cap is `check`'s `MAX_RUN_USD`, the commands pass `--cap`, and the owner's settings keep `caps.runUsd` at $5 or below.
 - On the sheet path each candidate is one `generate-sheet` call capped at $5 / candidates ($1.25), so the four together can't pass $5. Each candidate is its own `--round`.
-- Paid steps run only in the owner session, under the owner's own developer settings. A Factory worker runs Assetgrove offline only: `check` and dry runs (owner decision 2026-11-15, issue #131).
+- Paid steps run only in the owner session, under the owner's own developer settings. A Pendulum worker runs Assetgrove offline only: `check` and dry runs (owner decision 2026-11-15, issue #131).
 - `check` forecasts each family's run as 4 × (one sheet's dry-run forecast + one agent QA pass) and requires at most $5. Today that is about $1.60.
 - Agent QA is the import checks plus `animation-qa`'s vision checks.
 - Assetgrove's `stage`/`pick` path is not used while it ignores the style profile.

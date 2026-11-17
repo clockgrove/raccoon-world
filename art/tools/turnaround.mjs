@@ -18,7 +18,7 @@
 // Each call's cost is the one the gateway reports for that generation: providerMetadata.gateway.cost in the answer,
 // else the gateway's generation record (the AI SDK's getGenerationInfo, from the pinned Assetgrove's locked install). There is no credit-balance difference. When
 // no exact cost can be read, the call's reservation stays its committed cost: a call is never recorded as free, so the
-// run's cap holds. In a Factory worker (FACTORY_GATEWAY_URL set) the call goes through Factory's metering relay with
+// run's cap holds. In a Pendulum worker (PENDULUM_GATEWAY_URL set) the call goes through Pendulum's metering relay with
 // the relay token in AI_GATEWAY_API_KEY.
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
@@ -30,9 +30,9 @@ import { setTimeout as sleep } from "node:timers/promises";
 import { cropRgba, decodePng, encodePng } from "../../spikes/stevie-3d/scripts/png.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-/** AI_GATEWAY_URL is for an offline test against a local stub only; real runs use the gateway, or Factory's relay. */
-const RELAYED = Boolean(process.env.FACTORY_GATEWAY_URL) && !process.env.AI_GATEWAY_URL;
-const GATEWAY = process.env.AI_GATEWAY_URL ?? (RELAYED ? `${process.env.FACTORY_GATEWAY_URL}/v1` : "https://ai-gateway.vercel.sh/v1");
+/** AI_GATEWAY_URL is for an offline test against a local stub only; real runs use the gateway, or Pendulum's relay. */
+const RELAYED = Boolean(process.env.PENDULUM_GATEWAY_URL) && !process.env.AI_GATEWAY_URL;
+const GATEWAY = process.env.AI_GATEWAY_URL ?? (RELAYED ? `${process.env.PENDULUM_GATEWAY_URL}/v1` : "https://ai-gateway.vercel.sh/v1");
 
 /** The route. Its terms and output grant are those Assetgrove records for openai/gpt-image-2 (src/routes.ts). */
 export const ROUTE = {
@@ -179,13 +179,13 @@ async function main(argv) {
   );
   if (dryRun || todo.length === 0) return;
 
-  // Factory's relay takes image edits up to 128 MB (v0.9.16); the photos travel base64-encoded in the JSON body. A body
+  // Pendulum's relay takes image edits up to 128 MB (v0.9.16); the photos travel base64-encoded in the JSON body. A body
   // over that is refused here, before anything is reserved, rather than by the relay after the reservation.
   const RELAY_MAX_BYTES = 128 * 1024 * 1024;
   const bodyBytes = Buffer.byteLength(JSON.stringify({ model: ROUTE.model, images: photos.map(({ bytes }) => ({ image_url: dataUrl(bytes) })), prompt: run.prompt, ...PARAMETERS }));
   if (RELAYED && bodyBytes > RELAY_MAX_BYTES)
     throw new Error(
-      `the request is ${(bodyBytes / 1048576).toFixed(1)} MB, over the 128 MB Factory's gateway relay takes for an image edit: use smaller reference photos, or run this in the owner's session`,
+      `the request is ${(bodyBytes / 1048576).toFixed(1)} MB, over the 128 MB Pendulum's gateway relay takes for an image edit: use smaller reference photos, or run this in the owner's session`,
     );
 
   const token = process.env.AI_GATEWAY_API_KEY;
@@ -239,7 +239,7 @@ async function main(argv) {
         status: "done",
         ...(requestId && { requestId }),
         ...costFields(cost),
-        ...(RELAYED && { via: "Factory gateway relay" }),
+        ...(RELAYED && { via: "Pendulum gateway relay" }),
         usage: body.usage ?? null,
         minutes: Math.round((Date.now() - start) / 600) / 100,
       });

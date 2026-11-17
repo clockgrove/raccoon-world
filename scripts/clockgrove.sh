@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Checks this repository's world pack against Clockgrove at the commit pinned in CLOCKGROVE_COMMIT.
-# CI, Factory and local runs all use this script, so they run the same check.
+# CI, Pendulum and local runs all use this script, so they run the same check.
 #
 # Usage: bash scripts/clockgrove.sh fetch   clone the pinned commit and install its locked dependencies
 #        bash scripts/clockgrove.sh check   fetch if needed, then run Clockgrove's world-pack check
 #
 # CLOCKGROVE_DIR names the checkout (default: .clockgrove in this repository, which Git ignores; inside
-# the repository so that sandboxes which may write only the clone, such as Factory's local mode, can
+# the repository so that sandboxes which may write only the clone, such as Pendulum's local mode, can
 # make it). The script only replaces a directory it made itself: one holding its marker file, or an
 # empty one.
 set -euo pipefail
@@ -23,7 +23,7 @@ ready() { [[ -f "$marker" && "$(cat "$marker")" == "$pin" ]]; }
 pnpm=() # the pnpm command fetch runs (pick_pnpm)
 
 # Clockgrove's own pnpm (its package.json packageManager) through Corepack. Where Corepack cannot fetch
-# that version (Factory's local sandbox lets pnpm neither download nor switch versions), this machine's
+# that version (Pendulum's local sandbox lets pnpm neither download nor switch versions), this machine's
 # pnpm, told not to switch either, and the output says so.
 pick_pnpm() {
   local want have path
@@ -67,12 +67,12 @@ fetch() {
 }
 
 node_gate() {
-  # The Node.js Clockgrove pins (package.json engines). CI's setup-node and FACTORY_NODE_VERSION must match it.
+  # The Node.js Clockgrove pins (package.json engines). CI's setup-node and PENDULUM_NODE_VERSION must match it.
   local want have
   want="$(node -p 'require(process.argv[1]).engines.node' "$dir/package.json")"
   have="$(node --version)"
   if [[ "v$want" != "$have" ]]; then
-    echo "clockgrove: Node $have, but Clockgrove $pin pins $want; use that version (CI's setup-node and FACTORY_NODE_VERSION too)" >&2
+    echo "clockgrove: Node $have, but Clockgrove $pin pins $want; use that version (CI's setup-node and PENDULUM_NODE_VERSION too)" >&2
     exit 2
   fi
 }
@@ -87,7 +87,7 @@ check() {
 
 # The 3D look proof's journey (#26), the 3D visual ceiling's journey (#34) and the quality lab's (#45): each draws its
 # scene on both backends under a software GPU.
-# Its own CI step, not part of check, so Factory's validation and local checks never download a browser.
+# Its own CI step, not part of check, so Pendulum's validation and local checks never download a browser.
 slice() {
   ready || fetch
   node_gate
