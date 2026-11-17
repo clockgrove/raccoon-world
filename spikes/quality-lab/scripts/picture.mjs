@@ -1,8 +1,12 @@
 // Region-wise picture checks for the CI journey: pure functions over RGBA frames ({ data, width, height }), no DOM.
 // A whole-frame mean lets a broken prop that covers 2% of the frame average away, so every check here looks at tiles.
 
-/** A tile whose mean difference (of 255) is above this is a changed region; rasterisation noise stays well under it. */
-export const TILE_LIMIT = 8;
+/**
+ * A tile whose mean difference (of 255) is above this is a changed region. Calibrated on SwiftShader at 320 × 180
+ * (#143): Geometry detail 4× against 1× peaks at 6.7 (the lamp's light on the subdivided set), a prop's scrambled
+ * UVs at 12.1 and its negated normals at 103.6, so 9 sits between noise and the smallest real break.
+ */
+export const TILE_LIMIT = 9;
 /** A tile whose luminance spans at least this much (of 255) holds some detail, not a flat fill. */
 export const DETAIL_RANGE = 6;
 /** Ultra and Low must differ in at least this share of the tiles. */

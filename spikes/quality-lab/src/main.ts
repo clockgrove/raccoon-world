@@ -655,11 +655,13 @@ const lab: LabHandle & Record<string, unknown> = {
    * CI journey only: spoils one small prop by negating its normals or scrambling its UVs, so the journey can prove its
    * picture checks see a small break. The prop is chosen by the pixels it really shows, not its bounding box: each
    * candidate that has the attribute to break (and, for UVs, a base-colour map they would move) is hidden for one
-   * frame, and the one whose hiding changes nearest 2% of the frame (at least 0.5%) is spoiled. A prop hidden behind
-   * something, or with nothing to break, is never picked; a stand-in counts like a loaded GLB. null puts the
-   * geometry back. Resolves to null when no prop shows enough of itself.
+   * frame, and among those whose hiding changes at least 0.5% of the frame and whose break visibly changes at least
+   * 0.2% of it (a raw count of pixels that moved by more than 24 of 765, not the tile check under test), the one nearest
+   * 2% is spoiled. A prop hidden behind something, with nothing to break, or whose base colour is too flat for
+   * scrambled UVs to show, is never picked; a stand-in counts like a loaded GLB. null puts the geometry back.
+   * Resolves to null when no prop qualifies.
    */
-  async breakProp(kind: "normals" | "uvs" | null): Promise<{ name: string; coverage: number; boxCoverage: number } | null> {
+  async breakProp(kind: "normals" | "uvs" | null): Promise<{ name: string; coverage: number; boxCoverage: number; changed: number } | null> {
     for (const [mesh, original] of brokenGeometry) {
       mesh.geometry.dispose();
       mesh.geometry = original;
@@ -711,11 +713,50 @@ const lab: LabHandle & Record<string, unknown> = {
       render();
       return renderer.domElement.toDataURL("image/png");
     };
-    const base = await pixelsOf(frameUrl());
-    let best: { holder: THREE.Object3D; coverage: number; boxCoverage: number } | null = null;
+    const changedShare = (x: Uint8ClampedArray, y: Uint8ClampedArray) => {
+      let changed = 0;
+      for (let i = 0; i < x.length; i += 4) if (Math.abs(x[i] - y[i]) + Math.abs(x[i + 1] - y[i + 1]) + Math.abs(x[i + 2] - y[i + 2]) > 24) changed++;
+      return changed / (x.length / 4);
+    };
+    const restore = () => {
+      for (const [mesh, original] of brokenGeometry) {
+        mesh.geometry.dispose();
+        mesh.geometry = original;
+      }
+      brokenGeometry.clear();
+    };
+    const spoil = (holder: THREE.Object3D) =>
+      holder.traverse((node: THREE.Object3D) => {
+        const mesh = node as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        const source = mesh.geometry;
+        const spoiled = source.clone();
+        // Float copies, since the shipped media's attributes may be normalized or quantized integers.
+        const floats = (attribute: THREE.BufferAttribute | THREE.InterleavedBufferAttribute, map: (values: number[]) => number[]) => {
+          const out = new Float32Array(attribute.count * attribute.itemSize);
+          for (let i = 0; i < attribute.count; i++) {
+            const values = [];
+            for (let c = 0; c < attribute.itemSize; c++) values.push(attribute.getComponent(i, c));
+            out.set(map(values), i * attribute.itemSize);
+          }
+          return new THREE.BufferAttribute(out, attribute.itemSize);
+        };
+        const normal = source.getAttribute("normal");
+        if (kind === "normals" && normal) spoiled.setAttribute("normal", floats(normal, (n) => n.map((x) => -x)));
+        const uv = source.getAttribute("uv");
+        if (kind === "uvs" && uv) spoiled.setAttribute("uv", floats(uv, ([u, v]) => [v + 0.5 - Math.floor(v + 0.5), u + 0.5 - Math.floor(u + 0.5)]));
+        brokenGeometry.set(mesh, source);
+        mesh.geometry = spoiled;
+      });
     // The few whose boxes are nearest 2% (a box is never smaller than what the prop shows).
     const nearest = candidates.filter((c) => c.boxCoverage >= 0.005).sort((x, y) => Math.abs(x.boxCoverage - 0.02) - Math.abs(y.boxCoverage - 0.02)).slice(0, 8);
+    let best: { holder: THREE.Object3D; coverage: number; boxCoverage: number; changed: number } | null = null;
+    const tried: { name: string; coverage: number; changed: number }[] = [];
+    const round = (v: number) => Math.round(v * 1000) / 1000;
     for (const c of nearest) {
+      // Each measurement against a clean frame drawn just before it, so the scene's own frame-to-frame change is not
+      // counted as the prop's.
+      const clean = await pixelsOf(frameUrl());
       c.holder.visible = false;
       let hidden: Uint8ClampedArray;
       try {
@@ -723,43 +764,36 @@ const lab: LabHandle & Record<string, unknown> = {
       } finally {
         c.holder.visible = true;
       }
-      let changed = 0;
-      for (let i = 0; i < base.length; i += 4) if (Math.abs(base[i] - hidden[i]) + Math.abs(base[i + 1] - hidden[i + 1]) + Math.abs(base[i + 2] - hidden[i + 2]) > 24) changed++;
-      const coverage = changed / (base.length / 4);
-      if (coverage < 0.005) continue;
-      if (!best || Math.abs(coverage - 0.02) < Math.abs(best.coverage - 0.02)) best = { holder: c.holder, coverage, boxCoverage: c.boxCoverage };
+      const coverage = changedShare(clean, hidden);
+      // The break must be one a person would see: it changes pixels outright (a prop whose base colour is nearly
+      // flat shows no scrambled UVs, so it proves nothing). The raw pixel count is not the tile check under test.
+      const before = await pixelsOf(frameUrl());
+      let spoiledPixels: Uint8ClampedArray;
+      try {
+        spoil(c.holder);
+        spoiledPixels = await pixelsOf(frameUrl());
+      } finally {
+        restore();
+      }
+      const changed = changedShare(before, spoiledPixels);
+      tried.push({ name: c.holder.name.slice("prop-".length), coverage: round(coverage), changed: round(changed) });
+      if (coverage < 0.005 || changed < 0.002) continue;
+      if (!best || Math.abs(coverage - 0.02) < Math.abs(best.coverage - 0.02)) best = { holder: c.holder, coverage, boxCoverage: c.boxCoverage, changed };
     }
+    lastBreakTried = tried;
     if (!best) return null;
-    const chosen = best as { holder: THREE.Object3D; coverage: number; boxCoverage: number };
-    chosen.holder.traverse((node) => {
-      const mesh = node as THREE.Mesh;
-      if (!mesh.isMesh) return;
-      const source = mesh.geometry;
-      const spoiled = source.clone();
-      // Float copies, since the shipped media's attributes may be normalized or quantized integers.
-      const floats = (attribute: THREE.BufferAttribute | THREE.InterleavedBufferAttribute, map: (values: number[]) => number[]) => {
-        const out = new Float32Array(attribute.count * attribute.itemSize);
-        for (let i = 0; i < attribute.count; i++) {
-          const values = [];
-          for (let c = 0; c < attribute.itemSize; c++) values.push(attribute.getComponent(i, c));
-          out.set(map(values), i * attribute.itemSize);
-        }
-        return new THREE.BufferAttribute(out, attribute.itemSize);
-      };
-      const normal = source.getAttribute("normal");
-      if (kind === "normals" && normal) spoiled.setAttribute("normal", floats(normal, (n) => n.map((x) => -x)));
-      const uv = source.getAttribute("uv");
-      if (kind === "uvs" && uv) spoiled.setAttribute("uv", floats(uv, ([u, v]) => [v + 0.5 - Math.floor(v + 0.5), u + 0.5 - Math.floor(u + 0.5)]));
-      brokenGeometry.set(mesh, source);
-      mesh.geometry = spoiled;
-    });
-    const round = (v: number) => Math.round(v * 1000) / 1000;
-    return { name: chosen.holder.name.slice("prop-".length), coverage: round(chosen.coverage), boxCoverage: round(chosen.boxCoverage) };
+    const chosen = best as { holder: THREE.Object3D; coverage: number; boxCoverage: number; changed: number };
+    spoil(chosen.holder);
+    return { name: chosen.holder.name.slice("prop-".length), coverage: round(chosen.coverage), boxCoverage: round(chosen.boxCoverage), changed: round(chosen.changed) };
   },
+  /** CI journey only: what the last lab.breakProp measured for each candidate prop. */
+  breakPropTried: () => lastBreakTried,
   stevie: () => stevie?.metrics ?? null,
   probeError: () => probeError,
 };
 Object.assign(globalThis, { lab });
+/** What the last `lab.breakProp` measured for each candidate. */
+let lastBreakTried: { name: string; coverage: number; changed: number }[] = [];
 /** The geometry `lab.breakProp` swapped out, to put back. */
 const brokenGeometry = new Map<THREE.Mesh, THREE.BufferGeometry>();
 

@@ -243,15 +243,22 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
         const four = lab.status().triangles;
         await lab.apply({ ...medium, coat: base.coat, furMode: base.furMode, detail: 1 });
         const broken = {};
+        const tried = {};
         for (const kind of ["normals", "uvs"]) {
           broken[kind] = await lab.breakProp(kind);
+          tried[kind] = lab.breakPropTried();
           shots[kind] = lab.frame();
           await lab.breakProp(null);
         }
         lab.freeze(null);
         await lab.apply(base);
-        return { plain, four, shots, broken };
+        return { plain, four, shots, broken, tried };
       }, PRESETS.medium);
+      if (process.env.LAB_FRAMES_DIR) {
+        await mkdir(process.env.LAB_FRAMES_DIR, { recursive: true });
+        for (const [key, url] of Object.entries(counts.shots)) await writeFile(path.join(process.env.LAB_FRAMES_DIR, `${backend}-${key}.png`), Buffer.from(url.split(",")[1], "base64"));
+        await writeFile(path.join(process.env.LAB_FRAMES_DIR, `${backend}-broken.json`), JSON.stringify(counts.broken, null, 2));
+      }
       check(counts.four > counts.plain, `${name}: Geometry detail 4× did not add triangles (${counts.plain} → ${counts.four})`);
       const plainPixels = await pixels(page, counts.shots.plain);
       const fourDiff = pictureDiff(plainPixels, await pixels(page, counts.shots.four));
@@ -259,11 +266,11 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
       check(samePicture(fourDiff), `${name}: Geometry detail 4× changed the picture: ${where(fourDiff)}`);
       const spoiled = {};
       for (const kind of ["normals", "uvs"]) {
-        check(counts.broken[kind], `${name}: no prop shows at least 0.5% of the frame with ${kind} to break (lab.breakProp), so the picture check's own proof could not run`);
+        check(counts.broken[kind], `${name}: no prop shows at least 0.5% of the frame with ${kind} whose break visibly changes 0.2% of it (lab.breakProp), so the picture check's own proof could not run; tried ${JSON.stringify(counts.tried[kind])}`);
         spoiled[kind] = pictureDiff(plainPixels, await pixels(page, counts.shots[kind]));
-        check(!samePicture(spoiled[kind]), `${name}: the picture check missed a prop (${counts.broken[kind].name}, ${(counts.broken[kind].coverage * 100).toFixed(1)}% of the frame) with broken ${kind}: ${where(spoiled[kind])}`);
+        check(!samePicture(spoiled[kind]), `${name}: the picture check missed a prop (${counts.broken[kind].name}, ${(counts.broken[kind].coverage * 100).toFixed(1)}% of the frame, the break moves ${(counts.broken[kind].changed * 100).toFixed(1)}% of the pixels) with broken ${kind}: ${where(spoiled[kind])}`);
       }
-      const brokenNote = ["normals", "uvs"].map((kind) => `broken ${kind} of ${counts.broken[kind].name} (${(counts.broken[kind].coverage * 100).toFixed(1)}% of the frame visible, box ${(counts.broken[kind].boxCoverage * 100).toFixed(1)}%) caught, worst tile ${spoiled[kind].worstTile.score.toFixed(1)}, ${(spoiled[kind].changedShare * 100).toFixed(1)}% of tiles changed`).join("; ");
+      const brokenNote = ["normals", "uvs"].map((kind) => `broken ${kind} of ${counts.broken[kind].name} (${(counts.broken[kind].coverage * 100).toFixed(1)}% of the frame visible, box ${(counts.broken[kind].boxCoverage * 100).toFixed(1)}%, the break moves ${(counts.broken[kind].changed * 100).toFixed(1)}% of the pixels) caught, worst tile ${spoiled[kind].worstTile.score.toFixed(1)}, ${(spoiled[kind].changedShare * 100).toFixed(1)}% of tiles changed`).join("; ");
       const copy = await page.evaluate(() => {
         const button = [...document.querySelectorAll(".ql button")].find((b) => b.textContent === "Copy results");
         return { enabled: Boolean(button && !button.disabled), text: globalThis.labRunner.copied() };
