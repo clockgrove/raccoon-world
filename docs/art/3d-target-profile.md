@@ -206,7 +206,7 @@ The pinned Clockgrove's pack format has no coat field yet (clockgrove/clockgrove
 - **Flagged** (accepted and reported):
   - `tier:<tier>:<key>`: a level the tier draws is over that tier's budget. The detail names the level and its file. A manifest with no chain is checked as its main file against each tier;
   - `clip-missing:<family>`: a required clip that is not there yet;
-  - `height:unspecified`: no spec `heightM` was found; the height must then lie in the earlier 0.05 to 5 m band, so a missing spec never accepts a character exported ten times too big.
+  - `height:unspecified`: no spec `heightM` was found; the height must then lie in the earlier 0.05 to 5 m band, so a missing spec never accepts what the earlier check refused (a 0.45 m character at 4.5 m still lies in the band and is accepted with this flag; one at 45 m is refused).
 
 Stevie's chain (#113) is checked level by level. A tier draws its own `model.tiers.<tier>.levels` files when it has them (and they must cover every level `model.chain.tiers` lists for it), else the levels `model.chain.tiers` lists for it (0 is the main file). Each level's triangles, materials, bones and texture size (its embedded textures or the side maps the tier draws, whichever is larger) and the number of levels drawn are compared with that tier's budget. Stevie's phone levels and maps fit the phone budget, so it carries no `tier:phone` flag. `model3d.handoff.lods` is `"embedded"` or `"files"`.
 
