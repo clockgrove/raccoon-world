@@ -658,16 +658,12 @@ const lab: LabHandle & Record<string, unknown> = {
    * frame, and among those whose hiding changes at least 0.5% of the frame and whose break visibly changes at least
    * 0.2% of it (a raw count of pixels that moved by more than 24 of 765, not the tile check under test), the one nearest
    * 2% is spoiled. A prop hidden behind something, with nothing to break, or whose base colour is too flat for
-   * scrambled UVs to show, is never picked; a stand-in counts like a loaded GLB. null puts the geometry back.
+   * scrambled UVs to show, is never picked; a stand-in counts like a loaded GLB. The break is made in the attributes' own values, so a fresh `lab.apply` keeps it; null puts the values back.
    * Resolves to null when no prop qualifies; otherwise to the prop and its screen box (shares of the frame, top-left
    * origin), so the journey can require the picture check's worst tile to lie on it.
    */
   async breakProp(kind: "normals" | "uvs" | null): Promise<{ name: string; coverage: number; boxCoverage: number; changed: number; box: { x0: number; y0: number; x1: number; y1: number } } | null> {
-    for (const [mesh, original] of brokenGeometry) {
-      mesh.geometry.dispose();
-      mesh.geometry = original;
-    }
-    brokenGeometry.clear();
+    putBack();
     if (!kind) return null;
     camera.updateMatrixWorld(true);
     camera.updateProjectionMatrix();
@@ -721,35 +717,26 @@ const lab: LabHandle & Record<string, unknown> = {
       for (let i = 0; i < x.length; i += 4) if (Math.abs(x[i] - y[i]) + Math.abs(x[i + 1] - y[i + 1]) + Math.abs(x[i + 2] - y[i + 2]) > 24) changed++;
       return changed / (x.length / 4);
     };
-    const restore = () => {
-      for (const [mesh, original] of brokenGeometry) {
-        mesh.geometry.dispose();
-        mesh.geometry = original;
-      }
-      brokenGeometry.clear();
-    };
+    const restore = putBack;
+    // In place: the attribute's own values change and are uploaded again, so the renderer draws the break and its
+    // undoing on the next frame. (Swapping in a spoiled geometry copy is not reliable on WebGPU: the renderer kept
+    // drawing the old attributes until the next config change, in either direction.)
     const spoil = (holder: THREE.Object3D) =>
       holder.traverse((node: THREE.Object3D) => {
         const mesh = node as THREE.Mesh;
         if (!mesh.isMesh) return;
-        const source = mesh.geometry;
-        const spoiled = source.clone();
-        // Float copies, since the shipped media's attributes may be normalized or quantized integers.
-        const floats = (attribute: THREE.BufferAttribute | THREE.InterleavedBufferAttribute, map: (values: number[]) => number[]) => {
-          const out = new Float32Array(attribute.count * attribute.itemSize);
-          for (let i = 0; i < attribute.count; i++) {
-            const values = [];
-            for (let c = 0; c < attribute.itemSize; c++) values.push(attribute.getComponent(i, c));
-            out.set(map(values), i * attribute.itemSize);
-          }
-          return new THREE.BufferAttribute(out, attribute.itemSize);
-        };
-        const normal = source.getAttribute("normal");
-        if (kind === "normals" && normal) spoiled.setAttribute("normal", floats(normal, (n) => n.map((x) => -x)));
-        const uv = source.getAttribute("uv");
-        if (kind === "uvs" && uv) spoiled.setAttribute("uv", floats(uv, ([u, v]) => [v + 0.5 - Math.floor(v + 0.5), u + 0.5 - Math.floor(u + 0.5)]));
-        brokenGeometry.set(mesh, source);
-        mesh.geometry = spoiled;
+        const attribute = mesh.geometry.getAttribute(kind === "normals" ? "normal" : "uv") as THREE.BufferAttribute | THREE.InterleavedBufferAttribute | undefined;
+        if (!attribute || brokenAttributes.has(attribute)) return;
+        const map = kind === "normals" ? (n: number[]) => n.map((x) => -x) : ([u, v]: number[]) => [v + 0.5 - Math.floor(v + 0.5), u + 0.5 - Math.floor(u + 0.5)];
+        // getComponent and setComponent go through the attribute's normalization, so quantized media works too.
+        const saved = new Float64Array(attribute.count * attribute.itemSize);
+        for (let i = 0; i < attribute.count; i++) {
+          const values: number[] = [];
+          for (let c = 0; c < attribute.itemSize; c++) values.push((saved[i * attribute.itemSize + c] = attribute.getComponent(i, c)));
+          map(values).forEach((value, c) => attribute.setComponent(i, c, value));
+        }
+        brokenAttributes.set(attribute, saved);
+        uploaded(attribute);
       });
     // The few whose boxes are nearest 2% (a box is never smaller than what the prop shows).
     const nearest = candidates.filter((c) => c.boxCoverage >= 0.005).sort((x, y) => Math.abs(x.boxCoverage - 0.02) - Math.abs(y.boxCoverage - 0.02)).slice(0, 8);
@@ -760,12 +747,18 @@ const lab: LabHandle & Record<string, unknown> = {
       // Each measurement against a clean frame drawn just before it, so the scene's own frame-to-frame change is not
       // counted as the prop's.
       const clean = await pixelsOf(frameUrl());
-      c.holder.visible = false;
+      // Only the prop's meshes are hidden, never a light it carries (the lamp post's): switching a light off and on
+      // changes the yard's lighting until the next config change, which would be counted as the break.
+      const meshes: THREE.Object3D[] = [];
+      c.holder.traverse((node: THREE.Object3D) => {
+        if ((node as THREE.Mesh).isMesh && node.visible) meshes.push(node);
+      });
+      for (const mesh of meshes) mesh.visible = false;
       let hidden: Uint8ClampedArray;
       try {
         hidden = await pixelsOf(frameUrl());
       } finally {
-        c.holder.visible = true;
+        for (const mesh of meshes) mesh.visible = true;
       }
       const coverage = changedShare(clean, hidden);
       // The break must be one a person would see: it changes pixels outright (a prop whose base colour is nearly
@@ -797,8 +790,21 @@ const lab: LabHandle & Record<string, unknown> = {
 Object.assign(globalThis, { lab });
 /** What the last `lab.breakProp` measured for each candidate. */
 let lastBreakTried: { name: string; coverage: number; changed: number }[] = [];
-/** The geometry `lab.breakProp` swapped out, to put back. */
-const brokenGeometry = new Map<THREE.Mesh, THREE.BufferGeometry>();
+/** The attributes `lab.breakProp` spoiled in place, with their original values to put back. */
+const brokenAttributes = new Map<THREE.BufferAttribute | THREE.InterleavedBufferAttribute, Float64Array>();
+/** Marks an attribute (or its interleaved buffer) for upload on the next frame. */
+function uploaded(attribute: THREE.BufferAttribute | THREE.InterleavedBufferAttribute): void {
+  if ((attribute as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute) (attribute as THREE.InterleavedBufferAttribute).data.needsUpdate = true;
+  else (attribute as THREE.BufferAttribute).needsUpdate = true;
+}
+/** Puts back the values `lab.breakProp` spoiled. */
+function putBack(): void {
+  for (const [attribute, saved] of brokenAttributes) {
+    for (let i = 0; i < attribute.count; i++) for (let c = 0; c < attribute.itemSize; c++) attribute.setComponent(i, c, saved[i * attribute.itemSize + c]);
+    uploaded(attribute);
+  }
+  brokenAttributes.clear();
+}
 
 // ---- Loading: a checklist of the steps, each with a running timer, so slow never looks like broken ----
 type StepKey = "graphics" | "models" | "shaders";

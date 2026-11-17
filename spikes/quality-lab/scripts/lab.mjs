@@ -241,16 +241,21 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
         await lab.apply({ ...medium, coat: base.coat, furMode: base.furMode, detail: 4 });
         shots.four = lab.frame();
         const four = lab.status().triangles;
-        await lab.apply({ ...medium, coat: base.coat, furMode: base.furMode, detail: 1 });
+        const one = { ...medium, coat: base.coat, furMode: base.furMode, detail: 1 };
+        await lab.apply(one);
         const broken = {};
         const tried = {};
         for (const kind of ["normals", "uvs"]) {
           broken[kind] = await lab.breakProp(kind);
           tried[kind] = lab.breakPropTried();
+          // Each shot after a fresh apply of the same config: the spoil is in the attributes' own values, so it stays,
+          // and whatever breakProp's own frames left behind does not (#143 review: a lamp drawn brighter after them).
+          await lab.apply(one);
           shots[kind] = lab.frame();
           await lab.breakProp(null);
-          // The control: the same frames with the prop put back must be the same picture as plain, so a caught break
-          // is the prop's and not the scene drifting after the detail 4× round trip.
+          await lab.apply(one);
+          // The control: with the prop put back the picture must be plain's, so a caught break is the prop's and not
+          // the scene drifting.
           shots[`${kind}Restored`] = lab.frame();
         }
         lab.freeze(null);
