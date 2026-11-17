@@ -357,7 +357,7 @@ export interface TierSignals {
 
 /** A touch-first screen whose shorter side is at least this many CSS pixels is a tablet, not a phone. */
 export const TABLET_MIN_SHORT_SIDE_PX = 600;
-/** A tablet that reports at least this many logical cores, and (where reported) this much memory, is desktop class. */
+/** A tablet that reports at least this many logical cores and this much memory is desktop class. */
 export const DESKTOP_TABLET_MIN_CORES = 8;
 export const DESKTOP_TABLET_MIN_MEMORY_GB = 8;
 
@@ -365,17 +365,18 @@ export const DESKTOP_TABLET_MIN_MEMORY_GB = 8;
  * The device's tier, by what it is and what it can do; the user agent is not read (an iPad's Safari says it is a
  * Mac, and an Android tablet's says Android like a phone). A device whose primary pointer can hover (a mouse or
  * trackpad: a desktop or laptop, touchscreen or not) is desktop. A touch-first device with a phone-sized screen is a
- * phone. A touch-first tablet is desktop when it reports laptop-class hardware (8 or more cores and, where the
- * browser says, 8 GB or more), else phone. `reason` says which rule placed it.
+ * phone. A touch-first tablet is desktop when it reports laptop-class hardware (8 or more cores and 8 GB or more),
+ * else phone. Both must be reported: WebKit (every iPadOS browser) reports no memory and caps
+ * `navigator.hardwareConcurrency` below the real core count, so its cores say nothing and an iPad is phone tier
+ * unless `?platform=desktop` says otherwise. `reason` says which rule placed it.
  */
 export function deviceTier(s: TierSignals): { platform: Platform; reason: string } {
   if (s.forced === "phone" || s.forced === "desktop") return { platform: s.forced, reason: "?platform= override" };
   if (!s.touchFirst) return { platform: "desktop", reason: "primary pointer hovers (mouse or trackpad)" };
   if (s.shortSidePx < TABLET_MIN_SHORT_SIDE_PX) return { platform: "phone", reason: `touch-first, screen ${Math.round(s.shortSidePx)} px on its short side (phone)` };
-  const cores = s.cores ?? 0;
-  const memoryOk = s.memoryGb == null || s.memoryGb >= DESKTOP_TABLET_MIN_MEMORY_GB;
-  const what = `${s.cores ?? "?"} cores${s.memoryGb == null ? "" : `, ${s.memoryGb} GB`}`;
-  if (cores >= DESKTOP_TABLET_MIN_CORES && memoryOk) return { platform: "desktop", reason: `touch-first tablet with laptop-class hardware (${what})` };
+  const what = `${s.cores ?? "?"} cores, ${s.memoryGb == null ? "no memory reported" : `${s.memoryGb} GB`}`;
+  if (s.memoryGb == null) return { platform: "phone", reason: `touch-first tablet whose browser reports no memory, so its core count is not trusted (${what})` };
+  if ((s.cores ?? 0) >= DESKTOP_TABLET_MIN_CORES && s.memoryGb >= DESKTOP_TABLET_MIN_MEMORY_GB) return { platform: "desktop", reason: `touch-first tablet with laptop-class hardware (${what})` };
   return { platform: "phone", reason: `touch-first tablet below laptop-class hardware (${what})` };
 }
 

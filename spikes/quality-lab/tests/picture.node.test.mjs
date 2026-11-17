@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { clearlyDifferent, notBlank, pictureDetail, pictureDiff, samePicture, shrink, TILE_LIMIT } from "../scripts/picture.mjs";
+import { clearlyDifferent, notBlank, pictureDetail, pictureDiff, samePicture, shrink, TILE_LIMIT, worstTileOn } from "../scripts/picture.mjs";
 
 const W = 320;
 const H = 180;
@@ -77,6 +77,13 @@ test("a small patch with its texture scrambled is not the same", () => {
   const diff = pictureDiff(scene({ patch: textured(1) }), noisy(scene({ patch: textured(50) }), 3, 9));
   assert.ok(!samePicture(diff), JSON.stringify(diff));
   assert.ok(diff.meanDiff < 3);
+});
+
+test("a caught break is placed: the worst tile lies on the broken patch's box, not on a box elsewhere", () => {
+  const diff = pictureDiff(scene({ patch: textured(1) }), noisy(scene({ patch: textured(50) }), 3, 9));
+  const onPatch = { x0: PATCH_AT.x / W, x1: (PATCH_AT.x + 34) / W, y0: PATCH_AT.y / H, y1: (PATCH_AT.y + 34) / H };
+  assert.ok(worstTileOn(diff, onPatch), JSON.stringify(diff.worstTile));
+  assert.ok(!worstTileOn(diff, { x0: 0, x1: 0.3, y0: 0, y1: 0.3 }), JSON.stringify(diff.worstTile));
 });
 
 test("not blank: a flat frame, or a flat frame with a small patch, is blank; a textured frame is not", () => {

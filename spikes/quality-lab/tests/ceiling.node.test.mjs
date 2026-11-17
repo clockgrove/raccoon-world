@@ -97,3 +97,17 @@ test("probe savings under the noise floor fall through to the sweep's costs", ()
   assert.equal(rankedBy, "sweep");
   assert.equal(ranking[0], "shafts");
 });
+
+test("knobs whose probe saved the same whole refresh are ordered by the sweep's costs, then the default order", () => {
+  const refresh = 1000 / 60;
+  // Probed in this order; each saved exactly one refresh, so the probe alone cannot tell them apart.
+  const probe = ["ao", "shafts", "haze"].map((knob) => ({ knob, to: false, gpuMsP50: null, frameMsP50: refresh, frameMsP95: refresh }));
+  // The sweep measured shafts dearer than ao; it did not measure haze.
+  const sweep = [
+    { knob: "ao", id: "", label: "", frameMsP95: 1, gpuMsP50: null },
+    { knob: "shafts", id: "", label: "", frameMsP95: 3, gpuMsP50: null },
+  ];
+  assert.deepEqual(rankKnobs(probe, sweep).ranking.slice(0, 3), ["shafts", "ao", "haze"]);
+  // Without the sweep, the default order breaks the tie (haze, ao, shafts), not the order the probe ran in.
+  assert.deepEqual(rankKnobs(probe).ranking.slice(0, 3), ["haze", "ao", "shafts"]);
+});

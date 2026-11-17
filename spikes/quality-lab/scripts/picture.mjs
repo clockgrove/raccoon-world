@@ -97,10 +97,19 @@ export function pictureDiff(a, b, { tile = 8, radius = 1 } = {}) {
       if (score > worstTile.score) Object.assign(worstTile, { score, x: tx, y: ty });
     }
   }
-  return { meanDiff: plain / (width * height), worstTile, changedTiles, tiles, changedShare: changedTiles / tiles };
+  return { meanDiff: plain / (width * height), worstTile, changedTiles, tiles, changedShare: changedTiles / tiles, width, height, tile };
 }
 
 export const samePicture = (diff) => diff.worstTile.score <= TILE_LIMIT;
+
+/**
+ * Whether the diff's worst tile overlaps `box` (shares of the frame, top-left origin, as `lab.breakProp` reports a
+ * prop's screen box): proves a caught break was caught where the broken prop is, not by a change elsewhere.
+ */
+export function worstTileOn(diff, box) {
+  const { worstTile, width, height, tile } = diff;
+  return worstTile.x < box.x1 * width && worstTile.x + tile > box.x0 * width && worstTile.y < box.y1 * height && worstTile.y + tile > box.y0 * height;
+}
 
 /** Ultra against Low: the pictures differ, and in more than one stray tile. */
 export const clearlyDifferent = (diff) => !samePicture(diff) && diff.changedShare >= MIN_CHANGED_SHARE;

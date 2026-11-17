@@ -659,9 +659,10 @@ const lab: LabHandle & Record<string, unknown> = {
    * 0.2% of it (a raw count of pixels that moved by more than 24 of 765, not the tile check under test), the one nearest
    * 2% is spoiled. A prop hidden behind something, with nothing to break, or whose base colour is too flat for
    * scrambled UVs to show, is never picked; a stand-in counts like a loaded GLB. null puts the geometry back.
-   * Resolves to null when no prop qualifies.
+   * Resolves to null when no prop qualifies; otherwise to the prop and its screen box (shares of the frame, top-left
+   * origin), so the journey can require the picture check's worst tile to lie on it.
    */
-  async breakProp(kind: "normals" | "uvs" | null): Promise<{ name: string; coverage: number; boxCoverage: number; changed: number } | null> {
+  async breakProp(kind: "normals" | "uvs" | null): Promise<{ name: string; coverage: number; boxCoverage: number; changed: number; box: { x0: number; y0: number; x1: number; y1: number } } | null> {
     for (const [mesh, original] of brokenGeometry) {
       mesh.geometry.dispose();
       mesh.geometry = original;
@@ -680,7 +681,7 @@ const lab: LabHandle & Record<string, unknown> = {
       });
       return ok;
     };
-    const candidates: { holder: THREE.Object3D; boxCoverage: number }[] = [];
+    const candidates: { holder: THREE.Object3D; boxCoverage: number; box: { x0: number; y0: number; x1: number; y1: number } }[] = [];
     (set.groups.props as THREE.Object3D).traverse((holder) => {
       if (!holder.name.startsWith("prop-")) return;
       let shown = true;
@@ -699,7 +700,9 @@ const lab: LabHandle & Record<string, unknown> = {
       const width = Math.min(1, hi.x) - Math.max(-1, lo.x);
       const height = Math.min(1, hi.y) - Math.max(-1, lo.y);
       if (width <= 0 || height <= 0) return;
-      candidates.push({ holder, boxCoverage: (width * height) / 4 });
+      // The box on screen as shares of the frame, top-left origin, so the journey can find the prop's tiles.
+      const screen = { x0: (Math.max(-1, lo.x) + 1) / 2, x1: (Math.min(1, hi.x) + 1) / 2, y0: (1 - Math.min(1, hi.y)) / 2, y1: (1 - Math.max(-1, lo.y)) / 2 };
+      candidates.push({ holder, boxCoverage: (width * height) / 4, box: screen });
     });
     // The pixels a frame shows, to count what hiding a candidate changes.
     const pixelsOf = async (url: string) => {
@@ -750,7 +753,7 @@ const lab: LabHandle & Record<string, unknown> = {
       });
     // The few whose boxes are nearest 2% (a box is never smaller than what the prop shows).
     const nearest = candidates.filter((c) => c.boxCoverage >= 0.005).sort((x, y) => Math.abs(x.boxCoverage - 0.02) - Math.abs(y.boxCoverage - 0.02)).slice(0, 8);
-    let best: { holder: THREE.Object3D; coverage: number; boxCoverage: number; changed: number } | null = null;
+    let best: { holder: THREE.Object3D; coverage: number; boxCoverage: number; changed: number; box: { x0: number; y0: number; x1: number; y1: number } } | null = null;
     const tried: { name: string; coverage: number; changed: number }[] = [];
     const round = (v: number) => Math.round(v * 1000) / 1000;
     for (const c of nearest) {
@@ -778,13 +781,13 @@ const lab: LabHandle & Record<string, unknown> = {
       const changed = changedShare(before, spoiledPixels);
       tried.push({ name: c.holder.name.slice("prop-".length), coverage: round(coverage), changed: round(changed) });
       if (coverage < 0.005 || changed < 0.002) continue;
-      if (!best || Math.abs(coverage - 0.02) < Math.abs(best.coverage - 0.02)) best = { holder: c.holder, coverage, boxCoverage: c.boxCoverage, changed };
+      if (!best || Math.abs(coverage - 0.02) < Math.abs(best.coverage - 0.02)) best = { holder: c.holder, coverage, boxCoverage: c.boxCoverage, changed, box: c.box };
     }
     lastBreakTried = tried;
     if (!best) return null;
-    const chosen = best as { holder: THREE.Object3D; coverage: number; boxCoverage: number; changed: number };
+    const chosen = best as { holder: THREE.Object3D; coverage: number; boxCoverage: number; changed: number; box: { x0: number; y0: number; x1: number; y1: number } };
     spoil(chosen.holder);
-    return { name: chosen.holder.name.slice("prop-".length), coverage: round(chosen.coverage), boxCoverage: round(chosen.boxCoverage), changed: round(chosen.changed) };
+    return { name: chosen.holder.name.slice("prop-".length), coverage: round(chosen.coverage), boxCoverage: round(chosen.boxCoverage), changed: round(chosen.changed), box: chosen.box };
   },
   /** CI journey only: what the last lab.breakProp measured for each candidate prop. */
   breakPropTried: () => lastBreakTried,

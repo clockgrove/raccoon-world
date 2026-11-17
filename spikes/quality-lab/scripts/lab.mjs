@@ -27,7 +27,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { buildSite, pinned, repo, SITE } from "./serve.mjs";
-import { clearlyDifferent, notBlank, pictureDetail, pictureDiff, samePicture } from "./picture.mjs";
+import { clearlyDifferent, notBlank, pictureDetail, pictureDiff, samePicture, worstTileOn } from "./picture.mjs";
 
 const SWIFTSHADER_FLAGS = [
   "--enable-unsafe-webgpu",
@@ -249,6 +249,9 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
           tried[kind] = lab.breakPropTried();
           shots[kind] = lab.frame();
           await lab.breakProp(null);
+          // The control: the same frames with the prop put back must be the same picture as plain, so a caught break
+          // is the prop's and not the scene drifting after the detail 4× round trip.
+          shots[`${kind}Restored`] = lab.frame();
         }
         lab.freeze(null);
         await lab.apply(base);
@@ -269,6 +272,9 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
         check(counts.broken[kind], `${name}: no prop shows at least 0.5% of the frame with ${kind} whose break visibly changes 0.2% of it (lab.breakProp), so the picture check's own proof could not run; tried ${JSON.stringify(counts.tried[kind])}`);
         spoiled[kind] = pictureDiff(plainPixels, await pixels(page, counts.shots[kind]));
         check(!samePicture(spoiled[kind]), `${name}: the picture check missed a prop (${counts.broken[kind].name}, ${(counts.broken[kind].coverage * 100).toFixed(1)}% of the frame, the break moves ${(counts.broken[kind].changed * 100).toFixed(1)}% of the pixels) with broken ${kind}: ${where(spoiled[kind])}`);
+        const restored = pictureDiff(plainPixels, await pixels(page, counts.shots[`${kind}Restored`]));
+        check(samePicture(restored), `${name}: with ${counts.broken[kind].name}'s ${kind} put back the picture still differs from plain, so the broken-${kind} proof could be the scene drifting: ${where(restored)}`);
+        check(worstTileOn(spoiled[kind], counts.broken[kind].box), `${name}: the worst tile with broken ${kind} is not on ${counts.broken[kind].name} (box ${JSON.stringify(counts.broken[kind].box)}): ${where(spoiled[kind])}`);
       }
       const brokenNote = ["normals", "uvs"].map((kind) => `broken ${kind} of ${counts.broken[kind].name} (${(counts.broken[kind].coverage * 100).toFixed(1)}% of the frame visible, box ${(counts.broken[kind].boxCoverage * 100).toFixed(1)}%, the break moves ${(counts.broken[kind].changed * 100).toFixed(1)}% of the pixels) caught, worst tile ${spoiled[kind].worstTile.score.toFixed(1)}, ${(spoiled[kind].changedShare * 100).toFixed(1)}% of tiles changed`).join("; ");
       const copy = await page.evaluate(() => {

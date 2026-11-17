@@ -285,8 +285,12 @@ export const PROBE_MIN_SAVING_MS = 0.25;
 
 type Costed = { knob: Knob; gpuMsP50: number | null; frameMsP50?: number | null; frameMsP95: number | null };
 
-/** The largest value per knob, most expensive first; `value` returns null for a cost that does not count. */
-function ranked(costs: readonly Costed[] | undefined, value: (c: Costed) => number | null): { knobs: Knob[]; best: Map<Knob, number> } {
+/**
+ * The largest value per knob, most expensive first; `value` returns null for a cost that does not count. Equal values
+ * (without GPU timestamps the probe reads whole refreshes, so two knobs that each save one refresh tie exactly) go
+ * by `tie`, not by the order the costs were measured in.
+ */
+function ranked(costs: readonly Costed[] | undefined, value: (c: Costed) => number | null, tie: (a: Knob, b: Knob) => number): { knobs: Knob[]; best: Map<Knob, number> } {
   const best = new Map<Knob, number>();
   for (const c of costs ?? []) {
     const v = value(c);
@@ -294,7 +298,7 @@ function ranked(costs: readonly Costed[] | undefined, value: (c: Costed) => numb
     const prev = best.get(c.knob);
     if (prev === undefined || v > prev) best.set(c.knob, v);
   }
-  return { knobs: [...best.keys()].sort((a, b) => best.get(b)! - best.get(a)!), best };
+  return { knobs: [...best.keys()].sort((a, b) => best.get(b)! - best.get(a)! || tie(a, b)), best };
 }
 
 /**
@@ -310,16 +314,28 @@ function probeValue(probe: readonly ProbeCost[] | undefined): (c: Costed) => num
   };
 }
 
+/** A knob's place in the estimated default order (then KNOBS order for any it leaves out). */
+function defaultRank(k: Knob): number {
+  const i = DEFAULT_COST_ORDER.indexOf(k);
+  return i >= 0 ? i : DEFAULT_COST_ORDER.length + KNOBS.indexOf(k);
+}
+
 /**
  * Knobs most expensive first: what the cost probe measured on this device at Ultra (savings above the noise floor),
  * then the sweep's costs on top of Medium (GPU p50, else frame p95) for knobs the probe could not tell apart, then
  * the estimated default order.
  */
 export function rankKnobs(probe: readonly ProbeCost[] | undefined, sweep?: SweepReport["costs"]): { ranking: Knob[]; rankedBy: CeilingReport["rankedBy"] } {
-  const first = ranked(probe, probeValue(probe));
+  const sweepValue = (c: Costed) => c.gpuMsP50 ?? c.frameMsP95;
+  const byDefault = (a: Knob, b: Knob) => defaultRank(a) - defaultRank(b);
+  const all = ranked(sweep, sweepValue, byDefault).best;
+  // Probe ties go to the knob the sweep measured dearer, then to the default order.
+  const bySweep = (a: Knob, b: Knob) => (all.get(b) ?? -Infinity) - (all.get(a) ?? -Infinity) || byDefault(a, b);
+  const first = ranked(probe, probeValue(probe), bySweep);
   const second = ranked(
     sweep?.filter((c) => !first.best.has(c.knob)),
-    (c) => c.gpuMsP50 ?? c.frameMsP95,
+    sweepValue,
+    byDefault,
   );
   const seen = new Set<Knob>([...first.knobs, ...second.knobs]);
   const rest = [...DEFAULT_COST_ORDER, ...KNOBS].filter((k, i, all) => !seen.has(k) && all.indexOf(k) === i);
