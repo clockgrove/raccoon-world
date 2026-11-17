@@ -161,6 +161,7 @@ async function assetgrove(args, extraEnv = {}, cwd = root) {
 /** A throwaway copy of this repository's working tree: tracked and unignored files only. */
 async function throwawayCopy(label) {
   const dir = await mkdtemp(join(tmpdir(), `raccoon-world-${label}-`));
+  (await import('node:child_process')).execFileSync('git', ['init', '-q', dir]);
   // The copy has no .git, so .assetgrove marks it as the project root the bible's references resolve in.
   await mkdir(join(dir, ".assetgrove"));
   const { stdout } = await run("git", ["ls-files", "-co", "--exclude-standard", "-z"], {
