@@ -20,7 +20,8 @@
 //                 keeps the matte background its provenance records (issue 140).
 // 6. licences:    every committed manifest's licence is the licence REUSE.toml gives its source file,
 //                 so a CC-BY-4.0 pick can't land under the `**` MIT annotation.
-// 7. gracie:      Gracie's bible subject leads with her signature fur, her photos and approved views
+// 7. gracie:      Gracie's identity lock declares exactly the decided traits (a missing, extra, changed or moved
+//                 trait fails, named; her prose description is not parsed), her photos and approved views
 //                 are her subject's references, her approved turnaround is Kirk's pick (c1) with its
 //                 hashes and output grant, her character-3d spec names her subject and gait and the
 //                 pinned Assetgrove's character-3d reader accepts it, and her turnaround run forecasts within its $5 cap (issue 50).
@@ -29,7 +30,9 @@
 //                 forecasts within $5; a scripted stage and pick write a rigged .glb with a generated idle
 //                 (Assetgrove's draft motion, throwaway copy only) and walk into a throwaway copy, and the
 //                 profile's validator, Clockgrove's `clockgrove-assets validate`, accepts it on the first try;
-//                 Clockgrove refuses the same model over lower budgets (MODEL_BUDGET_EXCEEDED); it renders
+//                 Clockgrove refuses the same model over lower budgets (MODEL_BUDGET_EXCEEDED); a model's height
+//                 is checked against its own spec (Stevie ten times too big is refused, an 8 m model passes
+//                 against an 8 m spec); it renders
 //                 through the pinned renderer's world-content seam (art/tools/model3d-render.mjs); a
 //                 free-plan grant is refused with exit 7 (issues 39 and 82).
 // 9. cost:        recorded gateway answers (art/proof/gateway/) through a local stub of the generation lookup:
@@ -39,6 +42,10 @@
 // 10. fringe:     the matting-fringe QA (art/tools/fringe.mjs): every approved frame passes, fringed and
 //                 pale-fur fringed counter-examples fail, soft strands pass, and the profile's recorded
 //                 calibration (animation.matting) is what the repository measures (issue 140).
+// 11. facts:     the 3D spike's media decisions read structured facts (issue 142): a candidate mesh by
+//                 what its GLB holds (a walk file is never one), a texture cap by the manifest's tier and the
+//                 cast decision (Gracie 2048 px, a phone tier its manifest's cap), an idle by what the clip
+//                 declares and whether its keys move; on generated fixtures and Stevie's committed manifest.
 //
 // Assetgrove runs under throwaway developer settings (headless, only the scripted provider, the
 // proof's provider scripts and validators approved by hash) in a temporary directory outside the
@@ -66,6 +73,33 @@ const clockgroveDir = resolve(process.env.CLOCKGROVE_DIR ?? join(root, ".clockgr
 export const FAMILIES = ["idle", "walk", "sniff", "eat", "play", "shelter"];
 const MAX_RUN_USD = 5;
 const MAX_CANDIDATES = 4;
+/** Gracie's identity traits as decided (#50): her identity lock's signatureFeatures, the first her signature. */
+const GRACIE_TRAITS = [
+  "lower body (belly, flanks and hindquarters, down over her legs) lighter, greyer, noticeably longer and shaggier than her back",
+  "shorter, darker grey-brown fur on her back",
+  "full dark eye mask with pale brows and a pale muzzle",
+  "rounded ears with pale rims",
+  "ringed tail with dark and tan bands, dark tip",
+  "long-fingered hand-like front paws with dark palms; plantigrade hind feet with dark soles and pale fur over the top",
+];
+
+/** A declared trait list against the decided one, exactly: each missing, extra, changed or moved trait, named. */
+function traitProblems(declared, decided) {
+  if (!Array.isArray(declared)) return ["declares no signatureFeatures"];
+  const problems = [];
+  for (let i = 0; i < Math.max(declared.length, decided.length); i++) {
+    const [ours, theirs] = [declared[i], decided[i]];
+    if (ours === theirs) continue;
+    const missing = theirs !== undefined && !declared.includes(theirs);
+    const extra = ours !== undefined && !decided.includes(ours);
+    if (missing && extra) problems.push(`trait ${i + 1} changed: "${theirs}" is now "${ours}"`);
+    else if (missing) problems.push(`missing trait: "${theirs}"`);
+    else if (extra) problems.push(`extra trait: "${ours}"`);
+  }
+  if (!problems.length && JSON.stringify(declared) !== JSON.stringify(decided))
+    problems.push(`traits out of their decided order (the first is her signature): ${declared.map((t) => `"${t}"`).join(", ")}`);
+  return problems;
+}
 const IPTC_GENERATED = "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia";
 
 const failures = [];
@@ -235,12 +269,26 @@ async function checkBible() {
 
 async function checkGracie() {
   const bible = await json("art/style-bible.json");
-  const description = bible.subjects?.gracie?.description ?? "";
-  // Her signature leads: the first clause after her name is her lower-body fur.
-  if (!/^Gracie, [^;]*lower body[^;]*lighter, greyer, noticeably longer and shaggier fur than her back;/.test(description))
-    fail("gracie", `her subject description must lead with her signature lower-body fur: ${description}`);
-  for (const trait of ["full dark eye mask", "pale brows", "pale muzzle", "pale-rimmed ears", "ringed tail"])
-    if (!description.includes(trait)) fail("gracie", `her subject description lacks: ${trait}`);
+  // Her identity traits are the ones her identity lock declares, compared exactly with the decided set, as the
+  // identity locks are; her prose description is documentation a person reviews with the bible, not parsed here.
+  const described = await assetgrove(["bible", "describe", "--bible", "art/style-bible.md"]);
+  for (const problem of traitProblems(described.doc?.identities?.gracie?.signatureFeatures, GRACIE_TRAITS))
+    fail("gracie", `her identity lock's signatureFeatures must be the decided traits: ${problem}`);
+  // The check itself: a missing, extra, changed or moved trait fails, with the trait named.
+  const [first, second, ...rest] = GRACIE_TRAITS;
+  const changedTail = GRACIE_TRAITS.map((t) => (t === "ringed tail with dark and tan bands, dark tip" ? "plain tail, dark tip" : t));
+  const wrong = [
+    [[first, second, ...rest.slice(0, -1)], `missing trait: "${rest.at(-1)}"`],
+    [[...GRACIE_TRAITS, "bright round eyes"], 'extra trait: "bright round eyes"'],
+    [changedTail, 'trait 5 changed: "ringed tail with dark and tan bands, dark tip" is now "plain tail, dark tip"'],
+    [[second, first, ...rest], "traits out of their decided order"],
+    [undefined, "declares no signatureFeatures"],
+  ];
+  for (const [declared, problem] of wrong) {
+    const problems = traitProblems(declared, GRACIE_TRAITS);
+    if (!problems.some((p) => p.startsWith(problem)))
+      fail("gracie", `a declared trait list that should fail with ${problem} gave: ${problems.join("; ") || "no problem"}`);
+  }
   const references = bible.references.filter((r) => r.subject === "gracie").map((r) => r.path).sort();
   const expected = [
     "gracie-ice-cube.png", "gracie-lounging.png", "gracie-sleeping.png",
@@ -675,11 +723,44 @@ async function checkModel3d() {
   };
   await sideMaps(stevieManifest.model);
   const stevieInput = {
+    heightM: stevie.heightM,
     glb: new Uint8Array(await readFile(join(root, stevieManifest.source.path))),
     templateBytes: new Uint8Array(await readFile(join(root, "art", m.rig.template))),
     readBytes: (path) => (levelFiles.has(path) ? levelFiles.get(path) : undefined),
   };
   const chained = validateModel({ profile, manifest: stevieManifest, ...stevieInput });
+  // Height against the model's own spec (issue 142): Stevie's committed model is his spec's 0.45 m; the same
+  // model exported ten times too big is refused; an 8 m cedar or house wall passes against an 8 m spec.
+  const scaled = (factor) => {
+    const copy = structuredClone(stevieManifest);
+    copy.model.bounds.max[1] *= factor;
+    return copy;
+  };
+  const heightRefused = (result) => result.refusals.some((r) => r.code === "manifest:bounds");
+  if (chained.flags.some((f) => f.code === "height:unspecified")) fail("model3d", "Stevie's model must be checked against his spec's heightM");
+  if (!heightRefused(validateModel({ profile, manifest: scaled(10), ...stevieInput })))
+    fail("model3d", "Stevie exported ten times too big (4.5 m against his 0.45 m spec) must be refused with manifest:bounds");
+  const tall = scaled(8 / stevieManifest.model.bounds.max[1]);
+  if (heightRefused(validateModel({ profile, manifest: tall, ...stevieInput, heightM: 8 })))
+    fail("model3d", "an 8 m model must pass against an 8 m spec");
+  const { heightProblems } = await import(pathToFileURL(join(root, "art/tools/model3d-sidefiles.mjs")).href);
+  const box = (h) => ({ min: [-1, 0, -1], max: [1, h, 1] });
+  const heightCases = [
+    ["an 8 m cedar against its 8 m spec", box(8), 8, false],
+    ["a 7.8 m house wall against its 8 m spec", box(7.8), 8, false],
+    ["a 0.45 m character against its 0.45 m spec", box(0.45), 0.45, false],
+    ["a 0.45 m character exported ten times too big", box(4.5), 0.45, true],
+    ["a 0.45 m character exported ten times too small", box(0.045), 0.45, true],
+  ];
+  for (const [what, bounds, heightM, refused] of heightCases)
+    if (heightProblems(bounds, heightM).refusals.length > 0 !== refused) fail("model3d", `${what} must be ${refused ? "refused" : "accepted"}`);
+  if (!heightProblems(box(8), undefined).flags.some((f) => f.code === "height:unspecified"))
+    fail("model3d", "a model with no spec height must carry the height:unspecified flag");
+  for (const [what, bounds, refused] of [
+    ["a 45 m model with no spec height", box(45), true],
+    ["a 0.45 m model with no spec height", box(0.45), false],
+  ])
+    if (heightProblems(bounds, undefined).refusals.length > 0 !== refused) fail("model3d", `${what} must be ${refused ? "refused" : "accepted"}`);
   if (!chained.accepted || chained.flags.some((f) => f.code.startsWith("tier:")))
     fail("model3d", `Stevie's chain must be accepted with no tier flag: ${JSON.stringify([...chained.refusals, ...chained.flags.filter((f) => f.code.startsWith("tier:"))])}`);
   // His motions (#112): every family of the clip set is generated, so none is missing, and each declared motion is
@@ -774,6 +855,8 @@ async function checkModel3d() {
     if (!validator.includes("tier:phone:triangles")) fail("model3d", `the validator should flag tier:phone:triangles:\n${validator}`);
     // The shared rig generates every family of the clip set (#112), so none is missing.
     if (validator.includes("clip-missing:")) fail("model3d", `no clip should be missing:\n${validator}`);
+    // The CLI found the picked model's own spec (art/<subject>/<kind>/spec.json) and checked its height against it.
+    if (validator.includes("height:unspecified")) fail("model3d", `the validator CLI must find the model's spec height:\n${validator}`);
     for (const family of required)
       if (!manifest.model?.clips?.some((c) => c.name === family && c.generated === true)) fail("model3d", `the written model lacks the generated ${family}`);
     const { stdout: attr } = await run("git", ["check-attr", "filter", "--", manifest.source.path], { cwd: root });
@@ -865,6 +948,97 @@ async function checkModel3d() {
   }
 }
 
+/**
+ * 11. facts (issue 142): the 3D spike's media decisions read structured facts, proven on small generated
+ * fixtures and the committed manifest: a candidate mesh by what the GLB holds, a texture cap by the
+ * manifest's tier and the cast decision, an idle by what the clip declares and whether it moves.
+ */
+async function checkFacts() {
+  const facts = await import(pathToFileURL(join(root, "spikes/stevie-3d/scripts/media-facts.mjs")).href);
+  const { pickIdle } = await import(pathToFileURL(join(root, "spikes/stevie-3d/src/stevie/idle.ts")).href);
+  /** A JSON-only GLB: enough structure for the content checks, no geometry bytes. */
+  const glb = (json) => {
+    const text = Buffer.from(JSON.stringify({ asset: { version: "2.0" }, ...json }));
+    const chunk = Buffer.concat([text, Buffer.alloc((4 - (text.length % 4)) % 4, 0x20)]);
+    const header = Buffer.alloc(20);
+    header.write("glTF", 0, "latin1");
+    header.writeUInt32LE(2, 4);
+    header.writeUInt32LE(20 + chunk.length, 8);
+    header.writeUInt32LE(chunk.length, 12);
+    header.writeUInt32LE(0x4e4f534a, 16);
+    return new Uint8Array(Buffer.concat([header, chunk]));
+  };
+  const mesh = { meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }], accessors: [{ count: 3, type: "VEC3", componentType: 5126 }] };
+  const walk = { animations: [{ name: "walk", channels: [], samplers: [] }] };
+  const candidates = [
+    ["a generated mesh (meshy-model.glb)", glb(mesh), true],
+    ["a rigged mesh with no clip (tripo-rig-model.glb)", glb({ ...mesh, skins: [{ joints: [1] }], nodes: [{ mesh: 0, skin: 0 }, { name: "hips" }] }), true],
+    ["a provider's walk file (tripo-walk-model.glb)", glb({ ...mesh, ...walk }), false],
+    ["a running clip file named like a model (model.glb)", glb({ ...mesh, animations: [{ name: "Armature|Running", channels: [], samplers: [] }] }), false],
+    ["an armature-only file", glb({ nodes: [{ name: "hips" }], skins: [{ joints: [0] }] }), false],
+    ["a committed generated prop (references/ceiling-3d/props/mailbox.glb)", new Uint8Array(await readFile(join(root, "references/ceiling-3d/props/mailbox.glb"))), true],
+    ["a points-only file", glb({ meshes: [{ primitives: [{ attributes: { POSITION: 0 }, mode: 0 }] }] }), false],
+  ];
+  for (const [what, bytes, expected] of candidates)
+    if (facts.isCandidateMesh(bytes) !== expected) fail("facts", `${what} must ${expected ? "" : "not "}be a candidate mesh`);
+
+  const stevie = await json("assets/models/stevie/manifest.json");
+  const phoneMap = stevie.model.tiers.phone.eyes.path;
+  const caps = [
+    ["Stevie's model", stevie, stevie.source.path, 2048],
+    ["Stevie's desktop level 1", stevie, stevie.model.levels.lod1.path, 2048],
+    ["Stevie's desktop colour map", stevie, stevie.model.textures.baseColor.path, 2048],
+    ["Stevie's phone level 1", stevie, stevie.model.tiers.phone.levels.lod1.path, 1024],
+    [`Stevie's phone map ${phoneMap}`, stevie, phoneMap, 1024],
+    ["Gracie, whatever her file is called", { kind: "character-3d", assetId: "gracie", source: { path: "media/model.glb" }, model: {} }, "media/model.glb", 2048],
+    ["a cast member named stevie.phone.x but on no tier", { kind: "character-3d", model: { textureMaxPx: 2048 } }, "stevie.phone.x.glb", 2048],
+    ["a prop with no manifest, even named cast-tree", undefined, "cast-tree.glb", 1024],
+    ["a prop-3d manifest", { kind: "prop-3d", model: { textureMaxPx: 2048 } }, "assets/models/cedar/cedar.glb", 1024],
+  ];
+  const phoneTier = structuredClone(stevie);
+  for (const level of Object.values(phoneTier.model.tiers.phone.levels)) level.textureMaxPx = 512;
+  caps.push(["a phone tier whose manifest caps it at 512", phoneTier, phoneTier.model.tiers.phone.levels.lod2.path, 512]);
+  const tierCapped = structuredClone(stevie);
+  delete tierCapped.model.tiers.phone.levels;
+  tierCapped.model.tiers.phone.textureMaxPx = 512;
+  caps.push(["a phone tier with no levels that declares its own 512 cap", tierCapped, phoneMap, 512]);
+  // A phone tier that declares no cap anywhere is refused, never given the desktop cap.
+  const uncapped = structuredClone(stevie);
+  delete uncapped.model.tiers.phone.levels;
+  for (const [what, manifest] of [["no levels", uncapped], ["levels with no textureMaxPx", (() => {
+    const m = structuredClone(stevie);
+    for (const level of Object.values(m.model.tiers.phone.levels)) delete level.textureMaxPx;
+    return m;
+  })()]]) {
+    let cap;
+    try {
+      cap = facts.textureCap({ manifest, file: phoneMap }).cap;
+    } catch {
+      continue;
+    }
+    fail("facts", `a phone tier with ${what} declares no cap and must be refused, not given ${cap} px`);
+  }
+  for (const [what, manifest, file, expected] of caps) {
+    const { cap } = facts.textureCap({ manifest, file });
+    if (cap !== expected) fail("facts", `${what} must get a ${expected} px texture cap, not ${cap}`);
+  }
+
+  const track = (values) => ({ times: values.map((_, i) => i), values });
+  const clip = (name, values, userData) => ({ name, duration: 4, userData, tracks: [track(values)] });
+  const idles = [
+    ["only running and walking clips", [clip("Running", [0, 1, 0]), clip("Walking", [0, 0.5, 0])], null],
+    ["a held pose with identical keys", [clip("idle", [0.3, 0.3, 0.3])], null],
+    ["a moving idle", [clip("Walking", [0, 1]), clip("Idle_01", [0, 0.02, 0])], "Idle_01"],
+    ["a clip the file declares idle (extras role)", [clip("clip0", [0, 0.02, 0], { role: "idle" })], "clip0"],
+    ["a held clip the file declares idle", [clip("clip0", [1, 1], { role: "idle" })], null],
+  ];
+  for (const [what, clips, expected] of idles) {
+    const picked = pickIdle(clips)?.name ?? null;
+    if (picked !== expected) fail("facts", `${what}: the idle must be ${expected ?? "the breathing fallback"}, not ${picked ?? "the breathing fallback"}`);
+  }
+  return { candidates: candidates.length, caps: caps.length, idles: idles.length };
+}
+
 try {
   await pinned(assetgroveDir, "ASSETGROVE_COMMIT", "bash scripts/assetgrove.sh fetch");
   await pinned(clockgroveDir, "CLOCKGROVE_COMMIT", "bash scripts/clockgrove.sh fetch");
@@ -880,6 +1054,7 @@ try {
   const placeholders = await checkPlaceholders();
   const licensedManifests = await checkLicences();
   const model3d = await checkModel3d();
+  const facts = await checkFacts();
   // Settings, state, approvals and run directories all live outside the checkout.
   const after = await checkoutState();
   const added = after.filter((line) => !before.includes(line));
@@ -889,7 +1064,7 @@ try {
     process.exitCode = 1;
   } else
     console.log(
-      JSON.stringify({ status: "ok", validator: proved.validator, placeholders, licensedManifests, runForecastUsd: forecasts, recordedAnswers, fringe, model3d }),
+      JSON.stringify({ status: "ok", validator: proved.validator, placeholders, licensedManifests, runForecastUsd: forecasts, recordedAnswers, fringe, model3d, facts }),
     );
 } catch (error) {
   console.error(error.message);
