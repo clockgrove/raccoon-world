@@ -10,7 +10,7 @@ import { anchor, placeCamera, STATES, VIEWS } from "../../ceiling-3d/src/look.ts
 import { ground, puddleSky, rippleStrength, wetness } from "../../ceiling-3d/src/materials.ts";
 import { loadProps } from "../../ceiling-3d/src/props.ts";
 import { buildSet, lampStrength, rain } from "../../ceiling-3d/src/set.ts";
-import { FAR_ZOOM, isMotion, type LabConfig, type LabHandle, type LevelMode, type Motion, type LabStatus, type Measurement, type Platform, PRESETS, type PresetName, type StateName, type ViewName } from "./config.ts";
+import { deviceTier, FAR_ZOOM, isMotion, type LabConfig, type LabHandle, type LevelMode, type Motion, type LabStatus, type Measurement, type Platform, PRESETS, type PresetName, type StateName, type ViewName } from "./config.ts";
 import { buildPipeline, grade, type Pipeline } from "./pipeline.ts";
 import { GeometryDetail, sceneTriangles } from "./detail.ts";
 import { webMediaLoader } from "./loader.ts";
@@ -28,14 +28,19 @@ const SOFTWARE = /swiftshader|llvmpipe|lavapipe|softpipe|software|microsoft basi
 const media = (file: string) => new URL(`media/${file}`, document.baseURI).href;
 const model = (key: string) => (query.get("media") === "source" ? `source/${key}` : key);
 
-function detectPlatform(): Platform {
-  const forced = query.get("platform");
-  if (forced === "phone" || forced === "desktop") return forced;
-  const uaData: Any = (navigator as Any).userAgentData;
-  if (uaData && typeof uaData.mobile === "boolean") return uaData.mobile ? "phone" : "desktop";
-  return /Mobi|Android|iPhone|iPad|iPod/u.test(navigator.userAgent) ? "phone" : "desktop";
+/** The device's tier (config.ts deviceTier): by what it is and can do, never by its user agent. */
+function detectTier() {
+  const touchFirst = matchMedia("(pointer: coarse) and (hover: none)").matches && navigator.maxTouchPoints > 0;
+  return deviceTier({
+    forced: query.get("platform"),
+    touchFirst,
+    shortSidePx: Math.min(screen.width, screen.height),
+    cores: navigator.hardwareConcurrency || null,
+    memoryGb: (navigator as Any).deviceMemory ?? null,
+  });
 }
-const platform = detectPlatform();
+const tier = detectTier();
+const platform: Platform = tier.platform;
 /** `?motion=idle|walk|sniff|eat|play|shelter` starts Stevie and the cast on that clip; an unknown name is walk. */
 const defaultMotion: Motion = isMotion(query.get("motion")) ? (query.get("motion") as Motion) : "walk";
 /** The phone platform draws Stevie's phone levels; `?levels=phone|single` overrides, to compare either on any device. */
@@ -405,13 +410,15 @@ async function probeRefresh() {
     const tick = (now: number) => {
       if (prev) times.push(now - prev);
       prev = now;
-      if (times.length < 60) requestAnimationFrame(tick);
+      if (times.length < 120) requestAnimationFrame(tick);
       else resolve();
     };
     requestAnimationFrame(tick);
   });
+  // The lower quartile, not the median: the models decode on this thread meanwhile, and a busy frame only ever skips
+  // whole refreshes, so the shorter intervals are the display's own.
   const sorted = [...times].sort((a, b) => a - b);
-  refreshMs = Math.round(sorted[Math.floor(sorted.length / 2)]! * 100) / 100;
+  refreshMs = Math.round(sorted[Math.floor(sorted.length / 4)]! * 100) / 100;
 }
 /** Seconds each loading step took, and the models' download size. */
 const loadS: { graphics: number | null; models: number | null; shaders: number | null } = { graphics: null, models: null, shaders: null };
@@ -501,6 +508,7 @@ const lab: LabHandle & Record<string, unknown> = {
         loadS: { ...loadS },
         modelMb,
         levelsMb: levelsMb(),
+        tier: tier.reason,
       },
     };
   },
@@ -643,10 +651,160 @@ const lab: LabHandle & Record<string, unknown> = {
     render();
     return renderer.domElement.toDataURL("image/png");
   },
+  /**
+   * CI journey only: spoils one small prop by negating its normals or scrambling its UVs, so the journey can prove its
+   * picture checks see a small break. The prop is chosen by the pixels it really shows, not its bounding box: each
+   * candidate that has the attribute to break (and, for UVs, a base-colour map they would move) is hidden for one
+   * frame, and among those whose hiding changes at least 0.5% of the frame and whose break visibly changes at least
+   * 0.2% of it (a raw count of pixels that moved by more than 24 of 765, not the tile check under test), the one nearest
+   * 2% is spoiled. A prop hidden behind something, with nothing to break, or whose base colour is too flat for
+   * scrambled UVs to show, is never picked; a stand-in counts like a loaded GLB. The break is made in the attributes' own values, so a fresh `lab.apply` keeps it; null puts the values back.
+   * Resolves to null when no prop qualifies; otherwise to the prop and its screen box (shares of the frame, top-left
+   * origin), so the journey can require the picture check's worst tile to lie on it.
+   */
+  async breakProp(kind: "normals" | "uvs" | null): Promise<{ name: string; coverage: number; boxCoverage: number; changed: number; box: { x0: number; y0: number; x1: number; y1: number } } | null> {
+    putBack();
+    if (!kind) return null;
+    camera.updateMatrixWorld(true);
+    camera.updateProjectionMatrix();
+    const breakable = (holder: THREE.Object3D) => {
+      let ok = false;
+      holder.traverse((node: THREE.Object3D) => {
+        const mesh = node as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        const materials = (Array.isArray(mesh.material) ? mesh.material : [mesh.material]) as (THREE.Material & { map?: THREE.Texture | null })[];
+        if (kind === "normals" ? mesh.geometry.getAttribute("normal") : mesh.geometry.getAttribute("uv") && materials.some((m) => m?.map)) ok = true;
+      });
+      return ok;
+    };
+    const candidates: { holder: THREE.Object3D; boxCoverage: number; box: { x0: number; y0: number; x1: number; y1: number } }[] = [];
+    (set.groups.props as THREE.Object3D).traverse((holder) => {
+      if (!holder.name.startsWith("prop-")) return;
+      let shown = true;
+      for (let node: THREE.Object3D | null = holder; node; node = node.parent) shown &&= node.visible;
+      if (!shown || !breakable(holder)) return;
+      holder.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(holder);
+      if (box.isEmpty()) return;
+      const lo = new THREE.Vector2(Infinity, Infinity);
+      const hi = new THREE.Vector2(-Infinity, -Infinity);
+      for (let i = 0; i < 8; i++) {
+        const p = new THREE.Vector3(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).project(camera);
+        lo.min(p);
+        hi.max(p);
+      }
+      const width = Math.min(1, hi.x) - Math.max(-1, lo.x);
+      const height = Math.min(1, hi.y) - Math.max(-1, lo.y);
+      if (width <= 0 || height <= 0) return;
+      // The box on screen as shares of the frame, top-left origin, so the journey can find the prop's tiles.
+      const screen = { x0: (Math.max(-1, lo.x) + 1) / 2, x1: (Math.min(1, hi.x) + 1) / 2, y0: (1 - Math.min(1, hi.y)) / 2, y1: (1 - Math.max(-1, lo.y)) / 2 };
+      candidates.push({ holder, boxCoverage: (width * height) / 4, box: screen });
+    });
+    // The pixels a frame shows, to count what hiding a candidate changes.
+    const pixelsOf = async (url: string) => {
+      const bitmap = await createImageBitmap(await (await fetch(url)).blob());
+      const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+      ctx.drawImage(bitmap, 0, 0);
+      return ctx.getImageData(0, 0, bitmap.width, bitmap.height).data;
+    };
+    const frameUrl = () => {
+      render();
+      return renderer.domElement.toDataURL("image/png");
+    };
+    const changedShare = (x: Uint8ClampedArray, y: Uint8ClampedArray) => {
+      let changed = 0;
+      for (let i = 0; i < x.length; i += 4) if (Math.abs(x[i] - y[i]) + Math.abs(x[i + 1] - y[i + 1]) + Math.abs(x[i + 2] - y[i + 2]) > 24) changed++;
+      return changed / (x.length / 4);
+    };
+    const restore = putBack;
+    // In place: the attribute's own values change and are uploaded again, so the renderer draws the break and its
+    // undoing on the next frame. (Swapping in a spoiled geometry copy is not reliable on WebGPU: the renderer kept
+    // drawing the old attributes until the next config change, in either direction.)
+    const spoil = (holder: THREE.Object3D) =>
+      holder.traverse((node: THREE.Object3D) => {
+        const mesh = node as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        const attribute = mesh.geometry.getAttribute(kind === "normals" ? "normal" : "uv") as THREE.BufferAttribute | THREE.InterleavedBufferAttribute | undefined;
+        if (!attribute || brokenAttributes.has(attribute)) return;
+        const map = kind === "normals" ? (n: number[]) => n.map((x) => -x) : ([u, v]: number[]) => [v + 0.5 - Math.floor(v + 0.5), u + 0.5 - Math.floor(u + 0.5)];
+        // getComponent and setComponent go through the attribute's normalization, so quantized media works too.
+        const saved = new Float64Array(attribute.count * attribute.itemSize);
+        for (let i = 0; i < attribute.count; i++) {
+          const values: number[] = [];
+          for (let c = 0; c < attribute.itemSize; c++) values.push((saved[i * attribute.itemSize + c] = attribute.getComponent(i, c)));
+          map(values).forEach((value, c) => attribute.setComponent(i, c, value));
+        }
+        brokenAttributes.set(attribute, saved);
+        uploaded(attribute);
+      });
+    // The few whose boxes are nearest 2% (a box is never smaller than what the prop shows).
+    const nearest = candidates.filter((c) => c.boxCoverage >= 0.005).sort((x, y) => Math.abs(x.boxCoverage - 0.02) - Math.abs(y.boxCoverage - 0.02)).slice(0, 8);
+    let best: { holder: THREE.Object3D; coverage: number; boxCoverage: number; changed: number; box: { x0: number; y0: number; x1: number; y1: number } } | null = null;
+    const tried: { name: string; coverage: number; changed: number }[] = [];
+    const round = (v: number) => Math.round(v * 1000) / 1000;
+    for (const c of nearest) {
+      // Each measurement against a clean frame drawn just before it, so the scene's own frame-to-frame change is not
+      // counted as the prop's.
+      const clean = await pixelsOf(frameUrl());
+      // Only the prop's meshes are hidden, never a light it carries (the lamp post's): switching a light off and on
+      // changes the yard's lighting until the next config change, which would be counted as the break.
+      const meshes: THREE.Object3D[] = [];
+      c.holder.traverse((node: THREE.Object3D) => {
+        if ((node as THREE.Mesh).isMesh && node.visible) meshes.push(node);
+      });
+      for (const mesh of meshes) mesh.visible = false;
+      let hidden: Uint8ClampedArray;
+      try {
+        hidden = await pixelsOf(frameUrl());
+      } finally {
+        for (const mesh of meshes) mesh.visible = true;
+      }
+      const coverage = changedShare(clean, hidden);
+      // The break must be one a person would see: it changes pixels outright (a prop whose base colour is nearly
+      // flat shows no scrambled UVs, so it proves nothing). The raw pixel count is not the tile check under test.
+      const before = await pixelsOf(frameUrl());
+      let spoiledPixels: Uint8ClampedArray;
+      try {
+        spoil(c.holder);
+        spoiledPixels = await pixelsOf(frameUrl());
+      } finally {
+        restore();
+      }
+      const changed = changedShare(before, spoiledPixels);
+      tried.push({ name: c.holder.name.slice("prop-".length), coverage: round(coverage), changed: round(changed) });
+      if (coverage < 0.005 || changed < 0.002) continue;
+      if (!best || Math.abs(coverage - 0.02) < Math.abs(best.coverage - 0.02)) best = { holder: c.holder, coverage, boxCoverage: c.boxCoverage, changed, box: c.box };
+    }
+    lastBreakTried = tried;
+    if (!best) return null;
+    const chosen = best as { holder: THREE.Object3D; coverage: number; boxCoverage: number; changed: number; box: { x0: number; y0: number; x1: number; y1: number } };
+    spoil(chosen.holder);
+    return { name: chosen.holder.name.slice("prop-".length), coverage: round(chosen.coverage), boxCoverage: round(chosen.boxCoverage), changed: round(chosen.changed), box: chosen.box };
+  },
+  /** CI journey only: what the last lab.breakProp measured for each candidate prop. */
+  breakPropTried: () => lastBreakTried,
   stevie: () => stevie?.metrics ?? null,
   probeError: () => probeError,
 };
 Object.assign(globalThis, { lab });
+/** What the last `lab.breakProp` measured for each candidate. */
+let lastBreakTried: { name: string; coverage: number; changed: number }[] = [];
+/** The attributes `lab.breakProp` spoiled in place, with their original values to put back. */
+const brokenAttributes = new Map<THREE.BufferAttribute | THREE.InterleavedBufferAttribute, Float64Array>();
+/** Marks an attribute (or its interleaved buffer) for upload on the next frame. */
+function uploaded(attribute: THREE.BufferAttribute | THREE.InterleavedBufferAttribute): void {
+  if ((attribute as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute) (attribute as THREE.InterleavedBufferAttribute).data.needsUpdate = true;
+  else (attribute as THREE.BufferAttribute).needsUpdate = true;
+}
+/** Puts back the values `lab.breakProp` spoiled. */
+function putBack(): void {
+  for (const [attribute, saved] of brokenAttributes) {
+    for (let i = 0; i < attribute.count; i++) for (let c = 0; c < attribute.itemSize; c++) attribute.setComponent(i, c, saved[i * attribute.itemSize + c]);
+    uploaded(attribute);
+  }
+  brokenAttributes.clear();
+}
 
 // ---- Loading: a checklist of the steps, each with a running timer, so slow never looks like broken ----
 type StepKey = "graphics" | "models" | "shaders";

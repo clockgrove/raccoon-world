@@ -1,7 +1,7 @@
 // The quality lab's runner (issue 45): the sweep and the ceiling search, as pure logic over a LabHandle. No DOM and
 // no three.js, so the page UI, the CI journey and a node test can all drive it.
 
-import { BUDGET_SLACK, DEFAULT_COST_ORDER, KNOBS, KNOB_LABELS, LEVELS, PRESET_ORDER, PRESETS, budgetMs, stepDown, targetMs, sweepSteps } from "./config.ts";
+import { DEFAULT_COST_ORDER, KNOBS, KNOB_LABELS, LEVELS, PRESET_ORDER, PRESETS, TARGET_FPS, frameBudget, stepDown, sweepSteps } from "./config.ts";
 import type { Cast, DeviceInfo, DrawnLevel, Knob, LabConfig, LabHandle, LabStatus, Measurement, Platform, PresetName, StateName, ViewName } from "./config.ts";
 
 export interface StepResult {
@@ -51,6 +51,15 @@ export interface SweepReport {
   costs: CostEntry[];
 }
 
+/** What stepping one knob one level down from Ultra saved: GPU p50, frame p50 and frame p95, in ms. */
+export interface ProbeCost {
+  knob: Knob;
+  to: unknown;
+  gpuMsP50: number | null;
+  frameMsP50: number | null;
+  frameMsP95: number | null;
+}
+
 export interface Removed {
   knob: Knob;
   from: unknown;
@@ -64,10 +73,20 @@ export interface CeilingReport {
   startedAt: string;
   device?: DeviceInfo;
   platform: Platform;
-  /** The p95 the search holds: the strict target interval plus BUDGET_SLACK for display jitter. */
+  /** The p95 the search holds: the strict target plus half a display refresh (frameBudget). */
   budgetMs: number;
-  /** The strict target interval, 1000 / fps (16.7 ms desktop, 33.3 ms phone). */
+  /** The strict target interval: whole display refreshes meeting the platform's fps (16.7 ms at 60 Hz desktop). */
   targetMs: number;
+  /** The measured refresh interval the budget was built from, and refreshes per frame; null when not measured. */
+  refreshMs: number | null;
+  intervals: number | null;
+  /** What ordered the trims: the cost probe at Ultra on this device, the sweep's costs, or the estimated default order. */
+  rankedBy: "probe" | "sweep" | "default";
+  /** The knobs in the order the search trims them. */
+  ranking: Knob[];
+  /** The cost probe: Ultra with each knob one level down, and what each saved against Ultra (empty when not run). */
+  probe: StepResult[];
+  costs: ProbeCost[];
   /** The ceiling's measured p95, null when it was not measured. */
   ceilingP95Ms: number | null;
   /** Whether the ceiling's p95 is within the strict target, without the slack. */
@@ -90,7 +109,10 @@ export interface TriangleReport {
   platform: Platform;
   /** The fps this run holds: 60 everywhere (Kirk, 2026-11-12: "how much can we increase the triangle detail and keep 60fps"). */
   targetFps: number;
+  /** The p95 the run holds, fitted to the display's measured refresh (frameBudget), and what it was built from. */
   budgetMs: number;
+  refreshMs: number | null;
+  intervals: number | null;
   backend: LabStatus["backend"];
   adapter: string;
   software: boolean;
@@ -254,34 +276,101 @@ export async function runSweep(lab: LabHandle, opts: RunOptions = {}): Promise<S
   return report;
 }
 
-/** Knobs most expensive first: measured costs (GPU p50 when known, else frame p95; the largest per knob), then the default order. */
-function rankKnobs(costs: SweepReport["costs"] | undefined): Knob[] {
+/**
+ * A probe saving under this many ms is no measurement: without GPU timestamps the probe reads frame p50, which under
+ * vsync is whole refreshes, so a knob that does not cross a refresh boundary saves 0 whatever it costs. Such a knob
+ * falls through to the sweep's costs and the default order instead of outranking them with a zero.
+ */
+export const PROBE_MIN_SAVING_MS = 0.25;
+
+type Costed = { knob: Knob; gpuMsP50: number | null; frameMsP50?: number | null; frameMsP95: number | null };
+
+/**
+ * The largest value per knob, most expensive first; `value` returns null for a cost that does not count. Equal values
+ * (without GPU timestamps the probe reads whole refreshes, so two knobs that each save one refresh tie exactly) go
+ * by `tie`, not by the order the costs were measured in.
+ */
+function ranked(costs: readonly Costed[] | undefined, value: (c: Costed) => number | null, tie: (a: Knob, b: Knob) => number): { knobs: Knob[]; best: Map<Knob, number> } {
   const best = new Map<Knob, number>();
   for (const c of costs ?? []) {
-    const v = c.gpuMsP50 ?? c.frameMsP95;
+    const v = value(c);
     if (v == null) continue;
     const prev = best.get(c.knob);
     if (prev === undefined || v > prev) best.set(c.knob, v);
   }
-  const costed = [...best.keys()].sort((a, b) => best.get(b)! - best.get(a)!);
-  const rest = [...DEFAULT_COST_ORDER, ...KNOBS].filter((k, i, all) => !best.has(k) && all.indexOf(k) === i);
-  return [...costed, ...rest];
+  return { knobs: [...best.keys()].sort((a, b) => best.get(b)! - best.get(a)! || tie(a, b)), best };
 }
 
+/**
+ * The probe's ranking value. One measure for every knob, so knobs are compared in the same unit: GPU p50 when the
+ * adapter has timestamps, else frame p50, else frame p95. A saving under PROBE_MIN_SAVING_MS does not count.
+ */
+function probeValue(probe: readonly ProbeCost[] | undefined): (c: Costed) => number | null {
+  const all = probe ?? [];
+  const field: "gpuMsP50" | "frameMsP50" | "frameMsP95" = all.some((c) => c.gpuMsP50 != null) ? "gpuMsP50" : all.some((c) => c.frameMsP50 != null) ? "frameMsP50" : "frameMsP95";
+  return (c) => {
+    const v = c[field] ?? null;
+    return v != null && v >= PROBE_MIN_SAVING_MS ? v : null;
+  };
+}
+
+/** A knob's place in the estimated default order (then KNOBS order for any it leaves out). */
+function defaultRank(k: Knob): number {
+  const i = DEFAULT_COST_ORDER.indexOf(k);
+  return i >= 0 ? i : DEFAULT_COST_ORDER.length + KNOBS.indexOf(k);
+}
+
+/**
+ * Knobs most expensive first: what the cost probe measured on this device at Ultra (savings above the noise floor),
+ * then the sweep's costs on top of Medium (GPU p50, else frame p95) for knobs the probe could not tell apart, then
+ * the estimated default order.
+ */
+export function rankKnobs(probe: readonly ProbeCost[] | undefined, sweep?: SweepReport["costs"]): { ranking: Knob[]; rankedBy: CeilingReport["rankedBy"] } {
+  const sweepValue = (c: Costed) => c.gpuMsP50 ?? c.frameMsP95;
+  const byDefault = (a: Knob, b: Knob) => defaultRank(a) - defaultRank(b);
+  const all = ranked(sweep, sweepValue, byDefault).best;
+  // Probe ties go to the knob the sweep measured dearer, then to the default order.
+  const bySweep = (a: Knob, b: Knob) => (all.get(b) ?? -Infinity) - (all.get(a) ?? -Infinity) || byDefault(a, b);
+  const first = ranked(probe, probeValue(probe), bySweep);
+  const second = ranked(
+    sweep?.filter((c) => !first.best.has(c.knob)),
+    sweepValue,
+    byDefault,
+  );
+  const seen = new Set<Knob>([...first.knobs, ...second.knobs]);
+  const rest = [...DEFAULT_COST_ORDER, ...KNOBS].filter((k, i, all) => !seen.has(k) && all.indexOf(k) === i);
+  return { ranking: [...first.knobs, ...second.knobs, ...rest], rankedBy: first.knobs.length ? "probe" : second.knobs.length ? "sweep" : "default" };
+}
+
+/**
+ * The ceiling: starts at Ultra and, while the p95 misses the budget, steps the most expensive knob down one level.
+ * "Most expensive" is measured on this device where Ultra misses: the cost probe runs Ultra with each knob one level
+ * down and ranks the knobs by what that saved (so where haze is the bottleneck, haze goes before DPR). A software GPU
+ * has no times, so it skips the probe and uses the sweep's costs or the default order.
+ */
 export async function findCeiling(lab: LabHandle, opts: CeilingOptions = {}): Promise<CeilingReport> {
   const start = lab.status();
   const original = { ...start.config };
-  const budget = budgetMs(start.platform);
-  const ranking = rankKnobs(opts.costs);
+  const display = frameBudget(TARGET_FPS[start.platform], start.device?.refreshMs);
+  const budget = display.budgetMs;
+  let { ranking, rankedBy } = rankKnobs(undefined, opts.costs);
   const maxSteps = opts.maxSteps ?? Infinity;
-  const total = Math.min(maxSteps, 1 + KNOBS.reduce((n, k) => n + (LEVELS[k].length - 1), 0));
+  const ultra = { ...PRESETS.ultra, coat: original.coat, furMode: original.furMode, levels: original.levels };
+  const probeKnobs = start.software ? [] : KNOBS.filter((k) => stepDown(ultra, k));
+  let total = Math.min(maxSteps, 1 + KNOBS.reduce((n, k) => n + (LEVELS[k].length - 1), 0));
   const report: CeilingReport = {
     kind: "ceiling",
     startedAt: new Date().toISOString(),
     device: start.device,
     platform: start.platform,
     budgetMs: budget,
-    targetMs: targetMs(start.platform),
+    targetMs: display.targetMs,
+    refreshMs: display.refreshMs,
+    intervals: display.intervals,
+    rankedBy,
+    ranking,
+    probe: [],
+    costs: [],
     ceilingP95Ms: null,
     heldStrict: false,
     backend: start.backend,
@@ -291,9 +380,10 @@ export async function findCeiling(lab: LabHandle, opts: CeilingOptions = {}): Pr
     ceiling: original,
     steps: [],
   };
-  let config = { ...PRESETS.ultra, coat: original.coat, furMode: original.furMode, levels: original.levels };
+  let config: LabConfig = ultra;
   let prev: StepResult | null = null;
   let removed: Removed | undefined;
+  let done = 0;
   try {
     for (let i = 0; i < maxSteps; i++) {
       if (opts.signal?.aborted) break;
@@ -308,7 +398,7 @@ export async function findCeiling(lab: LabHandle, opts: CeilingOptions = {}): Pr
       }
       report.steps.push(r);
       report.ceiling = { ...config };
-      opts.onStep?.(r, i, total);
+      opts.onStep?.(r, done++, total);
       if (r.error) {
         // A failed step cannot be judged; keep stepping down so the search still ends.
       } else if (!start.software && r.measurement?.frameMsP95 != null && r.measurement.frameMsP95 <= budget) {
@@ -316,6 +406,22 @@ export async function findCeiling(lab: LabHandle, opts: CeilingOptions = {}): Pr
         report.ceilingP95Ms = r.measurement.frameMsP95;
         report.heldStrict = r.measurement.frameMsP95 <= report.targetMs;
         break;
+      }
+      // Ultra missed: measure what each knob costs here, on this device, before trimming any.
+      if (i === 0 && r.measurement && probeKnobs.length) {
+        total += probeKnobs.length;
+        for (const knob of probeKnobs) {
+          if (opts.signal?.aborted) break;
+          const lowered = stepDown(ultra, knob)!;
+          const p = await measureStep(lab, { id: `ceiling:probe:${knob}`, label: `Probe: Ultra − ${KNOB_LABELS[knob]} (${String(lowered[knob])})`, config: lowered, knob }, opts);
+          report.probe.push(p);
+          opts.onStep?.(p, done++, total);
+          const m = p.error ? null : p.measurement;
+          report.costs.push({ knob, to: lowered[knob], gpuMsP50: sub(r.measurement.gpuMsP50, m?.gpuMsP50), frameMsP50: sub(r.measurement.frameMsP50, m?.frameMsP50), frameMsP95: sub(r.measurement.frameMsP95, m?.frameMsP95) });
+        }
+        ({ ranking, rankedBy } = rankKnobs(report.costs, opts.costs));
+        report.ranking = ranking;
+        report.rankedBy = rankedBy;
       }
       let next: { knob: Knob; config: LabConfig } | null = null;
       for (const knob of ranking) {
@@ -347,7 +453,8 @@ export async function findTriangleBudget(lab: LabHandle, opts: TriangleOptions =
   const start = lab.status();
   const original = { ...start.config };
   const fps = 60;
-  const budget = (1000 / fps) * BUDGET_SLACK;
+  const display = frameBudget(fps, start.device?.refreshMs);
+  const budget = display.budgetMs;
   const steps = TRIANGLE_STEPS.slice(0, opts.maxSteps ?? TRIANGLE_STEPS.length);
   const report: TriangleReport = {
     kind: "triangles",
@@ -356,6 +463,8 @@ export async function findTriangleBudget(lab: LabHandle, opts: TriangleOptions =
     platform: start.platform,
     targetFps: fps,
     budgetMs: budget,
+    refreshMs: display.refreshMs,
+    intervals: display.intervals,
     backend: start.backend,
     adapter: start.adapter,
     software: start.software,
@@ -419,7 +528,10 @@ export interface CastReport {
   device?: DeviceInfo;
   platform: Platform;
   targetFps: number;
+  /** The p95 the run holds, fitted to the display's measured refresh (frameBudget), and what it was built from. */
   budgetMs: number;
+  refreshMs: number | null;
+  intervals: number | null;
   backend: LabStatus["backend"];
   adapter: string;
   software: boolean;
@@ -488,7 +600,8 @@ export async function findCastBudget(lab: LabHandle, opts: CastOptions = {}): Pr
   const original = { ...start.config };
   const base = { ...(opts.base ?? original), cast: 1 as Cast };
   const fps = 60;
-  const budget = (1000 / fps) * BUDGET_SLACK;
+  const display = frameBudget(fps, start.device?.refreshMs);
+  const budget = display.budgetMs;
   const steps = CAST_STEPS.slice(0, opts.maxSteps ?? CAST_STEPS.length);
   const report: CastReport = {
     kind: "cast",
@@ -497,6 +610,8 @@ export async function findCastBudget(lab: LabHandle, opts: CastOptions = {}): Pr
     platform: start.platform,
     targetFps: fps,
     budgetMs: budget,
+    refreshMs: display.refreshMs,
+    intervals: display.intervals,
     backend: start.backend,
     adapter: start.adapter,
     software: start.software,
@@ -761,9 +876,10 @@ export async function compareLevels(lab: LabHandle, opts: LevelsComparisonOption
 
 export type AnyReport = SweepReport | CeilingReport | TriangleReport | CastReport | SoakReport | FurComparisonReport | LevelsComparisonReport;
 
-const stripShots = <T extends { steps: { screenshot: string }[] }>(r: T): unknown => ({
+const stripShots = <T extends { steps: { screenshot: string }[]; probe?: { screenshot: string }[] }>(r: T): unknown => ({
   ...r,
   steps: r.steps.map(({ screenshot: _s, ...rest }) => rest),
+  ...(r.probe ? { probe: r.probe.map(({ screenshot: _s, ...rest }) => rest) } : {}),
 });
 
 export function compactJson(report: AnyReport | AnyReport[]): string {
@@ -825,6 +941,8 @@ export function slimJson(reports: AnyReport[]): string {
     const { steps, ...head } = r as AnyReport & { costs?: unknown };
     const rest: Record<string, unknown> = { ...head };
     if (r.kind === "sweep") delete rest.costs; // derivable from the sweep rows
+    // The ceiling's probe steps carry screenshots; their numbers are in its costs.
+    if (r.kind === "ceiling") delete rest.probe;
     delete rest.device; // stated once, as device.hardware
     for (const k of device) if (rest[k] === common[k] || k === "userAgent") delete rest[k];
     // Trailing nulls dropped from each row (no error, no GPU time...).
