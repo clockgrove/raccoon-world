@@ -225,7 +225,7 @@ Measured figures are from #77's recorded calls (`references/stevie/77-3d/provena
 - checks that hiding Stevie, or any of the 12 props, changes the picture;
 - checks that the walk animates.
 
-Its times are never reported as performance. It is not part of `check`, so Factory's validation and local `check` runs never download a browser. The step downloads Playwright's Chromium (about 115 MiB for the headless shell) when it is missing and runs about two to three minutes.
+Its times are never reported as performance. It is not part of `check`, so Pendulum's validation and local `check` runs never download a browser. The step downloads Playwright's Chromium (about 115 MiB for the headless shell) when it is missing and runs about two to three minutes.
 
 ## Maintainer steps
 
