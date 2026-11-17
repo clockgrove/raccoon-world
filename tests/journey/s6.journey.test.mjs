@@ -256,7 +256,7 @@ it("S6: the world boots in the Clockgrove shell, rains, and Stevie moves and exp
 
       // 8. Talk with Stevie (#152). He declares a cognitive Conversation mode, so his card offers
       // Talk, and a new conversation opens in his voice with its disclosure. Opening one calls no
-      // model; no message is sent.
+      // model.
       await talkAction.waitFor();
       expect(await talkAction.isEnabled()).toBe(true);
       await talk.getByRole("button", { name: "New conversation", exact: true }).click();
@@ -283,6 +283,28 @@ it("S6: the world boots in the Clockgrove shell, rains, and Stevie moves and exp
           messageCount: 0,
         },
       ]);
+
+      // 9. Stevie answers a message (#152). The journey's runtime has no model key (the harness
+      // passes one only under its live flags), so the scripted conversation model answers, in his
+      // cognitive voice, and CI makes no model call.
+      await talk.getByRole("textbox", { name: /^Message .+…$/u }).fill("Hello, Stevie.");
+      await talk.getByRole("button", { name: "Send", exact: true }).click();
+      const reply = talk
+        .getByRole("list", { name: "Conversation history" })
+        .getByRole("listitem")
+        .filter({
+          hasText:
+            "Scripted fixture reply: you have said 1 thing to me in this conversation.",
+        });
+      await reply.waitFor();
+      expect(await reply.innerText()).toContain(`(${VOICE_DISCLOSURES.cognitive})`);
+      const answered = await native.request(
+        "/v1/runtime/conversations/list",
+        { version: 1, ...scope, actorId: STEVIE },
+        "hall-inspect",
+      );
+      expect(answered.status, JSON.stringify(answered.body)).toBe(200);
+      expect(answered.body.sessions.map(({ messageCount }) => messageCount)).toEqual([2]);
     } finally {
       await browser?.close();
       await server.close();
