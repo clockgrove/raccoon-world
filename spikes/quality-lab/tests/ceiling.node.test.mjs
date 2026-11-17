@@ -5,11 +5,11 @@ import { KNOBS, PRESETS } from "../src/config.ts";
 import { findCeiling, rankKnobs } from "../src/runner.ts";
 
 /** A fake device: GPU time is a base plus each knob's cost at its level; frames are whole 60 Hz refreshes. */
-function fakeLab(costOf, { software = false, refreshMs = 1000 / 60 } = {}) {
+function fakeLab(costOf, { software = false, refreshMs = 1000 / 60, timestamps = true } = {}) {
   let config = { ...PRESETS.medium };
   const gpu = (c) => 2 + KNOBS.reduce((sum, k) => sum + costOf(k, c[k]), 0);
   return {
-    status: () => ({ ready: true, failure: null, backend: "webgpu", adapter: "fake", software, timestamps: true, platform: "desktop", dpr: 1, canvas: [1, 1], triangles: 0, drawnTriangles: 0, stevie: null, config: { ...config }, view: "yard", state: "dusk", userAgent: "", device: { refreshMs, cores: 8, memoryGb: 8, screen: [1, 1], loadS: { graphics: 0, models: 0, shaders: 0 }, modelMb: 0, levelsMb: { single: 0, phone: null } } }),
+    status: () => ({ ready: true, failure: null, backend: "webgpu", adapter: "fake", software, timestamps, platform: "desktop", dpr: 1, canvas: [1, 1], triangles: 0, drawnTriangles: 0, stevie: null, config: { ...config }, view: "yard", state: "dusk", userAgent: "", device: { refreshMs, cores: 8, memoryGb: 8, screen: [1, 1], loadS: { graphics: 0, models: 0, shaders: 0 }, modelMb: 0, levelsMb: { single: 0, phone: null } } }),
     apply: async (c) => {
       config = { ...c };
     },
@@ -19,7 +19,7 @@ function fakeLab(costOf, { software = false, refreshMs = 1000 / 60 } = {}) {
     measure: async () => {
       const g = gpu(config);
       const frame = Math.ceil(g / refreshMs - 1e-9) * refreshMs;
-      return { frames: 100, frameMsP50: frame, frameMsP95: frame, gpuMsP50: g, gpuMsP95: g };
+      return { frames: 100, frameMsP50: frame, frameMsP95: frame, gpuMsP50: timestamps ? g : null, gpuMsP95: timestamps ? g : null };
     },
     screenshot: async () => "data:image/jpeg;base64,",
   };
@@ -75,4 +75,25 @@ test("the triangle and cast budgets fit the same refresh", async () => {
     assert.equal(report.budgetMs, 30);
     assert.ok(report.held);
   }
+});
+
+test("without GPU timestamps, a knob whose probe saved no whole refresh falls through to the default order", async () => {
+  // Frames are whole 60 Hz refreshes: Ultra is two, Ultra − haze is one (saves 16.7 ms), every other knob saves 0.
+  const report = await findCeiling(fakeLab(hazeBound, { timestamps: false }), { warmupMs: 0, holdMs: 0 });
+  assert.equal(report.rankedBy, "probe");
+  assert.equal(report.ranking[0], "haze");
+  // The zeros are not measurements: DPR keeps its default place (first of the rest), not 16th in KNOBS order.
+  assert.equal(report.ranking[1], "dpr");
+  assert.ok(report.costs.find((c) => c.knob === "dpr").frameMsP50 === 0);
+});
+
+test("probe savings under the noise floor fall through to the sweep's costs", () => {
+  const probe = [
+    { knob: "haze", to: false, gpuMsP50: null, frameMsP50: 0, frameMsP95: 0 },
+    { knob: "ao", to: false, gpuMsP50: null, frameMsP50: 0.1, frameMsP95: 0 },
+  ];
+  const sweep = [{ knob: "shafts", id: "", label: "", frameMsP95: 4, gpuMsP50: null }];
+  const { ranking, rankedBy } = rankKnobs(probe, sweep);
+  assert.equal(rankedBy, "sweep");
+  assert.equal(ranking[0], "shafts");
 });

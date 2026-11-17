@@ -325,8 +325,11 @@ export interface FrameBudget {
  * The frame budget for a target frame rate on a display whose refresh interval was measured. A frame can only be
  * shown on a refresh, so the target is the longest whole number of refreshes that still meets the target frame rate
  * (60 fps: 1 refresh at 60 Hz, 2 at 120 Hz, 2 at 144 Hz), and never less than one: a 48 or 50 Hz panel cannot show
- * 60 fps, so a page that draws on every one of its refreshes holds. The budget adds half a refresh, the same line
- * `missedPct` counts a missed frame by: a p95 under it means at least 95% of frames landed on the cadence.
+ * 60 fps, so a page that draws on every one of its refreshes holds. The budget adds half a refresh: a p95 under it
+ * means at least 95% of frames landed on the target cadence. That is `missedPct`'s line (1.5 refreshes) only when the
+ * target is one refresh; `missedPct` counts frames that missed the display's own refresh, so at two refreshes per
+ * frame (60 fps on a 120 or 144 Hz panel, 30 fps on a 60 Hz phone) a ceiling that holds reports a `missedPct` near
+ * 100%, and the budget, not `missedPct`, says whether it held.
  * With no refresh measured it falls back to the nominal target plus BUDGET_SLACK.
  */
 export function frameBudget(fps: number, refreshMs: number | null | undefined): FrameBudget {

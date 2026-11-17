@@ -244,9 +244,9 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
         await lab.apply({ ...medium, coat: base.coat, furMode: base.furMode, detail: 1 });
         const broken = {};
         for (const kind of ["normals", "uvs"]) {
-          broken[kind] = lab.breakProp(kind);
+          broken[kind] = await lab.breakProp(kind);
           shots[kind] = lab.frame();
-          lab.breakProp(null);
+          await lab.breakProp(null);
         }
         lab.freeze(null);
         await lab.apply(base);
@@ -259,11 +259,11 @@ async function shard(siteUrl, { name, backend, start, steps, walk = false, runne
       check(samePicture(fourDiff), `${name}: Geometry detail 4× changed the picture: ${where(fourDiff)}`);
       const spoiled = {};
       for (const kind of ["normals", "uvs"]) {
-        check(counts.broken[kind], `${name}: no prop on screen to break the ${kind} of`);
+        check(counts.broken[kind], `${name}: no prop shows at least 0.5% of the frame with ${kind} to break (lab.breakProp), so the picture check's own proof could not run`);
         spoiled[kind] = pictureDiff(plainPixels, await pixels(page, counts.shots[kind]));
         check(!samePicture(spoiled[kind]), `${name}: the picture check missed a prop (${counts.broken[kind].name}, ${(counts.broken[kind].coverage * 100).toFixed(1)}% of the frame) with broken ${kind}: ${where(spoiled[kind])}`);
       }
-      const brokenNote = ["normals", "uvs"].map((kind) => `broken ${kind} of ${counts.broken[kind].name} (${(counts.broken[kind].coverage * 100).toFixed(1)}% of the frame) caught, worst tile ${spoiled[kind].worstTile.score.toFixed(1)}, ${(spoiled[kind].changedShare * 100).toFixed(1)}% of tiles changed`).join("; ");
+      const brokenNote = ["normals", "uvs"].map((kind) => `broken ${kind} of ${counts.broken[kind].name} (${(counts.broken[kind].coverage * 100).toFixed(1)}% of the frame visible, box ${(counts.broken[kind].boxCoverage * 100).toFixed(1)}%) caught, worst tile ${spoiled[kind].worstTile.score.toFixed(1)}, ${(spoiled[kind].changedShare * 100).toFixed(1)}% of tiles changed`).join("; ");
       const copy = await page.evaluate(() => {
         const button = [...document.querySelectorAll(".ql button")].find((b) => b.textContent === "Copy results");
         return { enabled: Boolean(button && !button.disabled), text: globalThis.labRunner.copied() };

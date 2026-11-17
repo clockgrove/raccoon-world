@@ -34,11 +34,41 @@ function nearest(a, b, radius) {
 }
 
 /**
- * How two frames of the same size differ, tile by tile. Each pixel is compared with the best match within `radius`
- * pixels in the other frame, both ways round, so a one-pixel shift of an edge is not a difference.
+ * A frame box-filtered down to `width` × `height`, a whole-number fraction of its size: Ultra draws at DPR 2, so its
+ * frame is twice Low's on each side, and the two are compared at Low's size. Alpha is kept as is.
+ */
+export function shrink(frame, width, height) {
+  const fx = frame.width / width;
+  const fy = frame.height / height;
+  if (!Number.isInteger(fx) || !Number.isInteger(fy) || fx < 1 || fy < 1) throw new Error(`frames differ in size: ${frame.width}x${frame.height} is not a whole multiple of ${width}x${height}`);
+  if (fx === 1 && fy === 1) return frame;
+  const data = new Uint8ClampedArray(width * height * 4);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const sum = [0, 0, 0, 0];
+      for (let sy = 0; sy < fy; sy++) {
+        for (let sx = 0; sx < fx; sx++) {
+          const i = ((y * fy + sy) * frame.width + x * fx + sx) * 4;
+          for (let c = 0; c < 4; c++) sum[c] += frame.data[i + c];
+        }
+      }
+      for (let c = 0; c < 4; c++) data[(y * width + x) * 4 + c] = Math.round(sum[c] / (fx * fy));
+    }
+  }
+  return { data, width, height };
+}
+
+/**
+ * How two frames differ, tile by tile. Each pixel is compared with the best match within `radius`
+ * pixels in the other frame, both ways round, so a one-pixel shift of an edge is not a difference. A frame that is a
+ * whole multiple of the other's size (a higher DPR) is box-filtered down to it first.
  */
 export function pictureDiff(a, b, { tile = 8, radius = 1 } = {}) {
-  if (a.width !== b.width || a.height !== b.height) throw new Error(`frames differ in size: ${a.width}x${a.height} and ${b.width}x${b.height}`);
+  // Frames drawn at different DPRs are compared at the smaller one's size.
+  const width0 = Math.min(a.width, b.width);
+  const height0 = Math.min(a.height, b.height);
+  a = shrink(a, width0, height0);
+  b = shrink(b, width0, height0);
   const { width, height } = a;
   const ab = nearest(a, b, radius);
   const ba = nearest(b, a, radius);

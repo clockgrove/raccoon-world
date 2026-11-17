@@ -652,10 +652,14 @@ const lab: LabHandle & Record<string, unknown> = {
     return renderer.domElement.toDataURL("image/png");
   },
   /**
-   * CI journey only: spoils one small generated prop (the one covering nearest 2% of the frame) by negating its normals
-   * or scrambling its UVs, so the journey can prove its picture checks see a small break. null puts the geometry back.
+   * CI journey only: spoils one small prop by negating its normals or scrambling its UVs, so the journey can prove its
+   * picture checks see a small break. The prop is chosen by the pixels it really shows, not its bounding box: each
+   * candidate that has the attribute to break (and, for UVs, a base-colour map they would move) is hidden for one
+   * frame, and the one whose hiding changes nearest 2% of the frame (at least 0.5%) is spoiled. A prop hidden behind
+   * something, or with nothing to break, is never picked; a stand-in counts like a loaded GLB. null puts the
+   * geometry back. Resolves to null when no prop shows enough of itself.
    */
-  breakProp(kind: "normals" | "uvs" | null): { name: string; coverage: number } | null {
+  async breakProp(kind: "normals" | "uvs" | null): Promise<{ name: string; coverage: number; boxCoverage: number } | null> {
     for (const [mesh, original] of brokenGeometry) {
       mesh.geometry.dispose();
       mesh.geometry = original;
@@ -664,12 +668,22 @@ const lab: LabHandle & Record<string, unknown> = {
     if (!kind) return null;
     camera.updateMatrixWorld(true);
     camera.updateProjectionMatrix();
-    let best: { holder: THREE.Object3D; coverage: number } | null = null;
+    const breakable = (holder: THREE.Object3D) => {
+      let ok = false;
+      holder.traverse((node: THREE.Object3D) => {
+        const mesh = node as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        const materials = (Array.isArray(mesh.material) ? mesh.material : [mesh.material]) as (THREE.Material & { map?: THREE.Texture | null })[];
+        if (kind === "normals" ? mesh.geometry.getAttribute("normal") : mesh.geometry.getAttribute("uv") && materials.some((m) => m?.map)) ok = true;
+      });
+      return ok;
+    };
+    const candidates: { holder: THREE.Object3D; boxCoverage: number }[] = [];
     (set.groups.props as THREE.Object3D).traverse((holder) => {
       if (!holder.name.startsWith("prop-")) return;
       let shown = true;
       for (let node: THREE.Object3D | null = holder; node; node = node.parent) shown &&= node.visible;
-      if (!shown) return;
+      if (!shown || !breakable(holder)) return;
       holder.updateMatrixWorld(true);
       const box = new THREE.Box3().setFromObject(holder);
       if (box.isEmpty()) return;
@@ -683,11 +697,40 @@ const lab: LabHandle & Record<string, unknown> = {
       const width = Math.min(1, hi.x) - Math.max(-1, lo.x);
       const height = Math.min(1, hi.y) - Math.max(-1, lo.y);
       if (width <= 0 || height <= 0) return;
-      const coverage = (width * height) / 4;
-      if (!best || Math.abs(coverage - 0.02) < Math.abs(best.coverage - 0.02)) best = { holder, coverage };
+      candidates.push({ holder, boxCoverage: (width * height) / 4 });
     });
+    // The pixels a frame shows, to count what hiding a candidate changes.
+    const pixelsOf = async (url: string) => {
+      const bitmap = await createImageBitmap(await (await fetch(url)).blob());
+      const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+      ctx.drawImage(bitmap, 0, 0);
+      return ctx.getImageData(0, 0, bitmap.width, bitmap.height).data;
+    };
+    const frameUrl = () => {
+      render();
+      return renderer.domElement.toDataURL("image/png");
+    };
+    const base = await pixelsOf(frameUrl());
+    let best: { holder: THREE.Object3D; coverage: number; boxCoverage: number } | null = null;
+    // The few whose boxes are nearest 2% (a box is never smaller than what the prop shows).
+    const nearest = candidates.filter((c) => c.boxCoverage >= 0.005).sort((x, y) => Math.abs(x.boxCoverage - 0.02) - Math.abs(y.boxCoverage - 0.02)).slice(0, 8);
+    for (const c of nearest) {
+      c.holder.visible = false;
+      let hidden: Uint8ClampedArray;
+      try {
+        hidden = await pixelsOf(frameUrl());
+      } finally {
+        c.holder.visible = true;
+      }
+      let changed = 0;
+      for (let i = 0; i < base.length; i += 4) if (Math.abs(base[i] - hidden[i]) + Math.abs(base[i + 1] - hidden[i + 1]) + Math.abs(base[i + 2] - hidden[i + 2]) > 24) changed++;
+      const coverage = changed / (base.length / 4);
+      if (coverage < 0.005) continue;
+      if (!best || Math.abs(coverage - 0.02) < Math.abs(best.coverage - 0.02)) best = { holder: c.holder, coverage, boxCoverage: c.boxCoverage };
+    }
     if (!best) return null;
-    const chosen = best as { holder: THREE.Object3D; coverage: number };
+    const chosen = best as { holder: THREE.Object3D; coverage: number; boxCoverage: number };
     chosen.holder.traverse((node) => {
       const mesh = node as THREE.Mesh;
       if (!mesh.isMesh) return;
@@ -710,7 +753,8 @@ const lab: LabHandle & Record<string, unknown> = {
       brokenGeometry.set(mesh, source);
       mesh.geometry = spoiled;
     });
-    return { name: chosen.holder.name.slice("prop-".length), coverage: Math.round(chosen.coverage * 1000) / 1000 };
+    const round = (v: number) => Math.round(v * 1000) / 1000;
+    return { name: chosen.holder.name.slice("prop-".length), coverage: round(chosen.coverage), boxCoverage: round(chosen.boxCoverage) };
   },
   stevie: () => stevie?.metrics ?? null,
   probeError: () => probeError,

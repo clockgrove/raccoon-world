@@ -276,14 +276,20 @@ export async function runSweep(lab: LabHandle, opts: RunOptions = {}): Promise<S
   return report;
 }
 
-/** A cost's ranking value: GPU p50 when the adapter has timestamps, else frame p50, else frame p95. */
-const costValue = (c: { gpuMsP50: number | null; frameMsP50?: number | null; frameMsP95: number | null }) => c.gpuMsP50 ?? c.frameMsP50 ?? c.frameMsP95;
+/**
+ * A probe saving under this many ms is no measurement: without GPU timestamps the probe reads frame p50, which under
+ * vsync is whole refreshes, so a knob that does not cross a refresh boundary saves 0 whatever it costs. Such a knob
+ * falls through to the sweep's costs and the default order instead of outranking them with a zero.
+ */
+export const PROBE_MIN_SAVING_MS = 0.25;
 
-/** The largest measured value per knob, most expensive first. */
-function ranked(costs: readonly { knob: Knob; gpuMsP50: number | null; frameMsP50?: number | null; frameMsP95: number | null }[] | undefined): { knobs: Knob[]; best: Map<Knob, number> } {
+type Costed = { knob: Knob; gpuMsP50: number | null; frameMsP50?: number | null; frameMsP95: number | null };
+
+/** The largest value per knob, most expensive first; `value` returns null for a cost that does not count. */
+function ranked(costs: readonly Costed[] | undefined, value: (c: Costed) => number | null): { knobs: Knob[]; best: Map<Knob, number> } {
   const best = new Map<Knob, number>();
   for (const c of costs ?? []) {
-    const v = costValue(c);
+    const v = value(c);
     if (v == null) continue;
     const prev = best.get(c.knob);
     if (prev === undefined || v > prev) best.set(c.knob, v);
@@ -292,12 +298,29 @@ function ranked(costs: readonly { knob: Knob; gpuMsP50: number | null; frameMsP5
 }
 
 /**
- * Knobs most expensive first: what the cost probe measured on this device at Ultra, then (for knobs it could not
- * measure) the sweep's costs on top of Medium, then the estimated default order.
+ * The probe's ranking value. One measure for every knob, so knobs are compared in the same unit: GPU p50 when the
+ * adapter has timestamps, else frame p50, else frame p95. A saving under PROBE_MIN_SAVING_MS does not count.
+ */
+function probeValue(probe: readonly ProbeCost[] | undefined): (c: Costed) => number | null {
+  const all = probe ?? [];
+  const field: "gpuMsP50" | "frameMsP50" | "frameMsP95" = all.some((c) => c.gpuMsP50 != null) ? "gpuMsP50" : all.some((c) => c.frameMsP50 != null) ? "frameMsP50" : "frameMsP95";
+  return (c) => {
+    const v = c[field] ?? null;
+    return v != null && v >= PROBE_MIN_SAVING_MS ? v : null;
+  };
+}
+
+/**
+ * Knobs most expensive first: what the cost probe measured on this device at Ultra (savings above the noise floor),
+ * then the sweep's costs on top of Medium (GPU p50, else frame p95) for knobs the probe could not tell apart, then
+ * the estimated default order.
  */
 export function rankKnobs(probe: readonly ProbeCost[] | undefined, sweep?: SweepReport["costs"]): { ranking: Knob[]; rankedBy: CeilingReport["rankedBy"] } {
-  const first = ranked(probe);
-  const second = ranked(sweep?.filter((c) => !first.best.has(c.knob)));
+  const first = ranked(probe, probeValue(probe));
+  const second = ranked(
+    sweep?.filter((c) => !first.best.has(c.knob)),
+    (c) => c.gpuMsP50 ?? c.frameMsP95,
+  );
   const seen = new Set<Knob>([...first.knobs, ...second.knobs]);
   const rest = [...DEFAULT_COST_ORDER, ...KNOBS].filter((k, i, all) => !seen.has(k) && all.indexOf(k) === i);
   return { ranking: [...first.knobs, ...second.knobs, ...rest], rankedBy: first.knobs.length ? "probe" : second.knobs.length ? "sweep" : "default" };

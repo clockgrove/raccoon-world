@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { clearlyDifferent, notBlank, pictureDetail, pictureDiff, samePicture, TILE_LIMIT } from "../scripts/picture.mjs";
+import { clearlyDifferent, notBlank, pictureDetail, pictureDiff, samePicture, shrink, TILE_LIMIT } from "../scripts/picture.mjs";
 
 const W = 320;
 const H = 180;
@@ -96,4 +96,25 @@ test("clearly different: two different frames are, noise is not", () => {
   assert.ok(clearlyDifferent(pictureDiff(a, inverted)));
   assert.ok(!clearlyDifferent(pictureDiff(a, noisy(a, 3, 5))));
   assert.ok(!clearlyDifferent(pictureDiff(a, a)));
+});
+
+/** The frame drawn at twice the size (DPR 2): every pixel repeated in a 2 × 2 block. */
+function doubled(frame) {
+  const data = new Uint8ClampedArray(frame.width * frame.height * 16);
+  for (let y = 0; y < frame.height * 2; y++) {
+    for (let x = 0; x < frame.width * 2; x++) {
+      const i = ((y >> 1) * frame.width + (x >> 1)) * 4;
+      data.set(frame.data.subarray(i, i + 4), (y * frame.width * 2 + x) * 4);
+    }
+  }
+  return { data, width: frame.width * 2, height: frame.height * 2 };
+}
+
+test("a frame drawn at DPR 2 is compared at the other's size (Ultra against Low)", () => {
+  const plain = scene();
+  assert.deepEqual(shrink(doubled(plain), W, H).data, plain.data);
+  assert.ok(samePicture(pictureDiff(doubled(plain), plain)));
+  const spoiled = scene({ patch: { x: 150, y: 20, paint: () => [255, 255, 255] } });
+  assert.ok(!samePicture(pictureDiff(plain, doubled(spoiled))));
+  assert.throws(() => pictureDiff(plain, { data: new Uint8ClampedArray(100 * 100 * 4), width: 100, height: 100 }), /whole multiple/u);
 });
