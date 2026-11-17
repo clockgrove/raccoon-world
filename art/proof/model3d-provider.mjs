@@ -22,7 +22,13 @@ export default {
   vision() {
     throw new Error("the 3D proof answers no vision calls");
   },
-  decide() {
+  // The model3d-facing decision (Assetgrove 0.2): the offline proof's model faces the route's forward, +x (yaw 90).
+  facing() {
+    return { answer: { type: "choice", choice: "90" }, confidence: 0.7, costUsd: 0.00002 };
+  },
+  decide(request) {
+    const q = request?.question;
+    if (q?.type === "choice") return { answer: { type: "choice", choice: Object.hasOwn(q.options, "front") ? "front" : Object.keys(q.options)[0] }, confidence: 0.7, costUsd: 0.00002 };
     return { answer: { type: "score", score: 3.6 }, confidence: 0.7, costUsd: 0.00002 };
   },
   model(request, index) {
