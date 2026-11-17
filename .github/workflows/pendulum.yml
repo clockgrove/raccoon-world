@@ -1,9 +1,9 @@
 # Pendulum: unattended Objectives. Written by `/pendulum setup`; edit the env block, not the jobs.
 # Triggers: cron, manual (one issue), a new pendulum:objective label or its removal, the review job's own last step,
 # pull_request when the Pendulum App labels a PR pendulum:review, and a review submitted on a Pendulum PR. Never from a fork: the Objective text (a writer) and the label (a
-# maintainer) are the only inputs. PENDULUM_AUTO_MERGE is ON: Pendulum merges the reviewed head with
-# no human read. The gate is your CI workflow's checks on that exact head (and the merge queue's
-# commit), the comment-only reviewer pass, and the queue's own re-run. Set it false for ready PRs.
+# maintainer) are the only inputs. PENDULUM_AUTO_MERGE (below) decides the merge: true merges the reviewed head
+# with no human read, gated by your CI workflow's checks on that exact head (and the merge queue's commit), the
+# comment-only reviewer pass and the queue's own re-run; false leaves a ready-for-review PR.
 name: pendulum
 on:
   schedule:
@@ -38,8 +38,10 @@ env:
   PENDULUM_MAX_CONCURRENT: 2
   PENDULUM_DAILY_USD: 25
   PENDULUM_MAX_USD: 25
+  PENDULUM_MAX_OBJECTIVE_USD: "" # one Objective's dollars across all its stages and parts; empty: no cap
   PENDULUM_TIMEOUT_MINUTES: 240 # under 360 on hosted runners; mirrored in timeout-minutes below
   PENDULUM_AUTO_MERGE: "true"
+  PENDULUM_PUBLISH_TRANSCRIPTS: "false" # true: on a public repository the usage artifacts carry the agent's event stream and sessions readable by anyone signed in to GitHub; false seals them (docs/PRIVACY.md)
   PENDULUM_NOTIFY: kirkmarple-clockgrove#318831919 # login#id: the id pins the account (setup writes it)
   PENDULUM_SETUP: ""
   PENDULUM_INSTALL: bash scripts/clockgrove.sh fetch # auto (from the lockfile), none, or your own command
@@ -81,7 +83,7 @@ jobs:
       wake_at: "${{ steps.f.outputs.wake_at }}"
       wake_kind: "${{ steps.f.outputs.wake_kind }}"
     steps:
-      - uses: clockgrove/pendulum@v0.10.0
+      - uses: clockgrove/pendulum@v0.10.1
         id: f
         with: { mode: dispatch, issue: "${{ inputs.issue }}", app_id: "${{ secrets.PENDULUM_APP_ID }}", app_private_key: "${{ secrets.PENDULUM_APP_PRIVATE_KEY }}", vars: "${{ toJSON(vars) }}" }
   queue-watch:
@@ -101,7 +103,7 @@ jobs:
     permissions: { contents: read, actions: write } # actions: write only for the dispatcher tick
     concurrency: { group: pendulum-queue-watch, cancel-in-progress: false }
     steps:
-      - uses: clockgrove/pendulum@v0.10.0
+      - uses: clockgrove/pendulum@v0.10.1
         id: w
         with: { mode: watch, pr: "${{ needs.dispatch.outputs.queue_watch }}", app_id: "${{ secrets.PENDULUM_APP_ID }}", app_private_key: "${{ secrets.PENDULUM_APP_PRIVATE_KEY }}", vars: "${{ toJSON(vars) }}" }
       - name: Dispatch tick (a watched PR left the queue or stalled there, or the watch's time is up)
@@ -111,13 +113,16 @@ jobs:
   wake:
     # The dispatcher's own next tick, for a wait only time ends (GitHub's cron fires late or not at all): a sandbox
     # stage's lease end (a stage that died silently), a retry the sandbox vendor's quota set, the next try of a start
-    # that failed another way (three failures Block), the UTC day's turn when daily_usd held work back, or one retry
-    # of a read that failed. The dispatcher arms one only when no wake already queued or sleeping ticks before it;
+    # that failed another way (three failures Block), the UTC day's turn when daily_usd held work back, one retry of a
+    # read that failed or of a work job whose final tick may have come before GitHub marked it ended, or the end of a
+    # Running stint's 15-minute grace with no work job alive (a job that ended with no tick of its own is judged then).
+    # The dispatcher arms one only when no wake already queued or sleeping ticks before it;
     # none is ever cancelled, and a second one only ticks twice. It sleeps on a hosted runner and holds one of the
     # account's concurrent-job slots while it sleeps. Cost: a public repository pays nothing and sleeps to every wait
     # (a deadline past 350 minutes in hops, each a plain tick that arms the rest). A private one pays about $0.36 a
     # sleeper-hour (a 2-core Linux runner at $0.006 a minute), so it sleeps only to the short waits (a quota retry, a
-    # failed start's retry, a read retry: minutes each); a lease end and the day's turn wait for events and the cron.
+    # failed start's retry, a retry, a grace's end: minutes each); a lease end and the day's turn wait for events and
+    # the cron.
     name: wake (${{ needs.dispatch.outputs.wake_kind }} ${{ needs.dispatch.outputs.wake_at }})
     needs: dispatch
     if: needs.dispatch.outputs.wake_at != ''
@@ -142,16 +147,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 240
     strategy: { fail-fast: false, matrix: { issue: "${{ fromJSON(needs.dispatch.outputs.issues) }}" } } # the dispatcher picks at most max_concurrent less the ones running, a repository variable's included
-    permissions: { contents: read, issues: write, actions: write } # actions: write for the tick at the end and triage's rerun of failed CI jobs
+    permissions: { contents: read, issues: write, actions: write } # actions: write for the tick at the end, triage's rerun of failed CI jobs and cross-OS CI's dispatch
     concurrency: { group: "pendulum-${{ matrix.issue }}", cancel-in-progress: false } # one job per issue; a repeat waits, siblings keep running
     steps:
-      - uses: clockgrove/pendulum@v0.10.0
+      - uses: clockgrove/pendulum@v0.10.1
         id: account # several accounts (PENDULUM_ACCOUNTS): the one this stage runs on, so the step below gets only its secrets
         if: env.PENDULUM_ACCOUNTS != ''
         with: { mode: account, rendered_accounts: "", issue: "${{ matrix.issue }}", harness: "${{ inputs.harness }}", app_id: "${{ secrets.PENDULUM_APP_ID }}", app_private_key: "${{ secrets.PENDULUM_APP_PRIVATE_KEY }}", vars: "${{ toJSON(vars) }}" }
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { fetch-depth: 0, persist-credentials: false }
-      - uses: clockgrove/pendulum@v0.10.0
+      - uses: clockgrove/pendulum@v0.10.1
         id: f
         with:
           vars: ${{ toJSON(vars) }} # the repository's variables: each PENDULUM_<NAME> one sets that setting over the env block (docs/INSTALL.md, Settings in layers)
@@ -169,7 +174,7 @@ jobs:
           worker_secret_values: ${{ secrets.PENDULUM_WORKER_SECRET_VALUES }} # optional, with PENDULUM_WORKER_SECRETS in the env block: SOURCE=value lines for the worker's shell only; a dedicated key with a gateway-side budget (docs/PLAN.md, Worker secrets)
           # anthropic_oidc_exchange_url: ${{ vars.ANTHROPIC_OIDC_EXCHANGE_URL }} # Claude federation (with id-token: write above)
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }} # credential: plan only; your own repository only
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with: { name: "pendulum-usage-${{ matrix.issue }}", path: "${{ steps.f.outputs.usage_dir }}", retention-days: 90 }
       - name: Dispatch tick (this worker finished; a conflicting PR fires no review job)
@@ -186,13 +191,13 @@ jobs:
     permissions: { contents: read, issues: write, actions: write } # actions: write here, for the tick below and triage's rerun of failed CI jobs
     concurrency: { group: "pendulum-review-${{ github.event.pull_request.number }}", cancel-in-progress: false }
     steps:
-      - uses: clockgrove/pendulum@v0.10.0
+      - uses: clockgrove/pendulum@v0.10.1
         id: account # several accounts (PENDULUM_ACCOUNTS): the one this stage runs on, so the step below gets only its secrets
         if: env.PENDULUM_ACCOUNTS != ''
         with: { mode: account, rendered_accounts: "", harness: "${{ inputs.harness }}", app_id: "${{ secrets.PENDULUM_APP_ID }}", app_private_key: "${{ secrets.PENDULUM_APP_PRIVATE_KEY }}", vars: "${{ toJSON(vars) }}" }
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { fetch-depth: 0, persist-credentials: false }
-      - uses: clockgrove/pendulum@v0.10.0
+      - uses: clockgrove/pendulum@v0.10.1
         id: f
         with:
           vars: ${{ toJSON(vars) }}
@@ -210,7 +215,7 @@ jobs:
           worker_secret_values: ${{ secrets.PENDULUM_WORKER_SECRET_VALUES }} # with PENDULUM_WORKER_SECRETS: the fix and answer passes only, never the reviewer
           # anthropic_oidc_exchange_url: ${{ vars.ANTHROPIC_OIDC_EXCHANGE_URL }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always() && steps.f.outputs.issue_number != ''
         with: { name: "pendulum-usage-${{ steps.f.outputs.issue_number }}-review", path: "${{ steps.f.outputs.usage_dir }}", retention-days: 90, overwrite: true } # one name per review run; the bench lists it exactly
       - name: Dispatch tick (a worker slot freed)
