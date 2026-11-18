@@ -216,7 +216,7 @@ Measured figures are from #77's recorded calls (`references/stevie/77-3d/provena
 
 ## CI
 
-`bash scripts/clockgrove.sh slice` is the slice's CI check, its own step in the `ci` workflow after the world-pack check. It fetches the pinned checkout if needed, applies the shared Node version gate, then runs `node spikes/look-3d/scripts/look.mjs journey`, which:
+`bash scripts/clockgrove.sh slice` is the slice's CI check, its own step in the `ci` workflow after the world-pack check. It runs in the merge queue (on the commit that lands), in the daily run on main and in a manual run (`workflow_dispatch`, on any branch), not on a pull request. It fetches the pinned checkout if needed, applies the shared Node version gate, then runs `node spikes/look-3d/scripts/look.mjs journey`, which:
 
 - builds this page at the pinned commit with the pinned Vite;
 - opens it in Playwright's Chromium under SwiftShader on WebGPU and on forced WebGL2, at the low and high tiers, each held and checked;
