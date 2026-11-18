@@ -13,8 +13,7 @@ Neither comes from npm. Each pin lives only in its file. Moving a pin is a revie
 
 | Path | What it is |
 | --- | --- |
-| `art/style-bible.md` | The style bible: the one statement of the world's look (Assetgrove's Markdown format: DTCG tokens, prose, Do's and Don'ts, anchors, identity locks). |
-| `art/style-bible.json` | Derived from the Markdown bible for the commands that read JSON (`generate-sheet`, `import`). Regenerate with `node art/tools/derive-bible.mjs`; never edit by hand. |
+| `art/style-bible.md` | The style bible: the one statement of the world's look (Assetgrove's Markdown format: DTCG tokens, prose, Do's and Don'ts, anchors, identity locks, the perspective sample and subject descriptions). Every Assetgrove command reads it, `generate-sheet` and `import` included, and its identity locks with it. |
 | `art/target-profile.json` | The target profile: Clockgrove's manifest v2 shape, frame grid, layout, licence rule, review field, identity and QA settings, and the validator. |
 | `reference/asset-style.json` | The world's style profile as Clockgrove reads it (soft alpha, unrestricted colour). |
 | `art/stevie/<family>/spec.json` | What to draw: Stevie, the family, 4 frames of 32×32, anchor (16, 30), quadruped gait. |
@@ -67,8 +66,8 @@ A run is up to 4 candidates of one family. On the sheet path a candidate is one 
 
 ```sh
 bash scripts/assetgrove.sh run generate-sheet \
-  --spec art/stevie/shelter/spec.json --bible art/style-bible.json \
-  --profile art/target-profile.json --lock-bible art/style-bible.md \
+  --spec art/stevie/shelter/spec.json --bible art/style-bible.md \
+  --profile art/target-profile.json \
   --cap 1.25 --dry-run --json
 ```
 
@@ -81,8 +80,8 @@ This is the step that spends money. It runs only in the owner session, under the
 ```sh
 for candidate in 1 2 3 4; do
   bash scripts/assetgrove.sh run generate-sheet \
-    --spec art/stevie/shelter/spec.json --bible art/style-bible.json \
-    --profile art/target-profile.json --lock-bible art/style-bible.md \
+    --spec art/stevie/shelter/spec.json --bible art/style-bible.md \
+    --profile art/target-profile.json \
     --cap 1.25 --imports .assetgrove/imports --round "$candidate" --json
 done
 ```

@@ -3,8 +3,8 @@
 // Assetgrove and Clockgrove run for real from their pinned checkouts; only the model provider is
 // scripted (art/proof/provider.mjs).
 //
-// 1. bible:       art/style-bible.json is exactly what art/tools/derive-bible.mjs derives from the
-//                 Markdown bible, and the bible keeps its anchors and identity locks as decided. Every
+// 1. bible:       art/style-bible.md, the one style bible every Assetgrove command reads, keeps its
+//                 anchors and identity locks as decided. Every
 //                 positive anchor is approved material: its bytes are an entry of references/approved.json,
 //                 wherever it lives, so an unpicked candidate in any folder fails (art/tools/anchors.mjs).
 // 2. style:       the target profile's style matches the Clockgrove style profile
@@ -60,7 +60,6 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
-import { deriveBible, DERIVED } from "./derive-bible.mjs";
 import { calibrate, fringed, stripBackgrounds, stripFrames } from "./fringe.mjs";
 import { decodePng, encodePng } from "../../spikes/stevie-3d/scripts/png.mjs";
 import { REGISTER, registerProblems, unapprovedAnchors } from "./anchors.mjs";
@@ -209,11 +208,13 @@ async function throwawayCopy(label) {
   return dir;
 }
 
+/** The style view the pinned Assetgrove's stage, generate-sheet and import read from art/style-bible.md. */
+async function styleView() {
+  const { loadStyleBible } = await import(pathToFileURL(join(assetgroveDir, "src/inputs.ts")).href);
+  return (await loadStyleBible(join(root, "art/style-bible.md"))).value;
+}
+
 async function checkBible() {
-  const fresh = await deriveBible(assetgroveDir);
-  const committed = await readFile(DERIVED, "utf8").catch(() => "");
-  if (committed !== fresh)
-    fail("bible", "art/style-bible.json differs from art/style-bible.md; run node art/tools/derive-bible.mjs");
   const described = await assetgrove(["bible", "describe", "--bible", "art/style-bible.md"]);
   if (described.code !== 0) {
     fail("bible", `Assetgrove refused art/style-bible.md: ${described.doc?.error?.message ?? described.stderr}`);
@@ -268,7 +269,7 @@ async function checkBible() {
 }
 
 async function checkGracie() {
-  const bible = await json("art/style-bible.json");
+  const bible = await styleView();
   // Her identity traits are the ones her identity lock declares, compared exactly with the decided set, as the
   // identity locks are; her prose description is documentation a person reviews with the bible, not parsed here.
   const described = await assetgrove(["bible", "describe", "--bible", "art/style-bible.md"]);
@@ -432,7 +433,7 @@ async function checkStyle() {
   const actor = clockgrove.sizes?.actor;
   if (!actor || profile.frames.width > actor.maxWidth || profile.frames.height > actor.maxHeight)
     fail("style", `the profile's ${profile.frames.width}x${profile.frames.height} frame exceeds the actor limit`);
-  const bible = await json("art/style-bible.json");
+  const bible = await styleView();
   if (JSON.stringify(profile.values?.palette) !== JSON.stringify([...bible.palette].sort()))
     fail("style", "art/target-profile.json values.palette must be the bible's palette, sorted");
   if (profile.identity?.mode !== "shadow" || profile.identity?.threshold !== 0.68)
@@ -459,8 +460,8 @@ async function checkInputs(qaPerCandidateUsd) {
       fail("inputs", `${dir}/run.json: at most ${MAX_CANDIDATES} candidates, and no capUsd (Assetgrove's run options carry none; a run's cap is $${MAX_RUN_USD})`);
     const perCandidateCap = MAX_RUN_USD / settings.candidates;
     const dry = await assetgrove([
-      "generate-sheet", "--spec", `${dir}/spec.json`, "--bible", "art/style-bible.json",
-      "--profile", "art/target-profile.json", "--lock-bible", "art/style-bible.md",
+      "generate-sheet", "--spec", `${dir}/spec.json`, "--bible", "art/style-bible.md",
+      "--profile", "art/target-profile.json",
       "--cap", String(perCandidateCap), "--dry-run",
     ]);
     if (dry.code !== 0) {
@@ -575,8 +576,8 @@ async function proof() {
   const target = await throwawayCopy("proof");
   const imports = await mkdtemp(join(tmpdir(), "raccoon-world-imports-"));
   const sheetArgs = [
-    "generate-sheet", "--spec", "art/stevie/shelter/spec.json", "--bible", "art/style-bible.json",
-    "--profile", "art/target-profile.json", "--lock-bible", "art/style-bible.md",
+    "generate-sheet", "--spec", "art/stevie/shelter/spec.json", "--bible", "art/style-bible.md",
+    "--profile", "art/target-profile.json",
     "--cap", "1.25", "--imports", imports, "--runs", join(imports, "runs"), "--provider-script", "art/proof/provider.mjs",
   ];
   try {
@@ -799,7 +800,7 @@ async function checkModel3d() {
   const settings = await json("art/stevie/character-3d/run.json");
   const runs = await mkdtemp(join(tmpdir(), "raccoon-world-runs3d-"));
   const target = await throwawayCopy("model3d");
-  const base = ["--spec", SPEC, "--bible", "art/style-bible.json", "--profile", PROFILE, "--runs", runs];
+  const base = ["--spec", SPEC, "--bible", "art/style-bible.md", "--profile", PROFILE, "--runs", runs];
   try {
     const dry = await assetgrove([
       "stage", ...base, "--candidates", String(settings.candidates), "--cap", String(MAX_RUN_USD), "--dry-run",

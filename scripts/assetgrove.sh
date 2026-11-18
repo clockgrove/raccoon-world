@@ -4,7 +4,7 @@
 #
 # Usage: bash scripts/assetgrove.sh fetch          clone the pinned commit and install its locked dependencies
 #        bash scripts/assetgrove.sh run <args...>  run the pinned Assetgrove CLI in this directory
-#        bash scripts/assetgrove.sh check          the art checks: derived bible copy, style profile match,
+#        bash scripts/assetgrove.sh check          the art checks: the bible's anchors and locks, style profile match,
 #                                                  run forecasts and the offline proof (art/tools/check.mjs)
 #
 # ASSETGROVE_DIR names the checkout (default: .assetgrove-src in this repository, which Git ignores).
