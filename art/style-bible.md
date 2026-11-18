@@ -221,7 +221,7 @@ subjects:
 ---
 # Raccoon World art direction
 
-This is the one statement of Raccoon World's look. Assetgrove reads it as the world's constitution: briefs, specs and run settings can steer mood and pose but never override it. `art/style-bible.json` is derived from this file by `node art/tools/derive-bible.mjs`; never edit it by hand.
+This is the one statement of Raccoon World's look. Assetgrove reads it as the world's constitution: briefs, specs and run settings can steer mood and pose but never override it. Every Assetgrove command reads this file directly, the identity locks with it.
 
 ## The look
 
