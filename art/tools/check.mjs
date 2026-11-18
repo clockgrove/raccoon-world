@@ -11,21 +11,19 @@
 //                 (reference/asset-style.json), and its palette value is the bible's palette.
 // 3. inputs:      each of Stevie's six families has its spec, brief and run settings, and one run
 //                 (up to 4 candidates) forecasts at no more than $5 in an offline dry run.
-// 4. placeholders: Clockgrove's asset check accepts the approved placeholder set, its atlas, its
-//                 licence report and its approved golden scene (in a throwaway copy).
-// 5. proof:       an offline Assetgrove run writes Stevie's shelter strip into a throwaway copy of
+// 4. proof:       an offline Assetgrove run writes Stevie's shelter strip into a throwaway copy of
 //                 this repository and Clockgrove's validator accepts it on the first try, with
 //                 review pending and complete provenance; a short sheet is refused, never padded. The
 //                 validator also ran the matting-fringe QA on the strip, and refuses it once its soft edge
 //                 keeps the matte background its provenance records (issue 140).
-// 6. licences:    every committed manifest's licence is the licence REUSE.toml gives its source file,
+// 5. licences:    every committed manifest's licence is the licence REUSE.toml gives its source file,
 //                 so a CC-BY-4.0 pick can't land under the `**` MIT annotation.
-// 7. gracie:      Gracie's identity lock declares exactly the decided traits (a missing, extra, changed or moved
+// 6. gracie:      Gracie's identity lock declares exactly the decided traits (a missing, extra, changed or moved
 //                 trait fails, named; her prose description is not parsed), her photos and approved views
 //                 are her subject's references, her approved turnaround is Kirk's pick (c1) with its
 //                 hashes and output grant, her character-3d spec names her subject and gait and the
 //                 pinned Assetgrove's character-3d reader accepts it, and her turnaround run forecasts within its $5 cap (issue 50).
-// 8. model3d:     the 3D target profile's shape (art/tools/model3d.mjs profile) and the pinned Assetgrove
+// 7. model3d:     the 3D target profile's shape (art/tools/model3d.mjs profile) and the pinned Assetgrove
 //                 reads it, its rig and walk; Stevie's and Gracie's character-3d specs; Stevie's 3D run
 //                 forecasts within $5; a scripted stage and pick write a rigged .glb with a generated idle
 //                 (Assetgrove's draft motion, throwaway copy only) and walk into a throwaway copy, and the
@@ -35,17 +33,21 @@
 //                 against an 8 m spec); it renders
 //                 through the pinned renderer's world-content seam (art/tools/model3d-render.mjs); a
 //                 free-plan grant is refused with exit 7 (issues 39 and 82).
-// 9. cost:        recorded gateway answers (art/proof/gateway/) through a local stub of the generation lookup:
+// 8. cost:        recorded gateway answers (art/proof/gateway/) through a local stub of the generation lookup:
 //                 a turnaround call records the cost the gateway reports for its generation (the AI SDK's
 //                 getGenerationInfo), else its reservation stays its committed cost, never free, also when a
 //                 reported cost rounds to 0 in the ledger main() writes (art/tools/turnaround.mjs, issue 140).
-// 10. fringe:     the matting-fringe QA (art/tools/fringe.mjs): every approved frame passes, fringed and
+// 9. fringe:     the matting-fringe QA (art/tools/fringe.mjs): every approved frame passes, fringed and
 //                 pale-fur fringed counter-examples fail, soft strands pass, and the profile's recorded
 //                 calibration (animation.matting) is what the repository measures (issue 140).
-// 11. facts:     the 3D spike's media decisions read structured facts (issue 142): a candidate mesh by
+// 10. facts:     the 3D spike's media decisions read structured facts (issue 142): a candidate mesh by
 //                 what its GLB holds (a walk file is never one), a texture cap by the manifest's tier and the
 //                 cast decision (Gracie 2048 px, a phone tier its manifest's cap), an idle by what the clip
 //                 declares and whether its keys move; on generated fixtures and Stevie's committed manifest.
+//
+// Clockgrove's asset deploy gate (licence, provenance and review of every asset, the reviewed atlas,
+// the licence report and the golden scene) is not one of these: `bash scripts/qualify.sh assets`
+// runs it, its own step in CI.
 //
 // Assetgrove runs under throwaway developer settings (headless, only the scripted provider, the
 // proof's provider scripts and validators approved by hash) in a temporary directory outside the
@@ -474,22 +476,6 @@ async function checkInputs(qaPerCandidateUsd) {
       fail("inputs", `${family}: one run forecasts $${forecast.toFixed(3)}, over its $${MAX_RUN_USD} cap`);
   }
   return forecasts;
-}
-
-async function checkPlaceholders() {
-  const copy = await throwawayCopy("placeholders");
-  try {
-    const { stdout } = await run(
-      process.execPath,
-      [join(clockgroveDir, "packages/assets/bin/clockgrove-assets.mjs"), "check", "--world", copy],
-      { env, maxBuffer: 16 << 20 },
-    );
-    return stdout.trim();
-  } catch (error) {
-    fail("placeholders", `Clockgrove's asset check refused:\n${error.stderr ?? error.message}`);
-  } finally {
-    await rm(copy, { recursive: true, force: true });
-  }
 }
 
 /** REUSE.toml's annotations, in file order: { paths: [glob], precedence, license }. */
@@ -1052,7 +1038,6 @@ try {
   const fringe = await checkFringe();
   const proved = await proof();
   const forecasts = await checkInputs(proved?.qaPerCandidateUsd ?? 0);
-  const placeholders = await checkPlaceholders();
   const licensedManifests = await checkLicences();
   const model3d = await checkModel3d();
   const facts = await checkFacts();
@@ -1065,7 +1050,7 @@ try {
     process.exitCode = 1;
   } else
     console.log(
-      JSON.stringify({ status: "ok", validator: proved.validator, placeholders, licensedManifests, runForecastUsd: forecasts, recordedAnswers, fringe, model3d, facts }),
+      JSON.stringify({ status: "ok", validator: proved.validator, licensedManifests, runForecastUsd: forecasts, recordedAnswers, fringe, model3d, facts }),
     );
 } catch (error) {
   console.error(error.message);
