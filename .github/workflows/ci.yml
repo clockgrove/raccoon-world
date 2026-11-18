@@ -7,11 +7,17 @@ name: CI
 # and the art passes Clockgrove's asset deploy gate (scripts/qualify.sh assets).
 # The `visual` job captures the Wave 4 golden states and runs the S6 browser journey (#13); a manual
 # run (workflow_dispatch) on main repeats the capture for the owner's digest comparison.
+#
+# When it runs: on every pull request and every merge-queue entry, once a day on main, and by hand.
+# Not on a push to main: main only moves through the merge queue, and the queue's run tests the very
+# commit that lands (the same SHA), so a push run tested it a second time. The daily run is what tells
+# main went red on its own (a new pin, toolchain or tool change upstream), and the base-failure check
+# Pendulum makes reads the check runs on main's commits, which the queue's runs are.
 on:
   pull_request:
   merge_group:
-  push:
-    branches: [main]
+  schedule:
+    - cron: "43 11 * * *" # daily, 3:43 AM Pacific (PST)
   workflow_dispatch:
 
 concurrency:
@@ -59,16 +65,22 @@ jobs:
       - name: Check the art against Clockgrove's asset gates
         run: bash scripts/qualify.sh assets
 
-      # The slice takes about 7 of the job's 12 minutes on the software GPU. A change made only of
-      # reference images and Markdown can't change what it draws, so it skips; anything else, any
-      # model under references/stevie/77-3d or references/ceiling-3d, and every push to main runs it.
+      # The slice takes about 20 of the job's 28 minutes on the software GPU, so it runs where it
+      # decides what lands: in the merge queue, on the exact commit that will be main, and in the daily
+      # and manual runs. A pull request skips it: the queue draws the same slice on the commit that
+      # lands, and a red there sends the PR back (Pendulum gives its PRs a fix pass for it). To see the
+      # slice on a branch before queueing, run this workflow by hand on it (workflow_dispatch).
+      # In the queue, a change made only of reference images and Markdown can't change what it draws,
+      # so it skips; anything else, and any model under references/stevie/77-3d or
+      # references/ceiling-3d, runs it.
       - name: Decide whether the change can affect the 3D slice
         id: slice
         env:
           EVENT: ${{ github.event_name }}
-          BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          BASE: ${{ github.event.merge_group.base_sha }}
         run: |
-          if [ "$EVENT" = push ] || [ -z "$BASE" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if [ "$EVENT" = pull_request ]; then echo "run=false" >> "$GITHUB_OUTPUT"; echo "Pull requests skip the slice: the merge queue draws it on the commit that lands."; exit 0; fi
+          if [ "$EVENT" != merge_group ] || [ -z "$BASE" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; fi
           git fetch -q --depth=1 --no-tags origin "$BASE"
           changed=$(git diff --name-only "$BASE" HEAD)
           printf '%s\n' "$changed"
@@ -81,7 +93,7 @@ jobs:
         run: bash scripts/clockgrove.sh slice
 
       # Raccoon World's art inputs against Assetgrove at the commit pinned in ASSETGROVE_COMMIT: the
-      # derived bible copy, the style profile match, the run forecasts and the offline proof. The model
+      # bible's anchors and identity locks, the style profile match, the run forecasts and the offline proof. The model
       # provider is scripted (art/proof/provider.mjs), so no key is passed and nothing is spent.
       - name: Fetch and install the pinned Assetgrove
         run: bash scripts/assetgrove.sh fetch
